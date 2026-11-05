@@ -43,17 +43,21 @@ export async function startDesktopService(
 
   let logWatcher: RocketLeagueLogWatcher | undefined;
   let identityRecoveryInProgress = false;
+  let stopped = false;
   const recoverIdentity = (): void => {
-    if (process.platform !== "win32" || !logWatcher || identityRecoveryInProgress) {
+    if (stopped || process.platform !== "win32" || !logWatcher || identityRecoveryInProgress) {
       return;
     }
     identityRecoveryInProgress = true;
     void (async () => {
       const processStartedAt = await getRocketLeagueProcessStartTime();
-      if (processStartedAt !== undefined) {
+      if (processStartedAt !== undefined && !stopped) {
         await logWatcher?.recoverIdentityAfter(processStartedAt);
       }
     })().catch((error: unknown) => {
+      if (stopped) {
+        return;
+      }
       options.onError(error instanceof Error ? error.message : String(error));
     }).finally(() => {
       identityRecoveryInProgress = false;
@@ -101,6 +105,7 @@ export async function startDesktopService(
 
   return {
     stop: () => {
+      stopped = true;
       runtime.stop();
       logWatcher?.stop();
     },
