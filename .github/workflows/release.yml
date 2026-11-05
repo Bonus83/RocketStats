@@ -73,6 +73,8 @@ jobs:
           } else {
             $isDraft = gh release view $tag --json isDraft --jq .isDraft
             if ($isDraft -ne "true") { throw "Release $tag is already published; refusing to replace its assets." }
+            gh release edit $tag --target $env:GITHUB_SHA
+            if ($LASTEXITCODE -ne 0) { throw "Could not update the target commit of $tag." }
           }
           gh release upload $tag @files --clobber
           if ($LASTEXITCODE -ne 0) { throw "Upload failed." }
