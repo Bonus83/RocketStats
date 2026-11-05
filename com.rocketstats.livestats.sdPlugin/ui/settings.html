@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RocketStats</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: system-ui, sans-serif;
+        font-size: 13px;
+      }
+      body {
+        margin: 0;
+        padding: 12px;
+        background: #121722;
+        color: #e8ecf6;
+      }
+      h1 {
+        margin: 0 0 14px;
+        font-size: 16px;
+      }
+      fieldset {
+        margin: 0 0 12px;
+        padding: 10px;
+        border: 1px solid #2f3a52;
+        border-radius: 8px;
+        background: #182238;
+      }
+      legend {
+        padding: 0 5px;
+        color: #aebbd3;
+      }
+      label {
+        display: block;
+        margin: 8px 0;
+      }
+      select {
+        box-sizing: border-box;
+        width: 100%;
+        margin-top: 4px;
+        padding: 7px;
+        border: 1px solid #394867;
+        border-radius: 5px;
+        background: #101725;
+        color: #e8ecf6;
+      }
+      input[type="number"] {
+        box-sizing: border-box;
+        width: 100%;
+        margin-top: 4px;
+        padding: 7px;
+        border: 1px solid #394867;
+        border-radius: 5px;
+        background: #101725;
+        color: #e8ecf6;
+      }
+      .check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .hint {
+        margin: 6px 0 0;
+        color: #9aa8c2;
+        font-size: 11px;
+      }
+      #status {
+        min-height: 16px;
+        margin-top: 6px;
+        color: #75d7a4;
+      }
+      #status.error {
+        color: #ff8a80;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>RocketStats</h1>
+
+    <fieldset>
+      <legend data-i18n="display">Display</legend>
+      <label>
+        <span data-i18n="language">Language</span>
+        <select id="locale" data-setting="locale">
+          <option value="de">Deutsch</option>
+          <option value="en">English</option>
+          <option value="pl">Polski</option>
+          <option value="fr">Français</option>
+          <option value="es">Español</option>
+          <option value="pt">Português</option>
+          <option value="ru">Русский</option>
+        </select>
+      </label>
+      <label>
+        <span data-i18n="playlist">MMR playlist</span>
+        <select id="playlist" data-setting="playlist">
+          <option value="auto" data-i18n="automaticPlaylist">Automatic (loaded mode)</option>
+          <option value="ranked_1v1" data-i18n="ranked1v1">Ranked 1v1</option>
+          <option value="ranked_2v2" data-i18n="ranked2v2">Ranked 2v2</option>
+          <option value="ranked_3v3" data-i18n="ranked3v3">Ranked 3v3</option>
+          <option value="ranked_4v4" data-i18n="ranked4v4">Ranked 4v4 Quads</option>
+          <option value="ranked_hoops" data-i18n="rankedHoops">Ranked Hoops</option>
+          <option value="ranked_rumble" data-i18n="rankedRumble">Ranked Rumble</option>
+          <option value="ranked_dropshot" data-i18n="rankedDropshot">Ranked Dropshot</option>
+          <option value="ranked_snow_day" data-i18n="rankedSnowDay">Ranked Snow Day</option>
+          <option value="ranked_heatseeker" data-i18n="rankedHeatseeker">Ranked Heatseeker</option>
+          <option value="casual" data-i18n="casual">Casual</option>
+          <option value="tournament" data-i18n="tournament">Tournament</option>
+        </select>
+      </label>
+      <p class="hint" data-i18n="playlistHint">Choose a specific playlist to keep this key fixed on that mode.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend data-i18n="localConnection">Local connection</legend>
+      <label>
+        <span data-i18n="statsPort">Rocket League Stats API port</span>
+        <input id="apiPort" type="number" min="1" max="65535" step="1" data-setting="apiPort" />
+      </label>
+      <label>
+        <span data-i18n="controlPort">Local control port</span>
+        <input id="controlPort" type="number" min="1" max="65535" step="1" data-setting="controlPort" />
+      </label>
+      <p class="hint" data-i18n="portsHint">These ports are plugin-wide. Connections stay on this PC (127.0.0.1).</p>
+    </fieldset>
+
+    <fieldset>
+      <legend data-i18n="accountFallback">Account fallback</legend>
+      <label>
+        <span data-i18n="inGameName">In-game name</span>
+        <input id="manualDisplayName" type="text" maxlength="64" autocomplete="off" />
+      </label>
+      <p class="hint" data-i18n="fallbackHint">Used only when the game account cannot be verified; exactly one matching player is selected. This name-based fallback is not a verified account ID. The detected game account always takes priority.</p>
+    </fieldset>
+
+    <fieldset>
+      <legend data-i18n="eventBanner">Event banner</legend>
+      <label class="check"><input type="checkbox" value="goals" data-banner-stat /> <span data-i18n="goals">Goals</span></label>
+      <label class="check"><input type="checkbox" value="assists" data-banner-stat /> <span data-i18n="assists">Assists</span></label>
+      <label class="check"><input type="checkbox" value="saves" data-banner-stat /> <span data-i18n="saves">Saves</span></label>
+      <label class="check"><input type="checkbox" value="shots" data-banner-stat /> <span data-i18n="shots">Shots</span></label>
+      <label class="check"><input type="checkbox" value="demos" data-banner-stat /> <span data-i18n="demos">Demos</span></label>
+      <label class="check"><input type="checkbox" value="score" data-banner-stat /> <span data-i18n="score">Score</span></label>
+      <label class="check"><input type="checkbox" value="ping" data-banner-stat /> <span data-i18n="ping">Ping</span></label>
+      <p class="hint" data-i18n="eventStatsHint">Select up to three statistics shown with gameplay events.</p>
+      <label class="check">
+        <input id="animateEvents" type="checkbox" data-setting="animateEvents" />
+        <span data-i18n="animateEvents">Animate event banner</span>
+      </label>
+    </fieldset>
+
+    <div id="status" role="status" aria-live="polite"></div>
+
+    <script src="settings-i18n.js"></script>
+    <script>
+      (() => {
+        const defaults = {
+          locale: "en",
+          playlist: "auto",
+          playlistMode: "auto",
+          eventBannerStats: ["goals", "assists", "saves"],
+          animateEvents: true
+        };
+        const globalDefaults = { apiPort: 49123, controlPort: 49124, manualDisplayName: "" };
+        const fields = {
+          locale: document.getElementById("locale"),
+          playlist: document.getElementById("playlist"),
+          apiPort: document.getElementById("apiPort"),
+          controlPort: document.getElementById("controlPort"),
+          manualDisplayName: document.getElementById("manualDisplayName"),
+          animateEvents: document.getElementById("animateEvents")
+        };
+        const statInputs = [...document.querySelectorAll("[data-banner-stat]")];
+        const status = document.getElementById("status");
+        const messages = window.RocketStatsSettingsI18n;
+        let websocket;
+        let context;
+        let pluginUuid;
+        let actionSettings = { ...defaults };
+        let globalSettings = { ...globalDefaults };
+
+        function applyLocale(locale) {
+          const translations = messages[locale] || messages.en;
+          document.documentElement.lang = locale;
+          for (const element of document.querySelectorAll("[data-i18n]")) {
+            const key = element.dataset.i18n;
+            if (translations[key]) {
+              element.textContent = translations[key];
+            }
+          }
+        }
+
+        function showStatus(messageKey, failed = false) {
+          const translations = messages[fields.locale.value] || messages.en;
+          status.textContent = translations[messageKey] || messages.en[messageKey] || messageKey;
+          status.classList.toggle("error", failed);
+        }
+
+        function send(event, payload, targetContext = context) {
+          if (!websocket || websocket.readyState !== WebSocket.OPEN || !targetContext) {
+            showStatus("socketNotReady", true);
+            return false;
+          }
+          try {
+            websocket.send(JSON.stringify({ event, context: targetContext, payload }));
+            return true;
+          } catch {
+            showStatus("connectionFailed", true);
+            return false;
+          }
+        }
+
+        function loadSettings(settings) {
+          actionSettings = { ...defaults, ...(settings || {}) };
+          fields.locale.value = actionSettings.locale;
+          applyLocale(actionSettings.locale);
+          fields.playlist.value = actionSettings.playlistMode === "manual"
+            ? actionSettings.playlist
+            : "auto";
+          if (!fields.playlist.value) {
+            fields.playlist.value = "auto";
+          }
+          fields.animateEvents.checked = actionSettings.animateEvents !== false;
+          const selected = new Set(
+            Array.isArray(actionSettings.eventBannerStats)
+              ? actionSettings.eventBannerStats.slice(0, 3)
+              : defaults.eventBannerStats
+          );
+          for (const input of statInputs) {
+            input.checked = selected.has(input.value);
+          }
+        }
+
+        function loadGlobalSettings(settings) {
+          globalSettings = { ...globalDefaults, ...(settings || {}) };
+          fields.apiPort.value = globalSettings.apiPort;
+          fields.controlPort.value = globalSettings.controlPort;
+          fields.manualDisplayName.value = globalSettings.manualDisplayName || "";
+        }
+
+        function saveSettings() {
+          applyLocale(fields.locale.value);
+          const apiPort = Number(fields.apiPort.value);
+          const controlPort = Number(fields.controlPort.value);
+          if (
+            !Number.isInteger(apiPort) ||
+            apiPort < 1 ||
+            apiPort > 65535 ||
+            !Number.isInteger(controlPort) ||
+            controlPort < 1 ||
+            controlPort > 65535
+          ) {
+            showStatus("invalidPorts", true);
+            return;
+          }
+          const selectedStats = statInputs
+            .filter((input) => input.checked)
+            .map((input) => input.value)
+            .slice(0, 3);
+          if (selectedStats.length === 0) {
+            showStatus("selectEventStat", true);
+            return;
+          }
+
+          const nextSettings = {
+            locale: fields.locale.value,
+            playlist: fields.playlist.value,
+            playlistMode: fields.playlist.value === "auto" ? "auto" : "manual",
+            eventBannerStats: selectedStats,
+            animateEvents: fields.animateEvents.checked
+          };
+          const portsChanged =
+            apiPort !== globalSettings.apiPort || controlPort !== globalSettings.controlPort;
+          const manualDisplayName = fields.manualDisplayName.value.trim().slice(0, 64);
+          const globalSettingsChanged =
+            portsChanged || manualDisplayName !== (globalSettings.manualDisplayName || "");
+          if (!send("setSettings", nextSettings)) {
+            return;
+          }
+          actionSettings = nextSettings;
+          if (globalSettingsChanged) {
+            const nextGlobalSettings = { apiPort, controlPort, manualDisplayName };
+            if (!send("setGlobalSettings", nextGlobalSettings, pluginUuid)) {
+              return;
+            }
+            globalSettings = nextGlobalSettings;
+          }
+          showStatus("saved");
+        }
+
+        for (const field of Object.values(fields)) {
+          field.addEventListener("change", saveSettings);
+        }
+        for (const input of statInputs) {
+          input.addEventListener("change", () => {
+            const checked = statInputs.filter((item) => item.checked);
+            if (checked.length > 3) {
+              input.checked = false;
+              showStatus("tooManyEventStats", true);
+              return;
+            }
+            saveSettings();
+          });
+        }
+
+        loadSettings(defaults);
+        loadGlobalSettings(globalDefaults);
+
+        window.connectElgatoStreamDeckSocket = (port, pluginUUID, registerEvent, info, actionInfo) => {
+          context = actionInfo.context;
+          pluginUuid = pluginUUID;
+          websocket = new WebSocket(`ws://127.0.0.1:${port}`);
+          websocket.addEventListener("open", () => {
+            websocket.send(JSON.stringify({ event: registerEvent, uuid: pluginUUID }));
+            if (send("getSettings") && send("getGlobalSettings", undefined, pluginUuid)) {
+              showStatus("connected");
+            }
+          });
+          websocket.addEventListener("message", (message) => {
+            let data;
+            try {
+              data = JSON.parse(message.data);
+            } catch {
+              showStatus("invalidSettings", true);
+              return;
+            }
+            if (data.event === "didReceiveSettings") {
+              loadSettings(data.payload && data.payload.settings);
+            } else if (data.event === "didReceiveGlobalSettings") {
+              loadGlobalSettings(data.payload && data.payload.settings);
+            }
+          });
+          websocket.addEventListener("error", () => {
+            showStatus("connectionFailed", true);
+          });
+          websocket.addEventListener("close", () => {
+            showStatus("connectionClosed", true);
+          });
+        };
+      })();
+    </script>
+  </body>
+</html>

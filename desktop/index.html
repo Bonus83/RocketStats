@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    >
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RocketStats Desktop</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">ROCKET LEAGUE · DESKTOP COMPANION</p>
+        <h1>RocketStats</h1>
+      </div>
+      <div class="connection">
+        <span id="status-dot" class="status-dot"></span>
+        <span id="connection-label">Connecting to local Stats API…</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="notice" aria-live="polite">
+        <span class="notice-icon" aria-hidden="true">i</span>
+        <p id="feed-note">Read-only local feed. No game controls or in-game overlay.</p>
+      </section>
+
+      <section id="error-panel" class="error-panel" hidden aria-live="polite">
+        <strong id="error-title">Setup notice</strong>
+        <p id="error-text"></p>
+      </section>
+      <section id="success-panel" class="success-panel" hidden aria-live="polite"></section>
+
+      <section class="controls" aria-label="Dashboard controls">
+        <div class="scope-control">
+          <div>
+            <p class="eyebrow" id="scope-eyebrow">WIN / LOSS SCOPE</p>
+            <strong id="scope-value">All modes</strong>
+          </div>
+          <button id="scope-button" class="button secondary" type="button">Switch scope</button>
+        </div>
+        <button id="reset-button" class="button danger" type="button">Reset W/L</button>
+        <button id="setup-api-button" class="button secondary" type="button">Set up local Stats API</button>
+        <div class="setting-control">
+          <label for="locale-select" id="language-label">Language</label>
+          <select id="locale-select">
+            <option value="de">Deutsch</option>
+            <option value="en">English</option>
+            <option value="pl">Polski</option>
+            <option value="fr">Français</option>
+            <option value="es">Español</option>
+            <option value="pt">Português</option>
+            <option value="ru">Русский</option>
+          </select>
+        </div>
+        <form id="port-form" class="setting-control">
+          <label for="port-input" id="port-label">Local API port</label>
+          <input id="port-input" type="number" min="1" max="65535" value="49123" inputmode="numeric">
+          <button class="button secondary compact" id="port-save" type="submit">Apply</button>
+        </form>
+      </section>
+
+      <section class="updates" aria-labelledby="updates-heading">
+        <div class="update-heading">
+          <h2 id="updates-heading">Application updates</h2>
+          <span id="update-version"></span>
+        </div>
+        <p id="update-status" aria-live="polite"></p>
+        <p id="update-source" class="update-detail"></p>
+        <progress id="update-progress" max="100" value="0" hidden aria-label="Update download"></progress>
+        <p id="update-error" class="update-error" role="alert" hidden></p>
+        <div class="update-actions">
+          <label class="update-auto">
+            <input id="update-auto" type="checkbox" checked>
+            <span id="update-auto-label">Automatically check for updates</span>
+          </label>
+          <button id="update-check" class="button secondary" type="button" disabled>Check for updates</button>
+          <button id="update-download" class="button secondary" type="button" hidden>Download</button>
+          <button id="update-install" class="button secondary" type="button" hidden>Install and restart</button>
+        </div>
+        <p id="update-network" class="update-detail"></p>
+      </section>
+
+      <section class="dashboard-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" id="match-eyebrow">LIVE MATCH</p>
+            <h2 id="match-heading">Match overview</h2>
+          </div>
+        </div>
+        <div id="match-grid" class="card-grid"></div>
+      </section>
+
+      <section class="dashboard-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" id="ranked-eyebrow">RANKED</p>
+            <h2 id="ranked-heading">Rank &amp; record</h2>
+          </div>
+        </div>
+        <div id="ranked-grid" class="card-grid"></div>
+      </section>
+
+      <section class="dashboard-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" id="stats-eyebrow">PLAYER STATS</p>
+            <h2 id="stats-heading">Match statistics</h2>
+          </div>
+        </div>
+        <div id="stats-grid" class="card-grid"></div>
+      </section>
+    </main>
+    <script src="./renderer.js"></script>
+  </body>
+</html>

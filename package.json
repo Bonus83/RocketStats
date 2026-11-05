@@ -1,0 +1,62 @@
+{
+  "name": "rocketstats-elgato",
+  "version": "0.1.0",
+  "description": "Rocket League live statistics for Elgato Stream Deck and desktop.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "assets": "node scripts/generate-assets.mjs",
+    "configure:stats-api": "node scripts/configure-rl-stats-api.mjs",
+    "diagnose:stats": "node scripts/diagnose-stats-api.mjs",
+    "clean": "powershell -NoProfile -Command \"if (Test-Path 'com.rocketstats.livestats.sdPlugin/bin') { Remove-Item -Recurse -Force 'com.rocketstats.livestats.sdPlugin/bin' }\"",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "dev": "tsc -p tsconfig.json --watch",
+    "desktop:dev": "npm run build && electron .",
+    "desktop:dist": "npm run build && node scripts/build-desktop.mjs",
+    "desktop:release": "npm run build && node scripts/build-desktop.mjs --release"
+  },
+  "main": "desktop/main.cjs",
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@elgato/streamdeck": "^3.0.4",
+    "electron-updater": "^6.8.11"
+  },
+  "build": {
+    "appId": "com.rocketstats.desktop",
+    "productName": "RocketStats Desktop",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "desktop/**/*",
+      "com.rocketstats.livestats.sdPlugin/bin/**/*",
+      "com.rocketstats.livestats.sdPlugin/data/rank-distributions.json",
+      "com.rocketstats.livestats.sdPlugin/imgs/ranks/*.png",
+      "scripts/rl-stats-api-config.mjs",
+      "package.json",
+      "!node_modules/@elgato/**",
+      "!node_modules/zod/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "artifactName": "RocketStats-Desktop-${version}-Setup-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

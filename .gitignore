@@ -1,0 +1,9 @@
+node_modules/
+com.rocketstats.livestats.sdPlugin/bin/
+release/
+*.log
+.env*
+*.key
+*.pem
+*.pfx
+*.p12

@@ -1,0 +1,402 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "UUID": "com.rocketstats.livestats",
+  "Name": "Rocket League Live Stats",
+  "Description": "Live Rocket League stats on your Stream Deck keys.",
+  "Version": "0.1.0.0",
+  "Author": "RocketStats",
+  "Icon": "imgs/plugin/icon",
+  "Category": "Rocket League",
+  "CategoryIcon": "imgs/plugin/category",
+  "CodePath": "bin/index.js",
+  "PropertyInspectorPath": "ui/settings.html",
+  "SDKVersion": 2,
+  "Software": {
+    "MinimumVersion": "7.1"
+  },
+  "Nodejs": {
+    "Version": "24"
+  },
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    },
+    {
+      "Platform": "mac",
+      "MinimumVersion": "13"
+    }
+  ],
+  "Actions": [
+    {
+      "UUID": "com.rocketstats.livestats.score",
+      "Name": "Live Score",
+      "Icon": "imgs/actions/score",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/score-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.timer",
+      "Name": "Match Timer",
+      "Icon": "imgs/actions/timer",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/timer-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.boost",
+      "Name": "Boost",
+      "Icon": "imgs/actions/boost",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/boost-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.streak",
+      "Name": "Win/Loss Streak",
+      "Icon": "imgs/actions/streak",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/streak-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.mmr",
+      "Name": "MMR",
+      "Icon": "imgs/actions/mmr",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/mmr-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.banner",
+      "Name": "Event Banner",
+      "Icon": "imgs/actions/banner",
+      "Controllers": ["Keypad", "Neo", "Encoder"],
+      "States": [
+        {
+          "Image": "imgs/actions/banner-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.last-goal",
+      "Name": "Last Goal",
+      "Tooltip": "Shows the latest goal scorer and shot speed.",
+      "Icon": "imgs/actions/last-goal",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/last-goal-key",
+          "TitleAlignment": "middle",
+          "ShowTitle": false
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.queue",
+      "Name": "Queue Status",
+      "Icon": "imgs/actions/queue",
+      "Controllers": ["Keypad", "Neo"],
+      "States": [
+        {
+          "Image": "imgs/actions/queue-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.ban",
+      "Name": "Ban Countdown",
+      "Icon": "imgs/actions/ban",
+      "Controllers": ["Keypad", "Neo"],
+      "States": [
+        {
+          "Image": "imgs/actions/ban-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.speed",
+      "Name": "Speed",
+      "Icon": "imgs/actions/speed",
+      "Controllers": ["Keypad", "Encoder"],
+      "States": [
+        {
+          "Image": "imgs/actions/speed-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.ping",
+      "Name": "Ping",
+      "Icon": "imgs/actions/ping",
+      "Controllers": ["Keypad", "Neo"],
+      "States": [
+        {
+          "Image": "imgs/actions/ping-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.possession",
+      "Name": "Ball Possession",
+      "Icon": "imgs/actions/possession",
+      "Controllers": ["Keypad", "Neo"],
+      "States": [
+        {
+          "Image": "imgs/actions/possession-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.stats-scope",
+      "Name": "Win/Loss Scope (All / Current Mode)",
+      "Tooltip": "Press to switch streak and records between all matches and the current game mode.",
+      "Icon": "imgs/actions/stats-scope",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/stats-scope-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.stats-reset",
+      "Name": "Reset Win/Loss Stats",
+      "Tooltip": "Hold for 2 seconds to reset streak and win/loss records for the current scope.",
+      "Icon": "imgs/actions/stats-reset",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/stats-reset-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.rank",
+      "Name": "Rank",
+      "Tooltip": "Rank and division of the current mode, estimated from local MMR tables. DIV ? means overlapping or missing data.",
+      "Icon": "imgs/actions/rank",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/rank-key",
+          "TitleAlignment": "middle",
+          "ShowTitle": false
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.mmr-wl",
+      "Name": "MMR + Win/Loss",
+      "Tooltip": "MMR of the current mode with wins and losses of the current scope.",
+      "Icon": "imgs/actions/mmr-wl",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/mmr-wl-key",
+          "TitleAlignment": "middle",
+          "ShowTitle": false
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.hud-toggle",
+      "Name": "HUD Toggle (Bridge Required)",
+      "Icon": "imgs/actions/hud",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/hud-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.records",
+      "Name": "Personal Records",
+      "Icon": "imgs/actions/records",
+      "Controllers": ["Keypad", "Neo"],
+      "States": [
+        {
+          "Image": "imgs/actions/records-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.goals",
+      "Name": "Goals",
+      "Icon": "imgs/actions/goals",
+      "Controllers": ["Keypad", "Neo"],
+      "States": [
+        {
+          "Image": "imgs/actions/goals-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.assists",
+      "Name": "Assists",
+      "Icon": "imgs/actions/assists",
+      "Controllers": ["Keypad", "Neo"],
+      "States": [
+        {
+          "Image": "imgs/actions/assists-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.saves",
+      "Name": "Saves",
+      "Icon": "imgs/actions/saves",
+      "Controllers": ["Keypad", "Neo"],
+      "States": [
+        {
+          "Image": "imgs/actions/saves-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.shots",
+      "Name": "Shots",
+      "Icon": "imgs/actions/shots",
+      "Controllers": ["Keypad", "Neo"],
+      "States": [
+        {
+          "Image": "imgs/actions/shots-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.demos",
+      "Name": "Demos",
+      "Icon": "imgs/actions/demos",
+      "Controllers": ["Keypad", "Neo"],
+      "States": [
+        {
+          "Image": "imgs/actions/demos-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.flip-resets",
+      "Name": "Flip Resets",
+      "Icon": "imgs/actions/flip-resets",
+      "Controllers": ["Keypad", "Neo"],
+      "States": [
+        {
+          "Image": "imgs/actions/flip-resets-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.touches",
+      "Name": "Touches",
+      "Icon": "imgs/actions/touches",
+      "Controllers": ["Keypad", "Neo"],
+      "States": [
+        {
+          "Image": "imgs/actions/touches-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "UUID": "com.rocketstats.livestats.player-score",
+      "Name": "Player Score",
+      "Icon": "imgs/actions/player-score",
+      "Controllers": ["Keypad", "Neo"],
+      "States": [
+        {
+          "Image": "imgs/actions/player-score-key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    }
+  ],
+  "Profiles": [
+    {
+      "Name": "profiles/stream-deck",
+      "DeviceType": 0,
+      "AutoInstall": true,
+      "DontAutoSwitchWhenInstalled": true
+    },
+    {
+      "Name": "profiles/stream-deck-variant",
+      "DeviceType": 0,
+      "AutoInstall": true,
+      "DontAutoSwitchWhenInstalled": true
+    },
+    {
+      "Name": "profiles/stream-deck-mini",
+      "DeviceType": 1,
+      "AutoInstall": true,
+      "DontAutoSwitchWhenInstalled": true
+    },
+    {
+      "Name": "profiles/stream-deck-xl",
+      "DeviceType": 2,
+      "AutoInstall": true,
+      "DontAutoSwitchWhenInstalled": true
+    },
+    {
+      "Name": "profiles/stream-deck-xl-variant",
+      "DeviceType": 2,
+      "AutoInstall": true,
+      "DontAutoSwitchWhenInstalled": true
+    },
+    {
+      "Name": "profiles/stream-deck-neo",
+      "DeviceType": 9,
+      "AutoInstall": true,
+      "DontAutoSwitchWhenInstalled": true
+    },
+    {
+      "Name": "profiles/stream-deck-studio",
+      "DeviceType": 10,
+      "AutoInstall": true,
+      "DontAutoSwitchWhenInstalled": true
+    },
+    {
+      "Name": "profiles/stream-deck-plus",
+      "DeviceType": 7,
+      "AutoInstall": true,
+      "DontAutoSwitchWhenInstalled": true
+    }
+  ]
+}

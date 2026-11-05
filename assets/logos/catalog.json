@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "file": "button-logos.png",
+    "width": 768,
+    "height": 768,
+    "sha256": "ac5072a12291a7c8f000c72ea669c42aba557092fe3db7ba9fda2151f77c74d6",
+    "hasAlphaChannel": true
+  },
+  "layout": {
+    "columns": 5,
+    "order": "row-major",
+    "positionBase": 1,
+    "uniformGrid": false,
+    "cropDetection": {
+      "method": "alpha-connected-components",
+      "alphaThreshold": 128,
+      "paddingPx": 1
+    },
+    "notes": "Complete button cards with rounded borders. The asset generator detects card bounds from the transparent gutters and maps them to logos in row-major order."
+  },
+  "extensionPolicy": {
+    "appendOnly": true,
+    "preserveExistingIdsAndIndices": true,
+    "preserveExistingPixelPositionsAndScale": true,
+    "nextIndex": 22,
+    "nextRow": 5,
+    "nextColumn": 2,
+    "notes": "Fill the remaining cells of row 5 from left to right, then append rows below. Extend the canvas without resizing existing artwork. Do not insert or reorder existing entries."
+  },
+  "mappingBasis": "Intended actions follow the previously agreed order. Descriptions identify the visible motifs; artwork alone does not establish action semantics.",
+  "logos": [
+    { "index": 1, "id": "score", "row": 1, "column": 1, "description": "Zwei gekreuzte Zielflaggen" },
+    { "index": 2, "id": "timer", "row": 1, "column": 2, "description": "Stoppuhr" },
+    { "index": 3, "id": "boost", "row": 1, "column": 3, "description": "Flamme" },
+    { "index": 4, "id": "banner", "row": 1, "column": 4, "description": "Band mit Blitzsymbol" },
+    { "index": 5, "id": "streak", "row": 1, "column": 5, "description": "Drei Pfeilspitzen nach rechts" },
+    { "index": 6, "id": "mmr", "row": 2, "column": 1, "description": "Schild mit Glanzstern" },
+    { "index": 7, "id": "queue", "row": 2, "column": 2, "description": "Lupe mit Auto" },
+    { "index": 8, "id": "ban", "row": 2, "column": 3, "description": "Geschlossenes Vorhaengeschloss" },
+    { "index": 9, "id": "speed", "row": 2, "column": 4, "description": "Auto mit Bewegungslinien" },
+    { "index": 10, "id": "ping", "row": 2, "column": 5, "description": "WLAN-Signal" },
+    { "index": 11, "id": "possession", "row": 3, "column": 1, "description": "Ball zwischen Pfeilen nach links und rechts" },
+    { "index": 12, "id": "hud-toggle", "row": 3, "column": 2, "description": "Vier Ecken eines Fokusrahmens" },
+    { "index": 13, "id": "records", "row": 3, "column": 3, "description": "Pokal" },
+    { "index": 14, "id": "goals", "row": 3, "column": 4, "description": "Tornetz" },
+    { "index": 15, "id": "assists", "row": 3, "column": 5, "description": "Ball mit gebogenem Pfeil nach rechts" },
+    { "index": 16, "id": "saves", "row": 4, "column": 1, "description": "Auto vor Tornetz mit Ball" },
+    { "index": 17, "id": "shots", "row": 4, "column": 2, "description": "Ball mit Bewegungslinien" },
+    { "index": 18, "id": "demos", "row": 4, "column": 3, "description": "Auto mit Explosionskranz" },
+    { "index": 19, "id": "flip-resets", "row": 4, "column": 4, "description": "Umgedrehtes Auto ueber einem Ball" },
+    { "index": 20, "id": "touches", "row": 4, "column": 5, "description": "Auto am Ball mit Kontaktlinien" },
+    { "index": 21, "id": "player-score", "row": 5, "column": 1, "description": "Schild mit Personensymbol" }
+  ]
+}

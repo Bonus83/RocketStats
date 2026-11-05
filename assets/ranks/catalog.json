@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "file": "rank-sheet.png",
+    "width": 768,
+    "height": 768,
+    "sha256": "3d6360e31db542e5f391aecc404282c0a485bbf0a0e80b32a5c872a2befd271c",
+    "hasAlphaChannel": true
+  },
+  "layout": {
+    "columns": 5,
+    "rows": 5,
+    "order": "row-major",
+    "uniformGrid": true,
+    "cellSizePx": 153.6,
+    "notes": "Rank icons on a transparent background, one icon per grid cell. Each icon is cropped to its alpha bounds inside its cell and centered on a square key image."
+  },
+  "output": {
+    "directory": "imgs/ranks",
+    "fileNamePattern": "rank-NN.png",
+    "sizePx": 144
+  },
+  "ranks": [
+    { "index": 0, "name": "Unranked" },
+    { "index": 1, "name": "Bronze I" },
+    { "index": 2, "name": "Bronze II" },
+    { "index": 3, "name": "Bronze III" },
+    { "index": 4, "name": "Silver I" },
+    { "index": 5, "name": "Silver II" },
+    { "index": 6, "name": "Silver III" },
+    { "index": 7, "name": "Gold I" },
+    { "index": 8, "name": "Gold II" },
+    { "index": 9, "name": "Gold III" },
+    { "index": 10, "name": "Platinum I" },
+    { "index": 11, "name": "Platinum II" },
+    { "index": 12, "name": "Platinum III" },
+    { "index": 13, "name": "Diamond I" },
+    { "index": 14, "name": "Diamond II" },
+    { "index": 15, "name": "Diamond III" },
+    { "index": 16, "name": "Champion I" },
+    { "index": 17, "name": "Champion II" },
+    { "index": 18, "name": "Champion III" },
+    { "index": 19, "name": "Grand Champion I" },
+    { "index": 20, "name": "Grand Champion II" },
+    { "index": 21, "name": "Grand Champion III" },
+    { "index": 22, "name": "Supersonic Legend" }
+  ]
+}
