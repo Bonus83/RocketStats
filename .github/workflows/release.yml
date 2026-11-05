@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version without leading v (must match package.json), e.g. 0.1.0"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Determine version
+        id: version
+        shell: pwsh
+        run: |
+          $pkg = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $requested = if ("${{ github.event_name }}" -eq "push") { "${{ github.ref_name }}".TrimStart("v") } else { "${{ inputs.version }}".TrimStart("v") }
+          if ($requested -ne $pkg) {
+            throw "Requested version $requested does not match package.json version $pkg."
+          }
+          "tag=v$pkg" >> $env:GITHUB_OUTPUT
+          "version=$pkg" >> $env:GITHUB_OUTPUT
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run desktop:release
+
+      - name: Collect release assets
+        id: assets
+        shell: pwsh
+        run: |
+          $v = "${{ steps.version.outputs.version }}"
+          $files = @(
+            "release/RocketStats-Desktop-$v-Setup-x64.exe",
+            "release/RocketStats-Desktop-$v-Setup-x64.exe.blockmap",
+            "release/latest.yml"
+          )
+          foreach ($f in $files) { if (-not (Test-Path $f)) { throw "Missing release asset: $f" } }
+          $latest = Get-Content release/latest.yml -Raw
+          if ($latest -notmatch "(?m)^version:\s*$([regex]::Escape($v))\s*$") {
+            throw "latest.yml does not describe version $v."
+          }
+          "files=$($files -join ' ')" >> $env:GITHUB_OUTPUT
+
+      - name: Upload to draft release
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          $files = "${{ steps.assets.outputs.files }}".Split(" ")
+          gh release view $tag --json isDraft *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag --draft --target $env:GITHUB_SHA --title "RocketStats Desktop $tag" --notes "Windows x64 build. Unsigned installer: Windows SmartScreen may show a warning."
+            if ($LASTEXITCODE -ne 0) { throw "Could not create release $tag." }
+          } else {
+            $isDraft = gh release view $tag --json isDraft --jq .isDraft
+            if ($isDraft -ne "true") { throw "Release $tag is already published; refusing to replace its assets." }
+          }
+          gh release upload $tag @files --clobber
+          if ($LASTEXITCODE -ne 0) { throw "Upload failed." }
+          "Assets uploaded to draft release $tag. Review and publish it manually." >> $env:GITHUB_STEP_SUMMARY

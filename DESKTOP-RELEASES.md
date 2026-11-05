@@ -91,6 +91,16 @@ repository or design a separately authenticated distribution service instead.
 5. Test upgrading the previous version on a Windows test machine before
    recommending the release to friends.
 
+### Automated build with GitHub Actions
+
+`.github/workflows/release.yml` performs steps 1–3 on a Windows runner. Run it
+via **Actions → Release → Run workflow** with the version from `package.json`,
+or push a tag `v<package version>`. It runs the tests, builds with
+`desktop:release`, checks that installer, blockmap and `latest.yml` exist and
+match the version, and uploads them to a **draft** release (created if missing).
+It refuses to touch an already published release. Review the draft and publish
+it manually (step 4).
+
 Both build commands use `publish: never`: neither uploads code nor creates or
 publishes releases. Uploads are a separate deliberate maintainer operation.
 `desktop:dist` can build an unsigned installer with the configured update
