@@ -25,21 +25,26 @@ function parseUpdateConfig(input) {
 
 function desktopBuildConfig(config, requireRelease) {
   const signingReady = Boolean(config?.publisherNames.length);
-  if (requireRelease && !signingReady) {
-    throw new Error(
-      "A signed release requires the exact code-signing certificate publisherNames in desktop/update-config.json."
-    );
+  if (requireRelease && !config) {
+    throw new Error("A release requires a public GitHub repository in desktop/update-config.json.");
   }
   return {
     forceCodeSigning: signingReady,
-    publish: signingReady
+    publish: config
       ? [{ provider: "github", owner: config.owner, repo: config.repo, private: false, releaseType: "release" }]
       : null,
     win: {
-      verifyUpdateCodeSignature: true,
+      verifyUpdateCodeSignature: signingReady,
       ...(signingReady ? { publisherName: config.publisherNames } : {})
     }
   };
 }
 
-module.exports = { parseUpdateConfig, desktopBuildConfig };
+function updateDisabledReason(config, isPackaged, platform) {
+  if (!config) return "unconfigured";
+  if (!isPackaged) return "development";
+  if (platform !== "win32") return "unsupported";
+  return undefined;
+}
+
+module.exports = { parseUpdateConfig, desktopBuildConfig, updateDisabledReason };

@@ -13,6 +13,9 @@ async function main() {
   if (!config && !args.includes("--release")) {
     console.log("Building a local installer without an update source. Automatic updates are disabled.");
   }
+  if (config && config.publisherNames.length === 0) {
+    console.warn("Building without publisher-signature verification. Updates rely on the security of the GitHub release repository.");
+  }
   await build({
     targets: Platform.WINDOWS.createTarget(["nsis"], Arch.x64),
     config: desktopBuildConfig(config, args.includes("--release")),

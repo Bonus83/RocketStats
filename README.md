@@ -161,16 +161,21 @@ configuration.
 Live MMR still depends on the existing local log parser and its documented
 limitations.
 
-The desktop updater supports signed, stable GitHub Releases. Configured installed
-builds check at startup and every six hours (can be disabled); downloading and
-installing each require consent. Installation is blocked while Rocket League is
-running and persists local state before restarting. No update is installed merely
-by closing the app. Development builds do not check for updates.
-The checked-in update source is intentionally unconfigured: fill in the public
-release repository and signing publishers before distribution. See
-[DESKTOP-RELEASES.md](./DESKTOP-RELEASES.md) for signing, versioning, the
-`desktop:release` build, and the required GitHub Release assets. No GitHub token
-belongs in the client. Update checks send normal HTTPS request metadata to
+The desktop updater uses stable GitHub Releases from `Bonus83/RocketStats`.
+Installed builds check at startup and every six hours (can be disabled);
+downloading and installing each require consent. Installation is blocked while
+Rocket League is running and persists local state before restarting. No update
+is installed merely by closing the app. Development builds do not check for
+updates.
+
+A Windows signing certificate is optional. The current configuration does not
+verify an update publisher's signature: HTTPS and the checksum in GitHub's
+release metadata do not protect against a compromised release repository. The
+dashboard and install confirmation warn about this. See
+[DESKTOP-RELEASES.md](./DESKTOP-RELEASES.md) for the trust limitations, optional
+signing, versioning and required release assets. Existing builds with an
+unconfigured updater need a manual install of the new version first. No GitHub
+token belongs in the client. Update checks send normal HTTPS request metadata to
 GitHub, but no game or account data.
 
 The game-data integration is limited to a read-only loopback feed and read-only

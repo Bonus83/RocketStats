@@ -1,11 +1,14 @@
 const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const CHECKABLE = new Set(["idle", "current", "available", "error"]);
 
-function createUpdateController({ updater, version, source, disabledReason, onState, beforeInstall }) {
+function createUpdateController({
+  updater, version, source, publisherVerification = false, disabledReason, onState, beforeInstall
+}) {
   let state = {
     phase: disabledReason || "idle",
     version,
     source,
+    publisherVerification,
     availableVersion: null,
     percent: null,
     error: null
@@ -75,7 +78,7 @@ function createUpdateController({ updater, version, source, disabledReason, onSt
       try {
         await updater.downloadUpdate();
         if (state.phase === "downloading") {
-          throw new Error("The updater did not confirm a verified download.");
+          throw new Error("The updater did not confirm the completed download.");
         }
       } catch (error) {
         fail(error);
@@ -83,7 +86,7 @@ function createUpdateController({ updater, version, source, disabledReason, onSt
       return { ...state };
     },
     async install() {
-      if (state.phase !== "downloaded") throw new Error("A verified update must be downloaded before installing.");
+      if (state.phase !== "downloaded") throw new Error("An update must be downloaded before installing.");
       publish({ phase: "installing", error: null });
       try {
         await beforeInstall();

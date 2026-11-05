@@ -7,11 +7,13 @@ while open. Users can turn automatic checking off or check manually.
 Downloads and installation each require a user action. A downloaded update is
 **not** installed just because the user closes the app.
 
-The updater accepts stable, newer versions only. It delegates SHA-512 integrity
-and Windows publisher-signature verification to `electron-updater`. Installation
-requires Rocket League to be closed. Before invoking the installer, the desktop
-service stops its readers, drains pending log work and persists its local state.
-The installer restarts RocketStats; account data stays in the user-data directory.
+The updater accepts stable, newer versions only and checks the downloaded
+installer against the SHA-512 checksum in the release metadata. With the current
+configuration it does **not** verify the publisher's signature. The dashboard
+and installation confirmation disclose this. Installation requires Rocket
+League to be closed. Before invoking the installer, the desktop service stops
+its readers, drains pending log work and persists its local state. The installer
+restarts RocketStats; account data stays in the user-data directory.
 
 Update errors and download progress appear in the dashboard in all seven
 languages. No remote release HTML or JavaScript is loaded into the renderer.
@@ -41,30 +43,24 @@ git config --local --add credential.https://github.com.helper '!powershell.exe -
 1. Use the configured **public GitHub release repository** at
    `Bonus83/RocketStats`. GitHub Releases serve the binary update metadata and
    assets; this repository may also contain the source code.
-2. Obtain a Windows Authenticode signing certificate and configure signing in
-   the secure build environment using electron-builder's signing options.
-   Never commit a certificate, private key, password, or token.
-3. Fill in [desktop/update-config.json](./desktop/update-config.json):
+2. The checked-in [desktop/update-config.json](./desktop/update-config.json)
+   selects this repository without requiring a signing certificate:
 
    ```json
    {
-     "owner": "<your GitHub owner>",
-     "repo": "<your public release repository>",
-     "publisherNames": ["<exact certificate publisher name>"]
+     "owner": "Bonus83",
+     "repo": "RocketStats",
+     "publisherNames": []
    }
    ```
 
-   These placeholders are documentation only. Replace them with real values.
-   The publisher name must match the signing certificate exactly. Certificate
-   rotation must be planned with a release signed by an already trusted
-   publisher; do not disable verification to work around a mismatch.
-4. Build and manually install this configured, signed version once. Earlier
-   versions without the updater, or with an empty source, cannot discover it.
-
-The release repository is configured, but the signing publisher is intentionally
-empty until a real code-signing certificate is selected. In this state the
-dashboard reports that automatic updates are unavailable, makes no update
-requests, and refuses release builds. Local unsigned builds remain available.
+3. Optionally, configure an Authenticode certificate in the secure build
+   environment and add its exact publisher name to `publisherNames`. Nonempty
+   publisher names force code signing and enable publisher-signature
+   verification. Plan certificate rotation with a release signed by an already
+   trusted publisher. Never commit a certificate, private key, password or token.
+4. Build and manually install the configured version once. Earlier builds with
+   an unconfigured updater cannot discover it.
 
 The public updater needs **no GitHub login or client token**. Do not embed a PAT
 in the application for a private repository. Use a public binary-release
@@ -80,10 +76,10 @@ repository or design a separately authenticated distribution service instead.
    npm run desktop:release
    ```
 
-2. The release build requires the source and signing publishers above, forces
-   code signing, enables publisher-signature verification and generates GitHub
-   update metadata. Missing signing credentials must fail the build, not create
-   an unsigned update. Signing credentials remain in the builder environment.
+2. The release build requires a configured public source but not a certificate.
+   With an empty `publisherNames` list it builds without publisher-signature
+   verification. If publisher names are configured, missing signing credentials
+   must fail the build; keep signing credentials in the builder environment.
 3. Create a GitHub Release tagged `v<package version>`, such as `v0.1.1`. Upload
    the generated artifacts from `release` together:
    - the `RocketStats-Desktop-<version>-Setup-x64.exe` installer;
@@ -92,22 +88,25 @@ repository or design a separately authenticated distribution service instead.
 4. Publish as a normal release, **not a draft or prerelease**. All three assets
    must belong to the same build and version. Do not edit the generated checksum
    or replace assets with files from another build.
-5. Test upgrading the previous signed version on a Windows test machine before
+5. Test upgrading the previous version on a Windows test machine before
    recommending the release to friends.
 
 Both build commands use `publish: never`: neither uploads code nor creates or
 publishes releases. Uploads are a separate deliberate maintainer operation.
-`desktop:dist` can still build an unsigned local installer when the configuration
-is entirely empty, but that installer has no update source. Once a source is
-configured, this command also requires signing. The Stream Deck SDK is excluded
-from the desktop package; the updater and its runtime dependencies are included.
+`desktop:dist` can build an unsigned installer with the configured update
+source. If the source is entirely empty, it builds a local installer without
+updates; `desktop:release` requires a source. The Stream Deck SDK is excluded from
+the desktop package; the updater and its runtime dependencies are included.
 
 ## Trust and privacy
 
 HTTPS plus a checksum detects corruption, but a checksum next to a compromised
-installer is not proof of its publisher. The configured signing publisher is an
-additional trust boundary; protect the signing key and GitHub release permissions.
-Signing does **not** constitute an Epic/Psyonix or anti-cheat approval.
+installer is not proof of its publisher. In the current configuration anyone
+who can compromise the GitHub release repository can publish a malicious
+update. Protect the GitHub account with two-factor authentication and limit
+release permissions. No independent cryptographic update signature is
+implemented. Optional Windows code signing adds publisher verification, but
+does **not** constitute an Epic/Psyonix or anti-cheat approval.
 
 Automatic checking introduces outbound requests to GitHub and its release/CDN
 infrastructure. GitHub receives normal request metadata, such as the client's
@@ -117,21 +116,21 @@ are attached to update requests. The renderer still has no direct network access
 ## Required live-release checks
 
 Unit tests cover configuration validation, no-source/development gating,
-available/current/offline states, consent and progress, simulated signature/
-checksum failure, persistence gating and seven-language UI controls. They do
-not replace a real signed-release upgrade test.
+available/current/offline states, consent and progress, simulated checksum
+failure, persistence gating and seven-language UI controls. They do not replace
+a real release upgrade test.
 
 Before distribution, verify on a clean Windows profile:
 
-- install version A manually, then update to higher signed version B;
-- publisher and checksum mismatches refuse installation;
+- install version A manually, then update to a higher version B;
+- a checksum mismatch refuses installation;
+- if publisher verification is configured, a publisher mismatch refuses installation;
 - an offline check is visible and retryable;
 - no download or installation occurs without consent;
 - closing the app alone never installs a downloaded update;
 - a running game blocks installation and a closed game allows retry;
 - account statistics, scope and settings survive the update.
 
-A real GitHub source, certificate and live upgrade test remain outstanding until
-the maintainer supplies them. The generated installer executable is also subject
-to this environment's organization content-exclusion policy; do not bypass that
-restriction to inspect or execute it.
+A real GitHub release and live upgrade test remain outstanding. The generated
+installer executable is also subject to this environment's organization
+content-exclusion policy; do not bypass that restriction to inspect or execute it.

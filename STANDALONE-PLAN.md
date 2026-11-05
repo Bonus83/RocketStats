@@ -55,9 +55,9 @@ the exact integration and build.
 - Decide on code signing before public distribution. Signing may help establish
   publisher identity; it is not an anti-cheat approval.
 - GitHub release updater implemented with explicit download/install controls,
-  optional periodic checking, error/progress UI and signed stable updates only.
-  Update-source and publisher configuration, certificate setup and a live upgrade
-  test are still outstanding. See [DESKTOP-RELEASES.md](./DESKTOP-RELEASES.md).
+  optional periodic checking and error/progress UI. The configured public source
+  supports unsigned stable updates; publisher verification is optional. A live
+  upgrade test is still outstanding. See [DESKTOP-RELEASES.md](./DESKTOP-RELEASES.md).
 
 ### Phase 3 — Pre-release validation (required before distributing broadly)
 
@@ -72,8 +72,7 @@ the exact integration and build.
 ### Phase 4 — Later features (not part of this first implementation)
 
 - Improve display preferences and accessible dashboard layouts.
-- Activate the implemented updater after configuring a signed GitHub release
-  process and completing the live-release checks.
+- Complete the live-release checks before relying on the updater for distribution.
 - Do not add an in-game overlay or any process/memory hooks without a separate
   safety and compatibility review.
 
@@ -89,9 +88,9 @@ the exact integration and build.
 - Rank divisions remain estimates derived from the bundled community table.
 - Account data is stored separately from the Stream Deck plugin's state file.
 - The project has not received an official anti-cheat compatibility approval.
-- No GitHub release repository or signing publisher has been supplied, so update
-  requests remain disabled in the default build. A local unsigned installer can
-  still be built; configured update/release builds require code signing.
+- The GitHub release source is configured, but no signing publisher is set.
+  Update publisher identity is not verified; a compromised release repository
+  can serve malicious updates despite HTTPS and checksums.
 
 ## Verification checklist
 

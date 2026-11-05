@@ -21,13 +21,14 @@ const TEXT = {
     mmrWl: "MMR + S/N",
     updateTitle: "Anwendungsupdates", updateAuto: "Automatisch nach Updates suchen",
     updateCheck: "Nach Updates suchen", updateDownload: "Herunterladen", updateInstall: "Installieren und neu starten",
-    updateConfirm: "Rocket League muss geschlossen sein. Das geprüfte Update installieren und RocketStats neu starten? Deine Kontodaten bleiben erhalten.",
+    updateConfirm: "Rocket League muss geschlossen sein. Dieses Update installieren und RocketStats neu starten? Deine Kontodaten bleiben erhalten.",
     updateNetwork: "Updateprüfungen kontaktieren GitHub. Es werden keine Spiel- oder Kontodaten übertragen.",
-    update_starting: "Updater wird gestartet…", update_unconfigured: "Automatische Updates sind erst mit einem eingerichteten Signaturherausgeber verfügbar.",
+    updateUnsigned: "Achtung: Eine Herausgebersignatur wird nicht geprüft. Installiere nur, wenn du dem GitHub-Release vertraust.",
+    update_starting: "Updater wird gestartet…", update_unconfigured: "Keine Updatequelle eingerichtet.",
     update_development: "Updates sind im Entwicklungsmodus deaktiviert.", update_unsupported: "Updates sind nur für die installierte Windows-Version verfügbar.",
     update_idle: "Bereit zur Updateprüfung.", update_checking: "Suche nach einer neuen Version…", update_current: "Du verwendest die aktuelle Version.",
     update_available: "Neue Version verfügbar:", update_downloading: "Update wird heruntergeladen:",
-    update_downloaded: "Update geprüft und bereit zur Installation:", update_installing: "Update wird installiert…",
+    update_downloaded: "Update heruntergeladen und bereit zur Installation:", update_installing: "Update wird installiert…",
     update_error: "Update fehlgeschlagen. Prüfe die Verbindung und versuche es erneut."
   },
   en: {
@@ -52,13 +53,14 @@ const TEXT = {
     mmrWl: "MMR + W/L",
     updateTitle: "Application updates", updateAuto: "Automatically check for updates",
     updateCheck: "Check for updates", updateDownload: "Download", updateInstall: "Install and restart",
-    updateConfirm: "Rocket League must be closed. Install the verified update and restart RocketStats? Your account data will be kept.",
+    updateConfirm: "Rocket League must be closed. Install this update and restart RocketStats? Your account data will be kept.",
     updateNetwork: "Update checks contact GitHub. No game or account data is transmitted.",
-    update_starting: "Starting updater…", update_unconfigured: "Automatic updates require a configured code-signing publisher.",
+    updateUnsigned: "Warning: Publisher signatures are not checked. Install only if you trust this GitHub release.",
+    update_starting: "Starting updater…", update_unconfigured: "No update source is configured.",
     update_development: "Updates are disabled in development mode.", update_unsupported: "Updates are available only in the installed Windows version.",
     update_idle: "Ready to check for updates.", update_checking: "Checking for a new version…", update_current: "You are using the latest version.",
     update_available: "New version available:", update_downloading: "Downloading update:",
-    update_downloaded: "Update verified and ready to install:", update_installing: "Installing update…",
+    update_downloaded: "Update downloaded and ready to install:", update_installing: "Installing update…",
     update_error: "Update failed. Check your connection and try again."
   },
   pl: {
@@ -83,13 +85,14 @@ const TEXT = {
     mmrWl: "MMR + W/P",
     updateTitle: "Aktualizacje aplikacji", updateAuto: "Automatycznie sprawdzaj aktualizacje",
     updateCheck: "Sprawdź aktualizacje", updateDownload: "Pobierz", updateInstall: "Zainstaluj i uruchom ponownie",
-    updateConfirm: "Rocket League musi być zamknięte. Zainstalować zweryfikowaną aktualizację i ponownie uruchomić RocketStats? Dane kont pozostaną.",
+    updateConfirm: "Rocket League musi być zamknięte. Zainstalować tę aktualizację i ponownie uruchomić RocketStats? Dane kont pozostaną.",
     updateNetwork: "Sprawdzanie aktualizacji łączy się z GitHub. Dane gry i kont nie są przesyłane.",
-    update_starting: "Uruchamianie aktualizatora…", update_unconfigured: "Automatyczne aktualizacje wymagają skonfigurowanego wydawcy podpisu.",
+    updateUnsigned: "Uwaga: Podpis wydawcy nie jest sprawdzany. Instaluj tylko, jeśli ufasz temu wydaniu w GitHub.",
+    update_starting: "Uruchamianie aktualizatora…", update_unconfigured: "Nie skonfigurowano źródła aktualizacji.",
     update_development: "Aktualizacje są wyłączone w trybie deweloperskim.", update_unsupported: "Aktualizacje są dostępne tylko w zainstalowanej wersji Windows.",
     update_idle: "Gotowe do sprawdzenia aktualizacji.", update_checking: "Sprawdzanie nowej wersji…", update_current: "Używasz najnowszej wersji.",
     update_available: "Dostępna nowa wersja:", update_downloading: "Pobieranie aktualizacji:",
-    update_downloaded: "Aktualizacja zweryfikowana i gotowa do instalacji:", update_installing: "Instalowanie aktualizacji…",
+    update_downloaded: "Aktualizacja pobrana i gotowa do instalacji:", update_installing: "Instalowanie aktualizacji…",
     update_error: "Aktualizacja nie powiodła się. Sprawdź połączenie i spróbuj ponownie."
   },
   fr: {
@@ -114,13 +117,14 @@ const TEXT = {
     mmrWl: "MMR + V/D",
     updateTitle: "Mises à jour", updateAuto: "Rechercher automatiquement les mises à jour",
     updateCheck: "Rechercher", updateDownload: "Télécharger", updateInstall: "Installer et redémarrer",
-    updateConfirm: "Rocket League doit être fermé. Installer la mise à jour vérifiée et redémarrer RocketStats ? Vos données de compte seront conservées.",
+    updateConfirm: "Rocket League doit être fermé. Installer cette mise à jour et redémarrer RocketStats ? Vos données de compte seront conservées.",
     updateNetwork: "Les recherches contactent GitHub. Aucune donnée de jeu ou de compte n’est transmise.",
-    update_starting: "Démarrage des mises à jour…", update_unconfigured: "Les mises à jour automatiques nécessitent un éditeur de signature configuré.",
+    updateUnsigned: "Attention : la signature de l’éditeur n’est pas vérifiée. Installez uniquement si vous faites confiance à cette version GitHub.",
+    update_starting: "Démarrage des mises à jour…", update_unconfigured: "Aucune source de mise à jour n’est configurée.",
     update_development: "Les mises à jour sont désactivées en développement.", update_unsupported: "Les mises à jour sont réservées à la version Windows installée.",
     update_idle: "Prêt à rechercher les mises à jour.", update_checking: "Recherche d’une nouvelle version…", update_current: "Vous utilisez la dernière version.",
     update_available: "Nouvelle version disponible :", update_downloading: "Téléchargement :",
-    update_downloaded: "Mise à jour vérifiée et prête à installer :", update_installing: "Installation…",
+    update_downloaded: "Mise à jour téléchargée et prête à installer :", update_installing: "Installation…",
     update_error: "Échec de la mise à jour. Vérifiez la connexion et réessayez."
   },
   es: {
@@ -145,13 +149,14 @@ const TEXT = {
     mmrWl: "MMR + V/D",
     updateTitle: "Actualizaciones", updateAuto: "Buscar actualizaciones automáticamente",
     updateCheck: "Buscar actualizaciones", updateDownload: "Descargar", updateInstall: "Instalar y reiniciar",
-    updateConfirm: "Rocket League debe estar cerrado. ¿Instalar la actualización verificada y reiniciar RocketStats? Se conservarán los datos de las cuentas.",
+    updateConfirm: "Rocket League debe estar cerrado. ¿Instalar esta actualización y reiniciar RocketStats? Se conservarán los datos de las cuentas.",
     updateNetwork: "La búsqueda contacta con GitHub. No se transmiten datos del juego ni de las cuentas.",
-    update_starting: "Iniciando actualizador…", update_unconfigured: "Las actualizaciones automáticas requieren un editor de firma configurado.",
+    updateUnsigned: "Aviso: No se comprueba la firma del editor. Instala solo si confías en esta versión de GitHub.",
+    update_starting: "Iniciando actualizador…", update_unconfigured: "No hay una fuente de actualizaciones configurada.",
     update_development: "Las actualizaciones están desactivadas en desarrollo.", update_unsupported: "Las actualizaciones solo están disponibles en la versión instalada de Windows.",
     update_idle: "Listo para buscar actualizaciones.", update_checking: "Buscando una nueva versión…", update_current: "Estás usando la última versión.",
     update_available: "Nueva versión disponible:", update_downloading: "Descargando:",
-    update_downloaded: "Actualización verificada y lista para instalar:", update_installing: "Instalando…",
+    update_downloaded: "Actualización descargada y lista para instalar:", update_installing: "Instalando…",
     update_error: "Error de actualización. Comprueba la conexión e inténtalo de nuevo."
   },
   pt: {
@@ -176,13 +181,14 @@ const TEXT = {
     mmrWl: "MMR + V/D",
     updateTitle: "Atualizações", updateAuto: "Verificar atualizações automaticamente",
     updateCheck: "Verificar atualizações", updateDownload: "Baixar", updateInstall: "Instalar e reiniciar",
-    updateConfirm: "Rocket League deve estar fechado. Instalar a atualização verificada e reiniciar RocketStats? Os dados das contas serão mantidos.",
+    updateConfirm: "Rocket League deve estar fechado. Instalar esta atualização e reiniciar RocketStats? Os dados das contas serão mantidos.",
     updateNetwork: "As verificações acessam o GitHub. Nenhum dado do jogo ou das contas é transmitido.",
-    update_starting: "Iniciando atualizador…", update_unconfigured: "As atualizações automáticas exigem um editor de assinatura configurado.",
+    updateUnsigned: "Atenção: A assinatura do editor não é verificada. Instale apenas se confiar nesta versão do GitHub.",
+    update_starting: "Iniciando atualizador…", update_unconfigured: "Nenhuma fonte de atualização está configurada.",
     update_development: "Atualizações desativadas no modo de desenvolvimento.", update_unsupported: "Atualizações disponíveis apenas na versão Windows instalada.",
     update_idle: "Pronto para verificar atualizações.", update_checking: "Buscando nova versão…", update_current: "Você está usando a versão mais recente.",
     update_available: "Nova versão disponível:", update_downloading: "Baixando atualização:",
-    update_downloaded: "Atualização verificada e pronta para instalar:", update_installing: "Instalando…",
+    update_downloaded: "Atualização baixada e pronta para instalar:", update_installing: "Instalando…",
     update_error: "Falha na atualização. Verifique a conexão e tente novamente."
   },
   ru: {
@@ -207,13 +213,14 @@ const TEXT = {
     mmrWl: "MMR + П/П",
     updateTitle: "Обновления приложения", updateAuto: "Автоматически проверять обновления",
     updateCheck: "Проверить обновления", updateDownload: "Скачать", updateInstall: "Установить и перезапустить",
-    updateConfirm: "Rocket League должна быть закрыта. Установить проверенное обновление и перезапустить RocketStats? Данные учётных записей сохранятся.",
+    updateConfirm: "Rocket League должна быть закрыта. Установить это обновление и перезапустить RocketStats? Данные учётных записей сохранятся.",
     updateNetwork: "Проверки обращаются к GitHub. Данные игры и учётных записей не передаются.",
-    update_starting: "Запуск обновления…", update_unconfigured: "Для автоматических обновлений требуется настроенный издатель подписи.",
+    updateUnsigned: "Внимание: подпись издателя не проверяется. Устанавливайте обновление, только если доверяете этому выпуску GitHub.",
+    update_starting: "Запуск обновления…", update_unconfigured: "Источник обновлений не настроен.",
     update_development: "Обновления отключены в режиме разработки.", update_unsupported: "Обновления доступны только в установленной версии для Windows.",
     update_idle: "Готово к проверке обновлений.", update_checking: "Поиск новой версии…", update_current: "Установлена последняя версия.",
     update_available: "Доступна новая версия:", update_downloading: "Загрузка обновления:",
-    update_downloaded: "Обновление проверено и готово к установке:", update_installing: "Установка обновления…",
+    update_downloaded: "Обновление загружено и готово к установке:", update_installing: "Установка обновления…",
     update_error: "Не удалось обновить приложение. Проверьте соединение и повторите попытку."
   }
 };
@@ -314,6 +321,9 @@ function renderUpdate() {
   ].filter(Boolean).join(" ");
   document.getElementById("update-source").textContent = update.source ? `GitHub Releases · ${update.source}` : "";
   document.getElementById("update-network").textContent = tr("updateNetwork");
+  const security = document.getElementById("update-security");
+  security.hidden = !update.source || update.publisherVerification === true;
+  security.textContent = security.hidden ? "" : tr("updateUnsigned");
   document.getElementById("update-auto-label").textContent = tr("updateAuto");
   const automatic = document.getElementById("update-auto");
   automatic.checked = state.autoCheckUpdates;
@@ -385,7 +395,10 @@ bridge.onUpdate((update) => {
 for (const [id, action] of [
   ["update-check", () => bridge.checkUpdate()],
   ["update-download", () => bridge.downloadUpdate()],
-  ["update-install", () => window.confirm(tr("updateConfirm")) ? bridge.installUpdate() : null]
+  ["update-install", () => {
+    const warning = state.update.publisherVerification === true ? "" : `\n\n${tr("updateUnsigned")}`;
+    return window.confirm(`${tr("updateConfirm")}${warning}`) ? bridge.installUpdate() : null;
+  }]
 ]) {
   document.getElementById(id).addEventListener("click", async () => {
     try {

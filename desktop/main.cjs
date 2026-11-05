@@ -6,7 +6,7 @@ const {
 const { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
-const { parseUpdateConfig } = require("./update-config.cjs");
+const { parseUpdateConfig, updateDisabledReason } = require("./update-config.cjs");
 const { createUpdateController } = require("./updater.cjs");
 
 const APP_NAME = "RocketStats Desktop";
@@ -261,15 +261,12 @@ app.whenReady().then(async () => {
     const config = parseUpdateConfig(JSON.parse(readFileSync(
       path.join(__dirname, "update-config.json"), "utf8"
     )));
-    const signingReady = Boolean(config?.publisherNames.length);
-    const disabledReason = !signingReady ? "unconfigured"
-      : !app.isPackaged ? "development"
-      : process.platform !== "win32" ? "unsupported"
-      : undefined;
+    const disabledReason = updateDisabledReason(config, app.isPackaged, process.platform);
     updateController = createUpdateController({
       updater: disabledReason ? null : require("electron-updater").autoUpdater,
       version: app.getVersion(),
       source: config ? `${config.owner}/${config.repo}` : null,
+      publisherVerification: Boolean(config?.publisherNames.length),
       disabledReason,
       onState: (update) => send("desktop:update", update),
       beforeInstall: async () => {

@@ -1,13 +1,12 @@
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
-import { spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import vm from "node:vm";
 import configModule from "../desktop/update-config.cjs";
 import updaterModule from "../desktop/updater.cjs";
 
-const { parseUpdateConfig, desktopBuildConfig } = configModule;
+const { parseUpdateConfig, desktopBuildConfig, updateDisabledReason } = configModule;
 const { createUpdateController } = updaterModule;
 const releaseConfig = {
   owner: "example-owner", repo: "desktop-releases", publisherNames: ["Example Publisher"]
@@ -26,7 +25,7 @@ class FakeUpdater extends EventEmitter {
     this.downloads += 1;
     this.emit("download-progress", { percent: 42 });
     this.emit("update-downloaded", { version: "0.2.0" });
-    return ["verified-installer"];
+    return ["downloaded-installer"];
   };
   quitAndInstall(...args) { this.installs.push(args); }
 }
@@ -38,7 +37,7 @@ function controllerFor(updater, extra = {}) {
   });
 }
 
-test("release config selects the public source but requires pinned signing publishers for releases", () => {
+test("release config supports unsigned releases and optional pinned publishers", () => {
   const empty = { owner: "", repo: "", publisherNames: [] };
   assert.equal(parseUpdateConfig(empty), null);
   assert.equal(desktopBuildConfig(null, false).publish, null);
@@ -56,8 +55,14 @@ test("release config selects the public source but requires pinned signing publi
   assert.deepEqual(sourceOnly, {
     owner: "example-owner", repo: "desktop-releases", publisherNames: []
   });
-  assert.equal(desktopBuildConfig(sourceOnly, false).publish, null);
-  assert.throws(() => desktopBuildConfig(sourceOnly, true), /publisherNames/);
+  const unsignedBuild = desktopBuildConfig(sourceOnly, true);
+  assert.equal(unsignedBuild.forceCodeSigning, false);
+  assert.equal(unsignedBuild.win.verifyUpdateCodeSignature, false);
+  assert.equal("publisherName" in unsignedBuild.win, false);
+  assert.deepEqual(unsignedBuild.publish, [{
+    provider: "github", owner: "example-owner", repo: "desktop-releases",
+    private: false, releaseType: "release"
+  }]);
   const config = parseUpdateConfig(releaseConfig);
   const build = desktopBuildConfig(config, true);
   assert.equal(build.forceCodeSigning, true);
@@ -69,17 +74,32 @@ test("release config selects the public source but requires pinned signing publi
   }]);
 });
 
-test("release build command rejects an unsigned source before packaging or publishing", async (t) => {
-  const config = JSON.parse(await readFile(new URL("../desktop/update-config.json", import.meta.url), "utf8"));
-  if (parseUpdateConfig(config)?.publisherNames.length) {
-    t.skip("A signed release source has been configured; the unsigned-release CLI guard no longer applies.");
-    return;
-  }
-  const script = new URL("../scripts/build-desktop.mjs", import.meta.url);
-  const { fileURLToPath } = await import("node:url");
-  const result = spawnSync(process.execPath, [fileURLToPath(script), "--release"], { encoding: "utf8" });
-  assert.equal(result.status, 1);
-  assert.match(result.stderr, /signed release requires|publisherNames/);
+test("the configured GitHub source enables installed Windows updates without a certificate", async () => {
+  const input = JSON.parse(await readFile(new URL("../desktop/update-config.json", import.meta.url), "utf8"));
+  const config = parseUpdateConfig(input);
+  assert.deepEqual(config, { owner: "Bonus83", repo: "RocketStats", publisherNames: [] });
+  assert.equal(updateDisabledReason(config, true, "win32"), undefined);
+  assert.equal(updateDisabledReason(config, false, "win32"), "development");
+  assert.equal(updateDisabledReason(config, true, "linux"), "unsupported");
+  assert.equal(updateDisabledReason(null, true, "win32"), "unconfigured");
+  assert.equal(desktopBuildConfig(config, true).publish[0].repo, "RocketStats");
+  const updater = new FakeUpdater();
+  const controller = controllerFor(updater, {
+    source: `${config.owner}/${config.repo}`,
+    publisherVerification: config.publisherNames.length > 0,
+    disabledReason: updateDisabledReason(config, true, "win32")
+  });
+  controller.configureAutomaticChecks(true);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(controller.getState().phase, "available");
+  assert.equal(controller.getState().publisherVerification, false);
+  assert.equal(updater.checks, 1);
+  assert.equal(updater.downloads, 0);
+  assert.equal(updater.installs.length, 0);
+  await controller.download();
+  assert.equal(controller.getState().phase, "downloaded");
+  assert.equal(updater.installs.length, 0);
+  controller.dispose();
 });
 
 test("unconfigured and development builds do not make update requests", async () => {
@@ -111,6 +131,7 @@ test("updates require separate download and installation consent and flush befor
   assert.equal(updater.autoInstallOnAppQuit, false);
   assert.equal(updater.allowPrerelease, false);
   assert.equal(updater.allowDowngrade, false);
+  assert.equal(controller.getState().publisherVerification, false);
   await controller.check();
   assert.equal(controller.getState().phase, "available");
   assert.equal(updater.downloads, 0);
@@ -147,7 +168,7 @@ test("duplicate operations are blocked while an update check is pending", async 
   controller.dispose();
 });
 
-test("offline errors and signature verification failures are explicit and cannot install", async () => {
+test("offline and checksum failures are explicit and cannot install", async () => {
   const updater = new FakeUpdater();
   const controller = controllerFor(updater);
   updater.checkForUpdates = async () => { throw new Error("Offline"); };
@@ -159,19 +180,37 @@ test("offline errors and signature verification failures are explicit and cannot
   };
   await controller.check();
   updater.downloadUpdate = async () => {
-    const error = new Error("Installer signature or checksum does not match");
+    const error = new Error("Installer checksum does not match");
     updater.emit("error", error);
     throw error;
   };
   await controller.download();
   assert.equal(controller.getState().phase, "error");
-  assert.match(controller.getState().error, /signature or checksum/);
+  assert.match(controller.getState().error, /checksum/);
   await assert.rejects(controller.install(), /downloaded/);
   assert.equal(updater.installs.length, 0);
   controller.dispose();
 });
 
-test("game-running and persistence failures keep the verified update available for retry", async () => {
+test("publisher verification failures remain errors when signing is configured", async () => {
+  const updater = new FakeUpdater();
+  const controller = controllerFor(updater, { publisherVerification: true });
+  assert.equal(controller.getState().publisherVerification, true);
+  await controller.check();
+  updater.downloadUpdate = async () => {
+    const error = new Error("Installer publisher signature does not match");
+    updater.emit("error", error);
+    throw error;
+  };
+  await controller.download();
+  assert.equal(controller.getState().phase, "error");
+  assert.match(controller.getState().error, /publisher signature/);
+  await assert.rejects(controller.install(), /downloaded/);
+  assert.equal(updater.installs.length, 0);
+  controller.dispose();
+});
+
+test("game-running and persistence failures keep the downloaded update available for retry", async () => {
   const updater = new FakeUpdater();
   let blocked = true;
   const controller = controllerFor(updater, {
@@ -232,7 +271,8 @@ test("update UI localizes all seven languages and gates download and restart con
   let onUpdate;
   let installations = 0;
   let confirmed = false;
-  const initialUpdate = { phase: "unconfigured", version: "0.1.0", source: null };
+  let confirmation = "";
+  const initialUpdate = { phase: "unconfigured", version: "0.1.0", source: null, publisherVerification: false };
   const bridge = {
     onModel() {}, onStatus() {}, onError() {},
     onUpdate(callback) { onUpdate = callback; },
@@ -248,28 +288,52 @@ test("update UI localizes all seven languages and gates download and restart con
     document: {
       getElementById: getElement, createElement: fakeElement, documentElement: { lang: "" }
     },
-    window: { rocketStatsDesktop: bridge, confirm: () => confirmed }
+    window: { rocketStatsDesktop: bridge, confirm: (message) => { confirmation = message; return confirmed; } }
   });
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(getElement("update-check").disabled, true);
   assert.equal(getElement("update-install").hidden, true);
+  assert.equal(getElement("update-security").hidden, true);
   const keys = Object.keys(texts.en).filter((key) => key.startsWith("update"));
   for (const locale of ["de", "en", "pl", "fr", "es", "pt", "ru"]) {
     for (const key of keys) assert.ok(texts[locale][key], `${locale}: ${key}`);
     await getElement("locale-select").listeners.get("change")({ target: { value: locale } });
     assert.equal(getElement("update-check").textContent, texts[locale].updateCheck);
+    onUpdate({
+      phase: "available", version: "0.1.0", source: "Bonus83/RocketStats",
+      publisherVerification: false, availableVersion: "0.2.0"
+    });
+    assert.equal(getElement("update-security").hidden, false);
+    assert.equal(getElement("update-security").textContent, texts[locale].updateUnsigned);
   }
-  onUpdate({ phase: "available", version: "0.1.0", availableVersion: "0.2.0" });
   assert.equal(getElement("update-download").hidden, false);
   assert.equal(getElement("update-install").hidden, true);
-  onUpdate({ phase: "downloading", version: "0.1.0", availableVersion: "0.2.0", percent: 42 });
+  onUpdate({
+    phase: "downloading", version: "0.1.0", source: "Bonus83/RocketStats",
+    publisherVerification: false, availableVersion: "0.2.0", percent: 42
+  });
   assert.equal(getElement("update-progress").value, 42);
   assert.equal(getElement("update-check").disabled, true);
-  onUpdate({ phase: "downloaded", version: "0.1.0", availableVersion: "0.2.0", percent: 100 });
+  onUpdate({
+    phase: "downloaded", version: "0.1.0", source: "Bonus83/RocketStats",
+    publisherVerification: false, availableVersion: "0.2.0", percent: 100
+  });
   assert.equal(getElement("update-install").disabled, false);
   await getElement("update-install").listeners.get("click")();
   assert.equal(installations, 0);
+  assert.ok(confirmation.includes(texts.ru.updateUnsigned));
   confirmed = true;
   await getElement("update-install").listeners.get("click")();
   assert.equal(installations, 1);
+  onUpdate({
+    phase: "downloaded", version: "0.1.0", source: "Bonus83/RocketStats",
+    publisherVerification: true, availableVersion: "0.2.0", percent: 100
+  });
+  assert.equal(getElement("update-security").hidden, true);
+  confirmed = false;
+  await getElement("update-install").listeners.get("click")();
+  assert.equal(confirmation, texts.ru.updateConfirm);
+  assert.equal(installations, 1);
+  onUpdate({ phase: "idle", version: "0.1.0", source: "Bonus83/RocketStats" });
+  assert.equal(getElement("update-security").hidden, false);
 });
