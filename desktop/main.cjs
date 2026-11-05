@@ -6,6 +6,7 @@ const {
 const { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
+const { createConnectionState } = require("./connection-state.cjs");
 const { parseUpdateConfig, updateDisabledReason } = require("./update-config.cjs");
 const { createUpdateController } = require("./updater.cjs");
 
@@ -23,7 +24,6 @@ let updateController;
 let locale;
 let port;
 let autoCheckUpdates = true;
-let status = "connecting";
 let startupError;
 let apiSetupInProgress = false;
 const models = new Map();
@@ -90,6 +90,8 @@ function send(channel, payload) {
   }
 }
 
+const connectionState = createConnectionState((connection) => send("desktop:status", connection));
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1180,
@@ -120,7 +122,7 @@ function createWindow() {
 
 ipcMain.handle("desktop:get-state", () => ({
   models: [...models.values()],
-  status,
+  connection: connectionState.getState(),
   locale,
   port,
   startupError,
@@ -288,13 +290,14 @@ app.whenReady().then(async () => {
         models.set(model.action, model);
         send("desktop:model", model);
       },
-      onStatus: (nextStatus) => {
-        status = nextStatus;
-        send("desktop:status", status);
-      },
-      onError: (message) => {
-        startupError = message;
-        send("desktop:error", message);
+      onStatus: (nextStatus) => connectionState.setStatus(nextStatus),
+      onError: (message, kind) => {
+        if (kind === "connection") {
+          connectionState.setError(message);
+        } else {
+          startupError = message;
+          send("desktop:error", message);
+        }
       }
     });
     updateController.configureAutomaticChecks(autoCheckUpdates);

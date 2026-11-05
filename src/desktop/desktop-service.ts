@@ -3,7 +3,7 @@ import { PluginLocale } from "../core/types.js";
 import { PluginState } from "../core/plugin-state.js";
 import { RocketLeagueLogWatcher } from "../connector/rocket-league-log-watcher.js";
 import { getRocketLeagueProcessStartTime } from "../core/rocket-league-process.js";
-import { LiveRuntime, LiveConnectionStatus } from "../runtime/live-runtime.js";
+import { LiveRuntime, LiveConnectionStatus, LiveErrorKind } from "../runtime/live-runtime.js";
 import { ActionKind, KeyRenderModel } from "../render/key-renderer.js";
 
 export interface DesktopServiceOptions {
@@ -12,7 +12,7 @@ export interface DesktopServiceOptions {
   port: number;
   onModel: (model: KeyRenderModel) => void;
   onStatus: (status: LiveConnectionStatus) => void;
-  onError: (message: string) => void;
+  onError: (message: string, kind: LiveErrorKind) => void;
 }
 
 export interface DesktopService {
@@ -58,7 +58,7 @@ export async function startDesktopService(
       if (stopped) {
         return;
       }
-      options.onError(error instanceof Error ? error.message : String(error));
+      options.onError(error instanceof Error ? error.message : String(error), "other");
     }).finally(() => {
       identityRecoveryInProgress = false;
     });
@@ -73,7 +73,7 @@ export async function startDesktopService(
     mmrPlaylist: "auto",
     eventBannerStats: ["goals", "assists", "saves"],
     animateEvents: true,
-    onError: (error) => options.onError(error.message),
+    onError: (error, kind) => options.onError(error.message, kind),
     onConnected: recoverIdentity,
     onConnectionStatus: options.onStatus
   });
@@ -85,7 +85,7 @@ export async function startDesktopService(
       logWatcher = new RocketLeagueLogWatcher(
         logPath,
         (queue) => runtime.recordGameLogQueue(queue),
-        (error) => options.onError(error.message),
+        (error) => options.onError(error.message, "other"),
         500,
         (accountId) => runtime.recordGameLogIdentity(accountId)
       );
@@ -95,7 +95,8 @@ export async function startDesktopService(
     options.onError(
       `The read-only Rocket League log watcher could not start: ${
         error instanceof Error ? error.message : String(error)
-      }`
+      }`,
+      "other"
     );
     logWatcher?.stop();
     logWatcher = undefined;

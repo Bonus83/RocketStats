@@ -5,6 +5,7 @@ import test from "node:test";
 import vm from "node:vm";
 import configModule from "../desktop/update-config.cjs";
 import updaterModule from "../desktop/updater.cjs";
+import { createDesktopDom } from "./fixtures/desktop-dom.mjs";
 
 const { parseUpdateConfig, desktopBuildConfig, updateDisabledReason } = configModule;
 const { createUpdateController } = updaterModule;
@@ -253,21 +254,8 @@ test("an empty provider result is not reported as a successful update check", as
   controller.dispose();
 });
 
-function fakeElement() {
-  return {
-    hidden: false, disabled: false, checked: false, value: "", textContent: "",
-    style: {}, classList: { add() {} }, listeners: new Map(),
-    append() {}, replaceChildren() {},
-    addEventListener(name, callback) { this.listeners.set(name, callback); }
-  };
-}
-
 test("update UI localizes all seven languages and gates download and restart controls", async () => {
-  const elements = new Map();
-  const getElement = (id) => {
-    if (!elements.has(id)) elements.set(id, fakeElement());
-    return elements.get(id);
-  };
+  const { document, getElement, setTimeout, clearTimeout } = createDesktopDom();
   let onUpdate;
   let installations = 0;
   let confirmed = false;
@@ -277,7 +265,8 @@ test("update UI localizes all seven languages and gates download and restart con
     onModel() {}, onStatus() {}, onError() {},
     onUpdate(callback) { onUpdate = callback; },
     getState: async () => ({
-      locale: "de", port: 49123, status: "disconnected", models: [],
+      locale: "de", port: 49123,
+      connection: { status: "disconnected", error: null, revision: 0 }, models: [],
       update: initialUpdate, autoCheckUpdates: true
     }),
     installUpdate: async () => { installations += 1; return { ...initialUpdate, phase: "installing" }; },
@@ -285,27 +274,36 @@ test("update UI localizes all seven languages and gates download and restart con
   };
   const source = await readFile(new URL("../desktop/renderer.js", import.meta.url), "utf8");
   const texts = vm.runInNewContext(`${source}\nTEXT;`, {
-    document: {
-      getElementById: getElement, createElement: fakeElement, documentElement: { lang: "" }
-    },
+    document, setTimeout, clearTimeout,
     window: { rocketStatsDesktop: bridge, confirm: (message) => { confirmation = message; return confirmed; } }
   });
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(getElement("update-check").disabled, true);
   assert.equal(getElement("update-install").hidden, true);
-  assert.equal(getElement("update-security").hidden, true);
   const keys = Object.keys(texts.en).filter((key) => key.startsWith("update"));
   for (const locale of ["de", "en", "pl", "fr", "es", "pt", "ru"]) {
     for (const key of keys) assert.ok(texts[locale][key], `${locale}: ${key}`);
     await getElement("locale-select").listeners.get("change")({ target: { value: locale } });
     assert.equal(getElement("update-check").textContent, texts[locale].updateCheck);
+    assert.equal(getElement("update-show").textContent, texts[locale].updateShow);
+    assert.equal(getElement("update-close").attributes.get("aria-label"), texts[locale].updateClose);
+    assert.equal(getElement("menu-toggle").attributes.get("aria-label"), texts[locale].menu);
     onUpdate({
       phase: "available", version: "0.1.0", source: "Bonus83/RocketStats",
       publisherVerification: false, availableVersion: "0.2.0"
     });
-    assert.equal(getElement("update-security").hidden, false);
-    assert.equal(getElement("update-security").textContent, texts[locale].updateUnsigned);
+    assert.equal("updateUnsigned" in texts[locale], false);
+    onUpdate({
+      phase: "downloaded", version: "0.1.0", source: "Bonus83/RocketStats",
+      publisherVerification: false, availableVersion: "0.2.0", percent: 100
+    });
+    await getElement("update-install").listeners.get("click")();
+    assert.equal(confirmation, texts[locale].updateConfirm);
   }
+  onUpdate({
+    phase: "available", version: "0.1.0", source: "Bonus83/RocketStats",
+    publisherVerification: false, availableVersion: "0.2.0"
+  });
   assert.equal(getElement("update-download").hidden, false);
   assert.equal(getElement("update-install").hidden, true);
   onUpdate({
@@ -321,7 +319,7 @@ test("update UI localizes all seven languages and gates download and restart con
   assert.equal(getElement("update-install").disabled, false);
   await getElement("update-install").listeners.get("click")();
   assert.equal(installations, 0);
-  assert.ok(confirmation.includes(texts.ru.updateUnsigned));
+  assert.equal(confirmation, texts.ru.updateConfirm);
   confirmed = true;
   await getElement("update-install").listeners.get("click")();
   assert.equal(installations, 1);
@@ -329,11 +327,9 @@ test("update UI localizes all seven languages and gates download and restart con
     phase: "downloaded", version: "0.1.0", source: "Bonus83/RocketStats",
     publisherVerification: true, availableVersion: "0.2.0", percent: 100
   });
-  assert.equal(getElement("update-security").hidden, true);
   confirmed = false;
   await getElement("update-install").listeners.get("click")();
   assert.equal(confirmation, texts.ru.updateConfirm);
   assert.equal(installations, 1);
   onUpdate({ phase: "idle", version: "0.1.0", source: "Bonus83/RocketStats" });
-  assert.equal(getElement("update-security").hidden, false);
 });

@@ -6,7 +6,7 @@ import {
   QueueType
 } from "../core/types.js";
 import { PluginState } from "../core/plugin-state.js";
-import { RlLiveConnector } from "../connector/rl-live-connector.js";
+import { RlLiveConnector, LiveErrorKind } from "../connector/rl-live-connector.js";
 import { RocketLeagueLogQueue } from "../connector/rocket-league-log-watcher.js";
 import { estimateRank } from "../core/rank-estimator.js";
 import {
@@ -20,6 +20,7 @@ export interface ActionSink {
 }
 
 export type LiveConnectionStatus = "connecting" | "connected" | "disconnected";
+export type { LiveErrorKind } from "../connector/rl-live-connector.js";
 
 export interface LiveRuntimeOptions {
   host: string;
@@ -30,7 +31,7 @@ export interface LiveRuntimeOptions {
   mmrPlaylist: string;
   eventBannerStats: Array<"goals" | "assists" | "saves" | "shots" | "demos" | "score" | "ping">;
   animateEvents: boolean;
-  onError?: (error: Error) => void;
+  onError?: (error: Error, kind: LiveErrorKind) => void;
   onConnected?: () => void;
   onConnectionStatus?: (status: LiveConnectionStatus) => void;
 }
@@ -46,7 +47,7 @@ const MAX_PENDING_QUEUE_AGE_MS = 5 * 60_000;
 
 export class LiveRuntime {
   private readonly connector: RlLiveConnector;
-  private readonly reportError: (error: unknown) => void;
+  private readonly reportError: (error: unknown, kind?: LiveErrorKind) => void;
   private lastRecordedEarlyLeaveMatchId: string | undefined;
   private currentPort: number;
   private manualDisplayName: string | undefined;
@@ -66,10 +67,10 @@ export class LiveRuntime {
     private readonly options: LiveRuntimeOptions
   ) {
     this.currentPort = this.options.port;
-    this.reportError = (error: unknown): void => {
+    this.reportError = (error: unknown, kind: LiveErrorKind = "other"): void => {
       const normalized = error instanceof Error ? error : new Error(String(error));
       if (this.options.onError) {
-        this.options.onError(normalized);
+        this.options.onError(normalized, kind);
         return;
       }
       process.stderr.write(`[rocketstats:error] ${normalized.message}\n`);
@@ -82,8 +83,8 @@ export class LiveRuntime {
 
     this.connector.onSnapshot((snapshot) => this.handleSnapshot(snapshot));
 
-    this.connector.onError((error) => {
-      this.reportError(error);
+    this.connector.onError((error, kind) => {
+      this.reportError(error, kind);
     });
     this.connector.onStatus((status) => {
       this.options.onConnectionStatus?.(status);

@@ -136,6 +136,10 @@ The desktop companion reuses the TypeScript live runtime and account/statistics
 logic, but does not require Stream Deck. It is a separate dashboard window with
 an isolated renderer; it does not inject an in-game overlay, read or write game
 memory, install drivers, automate inputs, or use the optional HUD-control bridge.
+The desktop dashboard shows rank, MMR, win/loss, streaks, records and matchmaking
+bans. Live match and player-stat cards (including boost, goals, timer, score,
+queue, speed and possession) are not displayed. The local feed still supports
+account statistics and record tracking; Stream Deck actions are unchanged.
 
 For development:
 
@@ -158,20 +162,25 @@ button can enable the local feed after confirmation, only while Rocket League is
 closed; it changes only the Stats API port and packet-rate settings and backs up
 an existing config file. The app does not silently edit Rocket League
 configuration.
+If the feed is unavailable, the dashboard shows the connection error and
+retries automatically. Once connected, it clears that error without hiding
+unrelated setup or runtime errors.
 Live MMR still depends on the existing local log parser and its documented
 limitations.
 
 The desktop updater uses stable GitHub Releases from `Bonus83/RocketStats`.
 Installed builds check at startup and every six hours (can be disabled);
-downloading and installing each require consent. Installation is blocked while
-Rocket League is running and persists local state before restarting. No update
-is installed merely by closing the app. Development builds do not check for
-updates.
+the result appears in an in-app balloon, and the menu provides a manual check,
+status and the automatic-check setting. Downloading and installing each require
+consent. Installation is blocked while Rocket League is running and persists
+local state before restarting. No update is installed merely by closing the
+app. Development builds do not check for updates.
 
 A Windows signing certificate is optional. The current configuration does not
 verify an update publisher's signature: HTTPS and the checksum in GitHub's
 release metadata do not protect against a compromised release repository. The
-dashboard and install confirmation warn about this. See
+app does not show a separate signature warning; Windows may display a SmartScreen
+warning for an unsigned installer. See
 [DESKTOP-RELEASES.md](./DESKTOP-RELEASES.md) for the trust limitations, optional
 signing, versioning and required release assets. Existing builds with an
 unconfigured updater need a manual install of the new version first. No GitHub

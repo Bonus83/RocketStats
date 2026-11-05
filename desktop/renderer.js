@@ -1,7 +1,6 @@
 const TEXT = {
   de: {
     connecting: "Verbinde mit lokaler Stats-API…", connected: "Stats-API verbunden", disconnected: "Stats-API getrennt",
-    feed: "Nur lesender lokaler Datenfeed. Keine Spielsteuerung und kein In-Game-Overlay.",
     matchTag: "LIVE-MATCH", matchHeading: "Spielübersicht", rankedTag: "RANGLISTE", rankedHeading: "Rang & Bilanz",
     statsTag: "SPIELERSTATISTIKEN", statsHeading: "Match-Statistiken", scopeTag: "SIEG / NIEDERLAGE",
     allModes: "Alle Modi", currentMode: "Aktueller Modus", switchScope: "Ansicht umschalten",
@@ -19,11 +18,11 @@ const TEXT = {
     goals: "Tore", assists: "Vorlagen", saves: "Paraden", shots: "Schüsse", demos: "Demos",
     resets: "Flip Resets", touches: "Ballkontakte", playerScore: "Punkte", rank: "Rang",
     mmrWl: "MMR + S/N",
-    updateTitle: "Anwendungsupdates", updateAuto: "Automatisch nach Updates suchen",
+    menu: "Menü", updateTitle: "Anwendungsupdates", updateAuto: "Automatisch nach Updates suchen",
+    updateShow: "Update-Status anzeigen", updateClose: "Update-Hinweis schließen",
     updateCheck: "Nach Updates suchen", updateDownload: "Herunterladen", updateInstall: "Installieren und neu starten",
     updateConfirm: "Rocket League muss geschlossen sein. Dieses Update installieren und RocketStats neu starten? Deine Kontodaten bleiben erhalten.",
     updateNetwork: "Updateprüfungen kontaktieren GitHub. Es werden keine Spiel- oder Kontodaten übertragen.",
-    updateUnsigned: "Achtung: Eine Herausgebersignatur wird nicht geprüft. Installiere nur, wenn du dem GitHub-Release vertraust.",
     update_starting: "Updater wird gestartet…", update_unconfigured: "Keine Updatequelle eingerichtet.",
     update_development: "Updates sind im Entwicklungsmodus deaktiviert.", update_unsupported: "Updates sind nur für die installierte Windows-Version verfügbar.",
     update_idle: "Bereit zur Updateprüfung.", update_checking: "Suche nach einer neuen Version…", update_current: "Du verwendest die aktuelle Version.",
@@ -33,7 +32,6 @@ const TEXT = {
   },
   en: {
     connecting: "Connecting to local Stats API…", connected: "Stats API connected", disconnected: "Stats API disconnected",
-    feed: "Read-only local feed. No game controls or in-game overlay.",
     matchTag: "LIVE MATCH", matchHeading: "Match overview", rankedTag: "RANKED", rankedHeading: "Rank & record",
     statsTag: "PLAYER STATS", statsHeading: "Match statistics", scopeTag: "WIN / LOSS SCOPE",
     allModes: "All modes", currentMode: "Current mode", switchScope: "Switch scope",
@@ -51,11 +49,11 @@ const TEXT = {
     goals: "Goals", assists: "Assists", saves: "Saves", shots: "Shots", demos: "Demos",
     resets: "Flip resets", touches: "Touches", playerScore: "Points", rank: "Rank",
     mmrWl: "MMR + W/L",
-    updateTitle: "Application updates", updateAuto: "Automatically check for updates",
+    menu: "Menu", updateTitle: "Application updates", updateAuto: "Automatically check for updates",
+    updateShow: "Show update status", updateClose: "Close update notification",
     updateCheck: "Check for updates", updateDownload: "Download", updateInstall: "Install and restart",
     updateConfirm: "Rocket League must be closed. Install this update and restart RocketStats? Your account data will be kept.",
     updateNetwork: "Update checks contact GitHub. No game or account data is transmitted.",
-    updateUnsigned: "Warning: Publisher signatures are not checked. Install only if you trust this GitHub release.",
     update_starting: "Starting updater…", update_unconfigured: "No update source is configured.",
     update_development: "Updates are disabled in development mode.", update_unsupported: "Updates are available only in the installed Windows version.",
     update_idle: "Ready to check for updates.", update_checking: "Checking for a new version…", update_current: "You are using the latest version.",
@@ -65,7 +63,6 @@ const TEXT = {
   },
   pl: {
     connecting: "Łączenie z lokalnym Stats API…", connected: "Połączono ze Stats API", disconnected: "Rozłączono ze Stats API",
-    feed: "Tylko do odczytu lokalny strumień. Bez sterowania grą i nakładki w grze.",
     matchTag: "MECZ NA ŻYWO", matchHeading: "Podsumowanie meczu", rankedTag: "RANKING", rankedHeading: "Ranga i bilans",
     statsTag: "STATYSTYKI GRACZA", statsHeading: "Statystyki meczu", scopeTag: "ZAKRES ZWYCIĘSTW / PORAŻEK",
     allModes: "Wszystkie tryby", currentMode: "Bieżący tryb", switchScope: "Zmień zakres",
@@ -83,11 +80,11 @@ const TEXT = {
     goals: "Gole", assists: "Asysty", saves: "Obrony", shots: "Strzały", demos: "Demolki",
     resets: "Flip reset", touches: "Kontakty", playerScore: "Punkty", rank: "Ranga",
     mmrWl: "MMR + W/P",
-    updateTitle: "Aktualizacje aplikacji", updateAuto: "Automatycznie sprawdzaj aktualizacje",
+    menu: "Menu", updateTitle: "Aktualizacje aplikacji", updateAuto: "Automatycznie sprawdzaj aktualizacje",
+    updateShow: "Pokaż stan aktualizacji", updateClose: "Zamknij powiadomienie o aktualizacji",
     updateCheck: "Sprawdź aktualizacje", updateDownload: "Pobierz", updateInstall: "Zainstaluj i uruchom ponownie",
     updateConfirm: "Rocket League musi być zamknięte. Zainstalować tę aktualizację i ponownie uruchomić RocketStats? Dane kont pozostaną.",
     updateNetwork: "Sprawdzanie aktualizacji łączy się z GitHub. Dane gry i kont nie są przesyłane.",
-    updateUnsigned: "Uwaga: Podpis wydawcy nie jest sprawdzany. Instaluj tylko, jeśli ufasz temu wydaniu w GitHub.",
     update_starting: "Uruchamianie aktualizatora…", update_unconfigured: "Nie skonfigurowano źródła aktualizacji.",
     update_development: "Aktualizacje są wyłączone w trybie deweloperskim.", update_unsupported: "Aktualizacje są dostępne tylko w zainstalowanej wersji Windows.",
     update_idle: "Gotowe do sprawdzenia aktualizacji.", update_checking: "Sprawdzanie nowej wersji…", update_current: "Używasz najnowszej wersji.",
@@ -97,7 +94,6 @@ const TEXT = {
   },
   fr: {
     connecting: "Connexion à l’API Stats locale…", connected: "API Stats connectée", disconnected: "API Stats déconnectée",
-    feed: "Flux local en lecture seule. Pas de contrôle du jeu ni de superposition en jeu.",
     matchTag: "MATCH EN DIRECT", matchHeading: "Aperçu du match", rankedTag: "CLASSÉ", rankedHeading: "Rang et bilan",
     statsTag: "STATS DU JOUEUR", statsHeading: "Statistiques du match", scopeTag: "PORTÉE VICTOIRES / DÉFAITES",
     allModes: "Tous les modes", currentMode: "Mode actuel", switchScope: "Changer la portée",
@@ -115,11 +111,11 @@ const TEXT = {
     goals: "Buts", assists: "Passes décisives", saves: "Arrêts", shots: "Tirs", demos: "Démolitions",
     resets: "Flip resets", touches: "Touches", playerScore: "Points", rank: "Rang",
     mmrWl: "MMR + V/D",
-    updateTitle: "Mises à jour", updateAuto: "Rechercher automatiquement les mises à jour",
+    menu: "Menu", updateTitle: "Mises à jour", updateAuto: "Rechercher automatiquement les mises à jour",
+    updateShow: "Afficher l’état des mises à jour", updateClose: "Fermer la notification de mise à jour",
     updateCheck: "Rechercher", updateDownload: "Télécharger", updateInstall: "Installer et redémarrer",
     updateConfirm: "Rocket League doit être fermé. Installer cette mise à jour et redémarrer RocketStats ? Vos données de compte seront conservées.",
     updateNetwork: "Les recherches contactent GitHub. Aucune donnée de jeu ou de compte n’est transmise.",
-    updateUnsigned: "Attention : la signature de l’éditeur n’est pas vérifiée. Installez uniquement si vous faites confiance à cette version GitHub.",
     update_starting: "Démarrage des mises à jour…", update_unconfigured: "Aucune source de mise à jour n’est configurée.",
     update_development: "Les mises à jour sont désactivées en développement.", update_unsupported: "Les mises à jour sont réservées à la version Windows installée.",
     update_idle: "Prêt à rechercher les mises à jour.", update_checking: "Recherche d’une nouvelle version…", update_current: "Vous utilisez la dernière version.",
@@ -129,7 +125,6 @@ const TEXT = {
   },
   es: {
     connecting: "Conectando a Stats API local…", connected: "Stats API conectada", disconnected: "Stats API desconectada",
-    feed: "Flujo local de solo lectura. Sin controles del juego ni superposición en partida.",
     matchTag: "PARTIDA EN VIVO", matchHeading: "Resumen de partida", rankedTag: "CLASIFICATORIA", rankedHeading: "Rango y registro",
     statsTag: "ESTADÍSTICAS", statsHeading: "Estadísticas de partida", scopeTag: "ÁMBITO DE VICTORIAS / DERROTAS",
     allModes: "Todos los modos", currentMode: "Modo actual", switchScope: "Cambiar ámbito",
@@ -147,11 +142,11 @@ const TEXT = {
     goals: "Goles", assists: "Asistencias", saves: "Paradas", shots: "Tiros", demos: "Derribos",
     resets: "Flip resets", touches: "Toques", playerScore: "Puntos", rank: "Rango",
     mmrWl: "MMR + V/D",
-    updateTitle: "Actualizaciones", updateAuto: "Buscar actualizaciones automáticamente",
+    menu: "Menú", updateTitle: "Actualizaciones", updateAuto: "Buscar actualizaciones automáticamente",
+    updateShow: "Mostrar estado de actualización", updateClose: "Cerrar aviso de actualización",
     updateCheck: "Buscar actualizaciones", updateDownload: "Descargar", updateInstall: "Instalar y reiniciar",
     updateConfirm: "Rocket League debe estar cerrado. ¿Instalar esta actualización y reiniciar RocketStats? Se conservarán los datos de las cuentas.",
     updateNetwork: "La búsqueda contacta con GitHub. No se transmiten datos del juego ni de las cuentas.",
-    updateUnsigned: "Aviso: No se comprueba la firma del editor. Instala solo si confías en esta versión de GitHub.",
     update_starting: "Iniciando actualizador…", update_unconfigured: "No hay una fuente de actualizaciones configurada.",
     update_development: "Las actualizaciones están desactivadas en desarrollo.", update_unsupported: "Las actualizaciones solo están disponibles en la versión instalada de Windows.",
     update_idle: "Listo para buscar actualizaciones.", update_checking: "Buscando una nueva versión…", update_current: "Estás usando la última versión.",
@@ -161,7 +156,6 @@ const TEXT = {
   },
   pt: {
     connecting: "Conectando à Stats API local…", connected: "Stats API conectada", disconnected: "Stats API desconectada",
-    feed: "Fluxo local somente leitura. Sem controles do jogo nem sobreposição durante a partida.",
     matchTag: "PARTIDA AO VIVO", matchHeading: "Visão geral", rankedTag: "RANQUEADA", rankedHeading: "Rank e histórico",
     statsTag: "ESTATÍSTICAS", statsHeading: "Estatísticas da partida", scopeTag: "ESCOPO DE VITÓRIAS / DERROTAS",
     allModes: "Todos os modos", currentMode: "Modo atual", switchScope: "Alterar escopo",
@@ -179,11 +173,11 @@ const TEXT = {
     goals: "Gols", assists: "Assistências", saves: "Defesas", shots: "Chutes", demos: "Demos",
     resets: "Flip resets", touches: "Toques", playerScore: "Pontos", rank: "Rank",
     mmrWl: "MMR + V/D",
-    updateTitle: "Atualizações", updateAuto: "Verificar atualizações automaticamente",
+    menu: "Menu", updateTitle: "Atualizações", updateAuto: "Verificar atualizações automaticamente",
+    updateShow: "Mostrar status da atualização", updateClose: "Fechar aviso de atualização",
     updateCheck: "Verificar atualizações", updateDownload: "Baixar", updateInstall: "Instalar e reiniciar",
     updateConfirm: "Rocket League deve estar fechado. Instalar esta atualização e reiniciar RocketStats? Os dados das contas serão mantidos.",
     updateNetwork: "As verificações acessam o GitHub. Nenhum dado do jogo ou das contas é transmitido.",
-    updateUnsigned: "Atenção: A assinatura do editor não é verificada. Instale apenas se confiar nesta versão do GitHub.",
     update_starting: "Iniciando atualizador…", update_unconfigured: "Nenhuma fonte de atualização está configurada.",
     update_development: "Atualizações desativadas no modo de desenvolvimento.", update_unsupported: "Atualizações disponíveis apenas na versão Windows instalada.",
     update_idle: "Pronto para verificar atualizações.", update_checking: "Buscando nova versão…", update_current: "Você está usando a versão mais recente.",
@@ -193,7 +187,6 @@ const TEXT = {
   },
   ru: {
     connecting: "Подключение к локальному Stats API…", connected: "Stats API подключено", disconnected: "Stats API отключено",
-    feed: "Локальный канал только для чтения. Без управления игрой и внутриигрового оверлея.",
     matchTag: "ТЕКУЩИЙ МАТЧ", matchHeading: "Обзор матча", rankedTag: "РЕЙТИНГ", rankedHeading: "Ранг и результаты",
     statsTag: "СТАТИСТИКА ИГРОКА", statsHeading: "Статистика матча", scopeTag: "УЧЁТ ПОБЕД / ПОРАЖЕНИЙ",
     allModes: "Все режимы", currentMode: "Текущий режим", switchScope: "Сменить охват",
@@ -211,11 +204,11 @@ const TEXT = {
     goals: "Голы", assists: "Передачи", saves: "Сейвы", shots: "Удары", demos: "Демо",
     resets: "Flip reset", touches: "Касания", playerScore: "Очки", rank: "Ранг",
     mmrWl: "MMR + П/П",
-    updateTitle: "Обновления приложения", updateAuto: "Автоматически проверять обновления",
+    menu: "Меню", updateTitle: "Обновления приложения", updateAuto: "Автоматически проверять обновления",
+    updateShow: "Показать состояние обновлений", updateClose: "Закрыть уведомление об обновлении",
     updateCheck: "Проверить обновления", updateDownload: "Скачать", updateInstall: "Установить и перезапустить",
     updateConfirm: "Rocket League должна быть закрыта. Установить это обновление и перезапустить RocketStats? Данные учётных записей сохранятся.",
     updateNetwork: "Проверки обращаются к GitHub. Данные игры и учётных записей не передаются.",
-    updateUnsigned: "Внимание: подпись издателя не проверяется. Устанавливайте обновление, только если доверяете этому выпуску GitHub.",
     update_starting: "Запуск обновления…", update_unconfigured: "Источник обновлений не настроен.",
     update_development: "Обновления отключены в режиме разработки.", update_unsupported: "Обновления доступны только в установленной версии для Windows.",
     update_idle: "Готово к проверке обновлений.", update_checking: "Поиск новой версии…", update_current: "Установлена последняя версия.",
@@ -225,22 +218,26 @@ const TEXT = {
   }
 };
 
-const GROUPS = {
-  match: ["score", "timer", "boost", "event-banner", "last-goal", "queue-status", "ban-countdown", "speed", "ping", "possession"],
-  ranked: ["mmr", "rank", "mmr-wl", "streak", "records"],
-  stats: ["goals", "assists", "saves", "shots", "demos", "flip-resets", "touches", "player-score"]
-};
+const RANKED_ACTIONS = ["mmr", "rank", "mmr-wl", "streak", "records", "ban-countdown"];
+const DASHBOARD_ACTIONS = new Set([...RANKED_ACTIONS, "stats-scope"]);
 const LABELS = {
-  score: "score", timer: "timer", boost: "boost", "event-banner": "banner", "last-goal": "lastGoal",
-  "queue-status": "queue", "ban-countdown": "ban", speed: "speed", ping: "ping", possession: "possession",
-  mmr: "mmr", rank: "rank", "mmr-wl": "mmrWl", streak: "streak", records: "records", goals: "goals",
-  assists: "assists", saves: "saves", shots: "shots", demos: "demos", "flip-resets": "resets",
-  touches: "touches", "player-score": "playerScore"
+  mmr: "mmr", rank: "rank", "mmr-wl": "mmrWl", streak: "streak", records: "records", "ban-countdown": "ban"
 };
 const state = {
-  locale: "en", models: new Map(), status: "connecting",
+  locale: "en", models: new Map(),
+  connection: { status: "connecting", error: null, revision: -1 }, error: null,
   update: { phase: "starting", version: "" }, autoCheckUpdates: true
 };
+let errorChanged = false;
+let updateStateRevision = 0;
+let autoUpdateChanged = false;
+let autoUpdateSaving = false;
+let updateHideTimer;
+
+const UPDATE_BALLOON_MS = 8000;
+const UPDATE_NOTIFICATION_PHASES = new Set([
+  "checking", "current", "available", "downloading", "downloaded", "installing", "error"
+]);
 
 function tr(key) {
   return TEXT[state.locale]?.[key] ?? TEXT.en[key] ?? key;
@@ -297,8 +294,8 @@ function renderGroup(groupId, actions) {
 function renderStatus() {
   const statusText = document.getElementById("connection-label");
   const dot = document.getElementById("status-dot");
-  statusText.textContent = tr(state.status);
-  dot.className = `status-dot ${state.status}`;
+  statusText.textContent = tr(state.connection.status);
+  dot.className = `status-dot ${state.connection.status}`;
 }
 
 function renderScope() {
@@ -312,8 +309,13 @@ function renderScope() {
 function renderUpdate() {
   const update = state.update;
   const disabled = ["starting", "unconfigured", "development", "unsupported"].includes(update.phase);
+  const version = update.version ? `v${update.version}` : "";
+  document.getElementById("menu-toggle").setAttribute("aria-label", tr("menu"));
+  document.getElementById("menu-updates-heading").textContent = tr("updateTitle");
+  document.getElementById("menu-update-version").textContent = version;
   document.getElementById("updates-heading").textContent = tr("updateTitle");
-  document.getElementById("update-version").textContent = `v${update.version}`;
+  document.getElementById("update-version").textContent = version;
+  document.getElementById("update-close").setAttribute("aria-label", tr("updateClose"));
   document.getElementById("update-status").textContent = [
     tr(`update_${update.phase}`),
     update.availableVersion ? `v${update.availableVersion}` : "",
@@ -321,16 +323,14 @@ function renderUpdate() {
   ].filter(Boolean).join(" ");
   document.getElementById("update-source").textContent = update.source ? `GitHub Releases · ${update.source}` : "";
   document.getElementById("update-network").textContent = tr("updateNetwork");
-  const security = document.getElementById("update-security");
-  security.hidden = !update.source || update.publisherVerification === true;
-  security.textContent = security.hidden ? "" : tr("updateUnsigned");
   document.getElementById("update-auto-label").textContent = tr("updateAuto");
   const automatic = document.getElementById("update-auto");
   automatic.checked = state.autoCheckUpdates;
-  automatic.disabled = disabled;
+  automatic.disabled = disabled || autoUpdateSaving;
   const check = document.getElementById("update-check");
   check.textContent = tr("updateCheck");
   check.disabled = !["idle", "current", "available", "error"].includes(update.phase);
+  document.getElementById("update-show").textContent = tr("updateShow");
   const download = document.getElementById("update-download");
   download.textContent = tr("updateDownload");
   download.hidden = !["available", "downloading"].includes(update.phase);
@@ -342,20 +342,60 @@ function renderUpdate() {
   const progress = document.getElementById("update-progress");
   progress.hidden = !["downloading", "downloaded"].includes(update.phase);
   progress.value = update.percent || 0;
+  progress.setAttribute("aria-label", tr("updateDownload"));
   const error = document.getElementById("update-error");
   error.textContent = update.error || "";
   error.hidden = !update.error;
 }
 
+function hideUpdateBalloon() {
+  if (updateHideTimer !== undefined) clearTimeout(updateHideTimer);
+  updateHideTimer = undefined;
+  const balloon = document.getElementById("update-balloon");
+  const hadFocus = balloon.contains(document.activeElement);
+  balloon.hidden = true;
+  if (hadFocus) document.getElementById("menu-toggle").focus();
+}
+
+function showUpdateBalloon(autoDismiss = false) {
+  if (updateHideTimer !== undefined) clearTimeout(updateHideTimer);
+  updateHideTimer = undefined;
+  const balloon = document.getElementById("update-balloon");
+  balloon.hidden = false;
+  if (autoDismiss) {
+    updateHideTimer = setTimeout(() => {
+      updateHideTimer = undefined;
+      if (!balloon.matches(":hover") && !balloon.contains(document.activeElement)) {
+        balloon.hidden = true;
+      }
+    }, UPDATE_BALLOON_MS);
+  }
+}
+
+function applyUpdate(update) {
+  const previous = state.update;
+  updateStateRevision += 1;
+  state.update = update;
+  if (
+    UPDATE_NOTIFICATION_PHASES.has(update.phase) &&
+    (update.phase !== previous.phase || (update.error && update.error !== previous.error))
+  ) {
+    showUpdateBalloon(update.phase === "current" && !update.error);
+  }
+  renderUpdate();
+}
+
+function showUpdateError(error) {
+  updateStateRevision += 1;
+  state.update = { ...state.update, error: error instanceof Error ? error.message : String(error) };
+  showUpdateBalloon();
+  renderUpdate();
+}
+
 function renderAll() {
   document.documentElement.lang = state.locale;
-  document.getElementById("feed-note").textContent = tr("feed");
-  document.getElementById("match-eyebrow").textContent = tr("matchTag");
-  document.getElementById("match-heading").textContent = tr("matchHeading");
   document.getElementById("ranked-eyebrow").textContent = tr("rankedTag");
   document.getElementById("ranked-heading").textContent = tr("rankedHeading");
-  document.getElementById("stats-eyebrow").textContent = tr("statsTag");
-  document.getElementById("stats-heading").textContent = tr("statsHeading");
   document.getElementById("scope-eyebrow").textContent = tr("scopeTag");
   document.getElementById("scope-button").textContent = tr("switchScope");
   document.getElementById("reset-button").textContent = tr("reset");
@@ -364,63 +404,106 @@ function renderAll() {
   document.getElementById("port-label").textContent = tr("port");
   document.getElementById("port-save").textContent = tr("apply");
   renderStatus();
+  renderError();
   renderScope();
   renderUpdate();
-  renderGroup("match-grid", GROUPS.match);
-  renderGroup("ranked-grid", GROUPS.ranked);
-  renderGroup("stats-grid", GROUPS.stats);
+  renderGroup("ranked-grid", RANKED_ACTIONS);
+}
+
+function renderError() {
+  const message = state.error || state.connection.error;
+  document.getElementById("error-title").textContent = tr("setup");
+  document.getElementById("error-text").textContent = message || "";
+  document.getElementById("error-panel").hidden = !message;
 }
 
 function showError(message) {
-  document.getElementById("error-title").textContent = tr("setup");
-  document.getElementById("error-text").textContent = message;
-  document.getElementById("error-panel").hidden = false;
+  errorChanged = true;
+  state.error = message;
+  renderError();
+}
+
+function clearError() {
+  errorChanged = true;
+  state.error = null;
+  state.connection = { ...state.connection, error: null };
+  renderError();
+}
+
+function applyConnection(connection) {
+  if (connection.revision <= state.connection.revision) return;
+  state.connection = connection;
+  renderStatus();
+  renderError();
 }
 
 const bridge = window.rocketStatsDesktop;
 bridge.onModel((model) => {
+  if (!DASHBOARD_ACTIONS.has(model.action)) return;
   state.models.set(model.action, model);
   renderAll();
 });
-bridge.onStatus((status) => {
-  state.status = status;
-  renderStatus();
-});
+bridge.onStatus(applyConnection);
 bridge.onError(showError);
-bridge.onUpdate((update) => {
-  state.update = update;
+bridge.onUpdate(applyUpdate);
+
+const menu = document.getElementById("app-menu");
+document.getElementById("update-close").addEventListener("click", hideUpdateBalloon);
+document.getElementById("update-show").addEventListener("click", () => {
+  menu.open = false;
   renderUpdate();
+  showUpdateBalloon(state.update.phase === "current" && !state.update.error);
+});
+document.addEventListener("click", (event) => {
+  if (menu.open && !menu.contains(event.target)) menu.open = false;
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  if (menu.open) {
+    menu.open = false;
+    document.getElementById("menu-toggle").focus();
+  } else if (!document.getElementById("update-balloon").hidden) {
+    hideUpdateBalloon();
+  }
 });
 
 for (const [id, action] of [
   ["update-check", () => bridge.checkUpdate()],
   ["update-download", () => bridge.downloadUpdate()],
-  ["update-install", () => {
-    const warning = state.update.publisherVerification === true ? "" : `\n\n${tr("updateUnsigned")}`;
-    return window.confirm(`${tr("updateConfirm")}${warning}`) ? bridge.installUpdate() : null;
-  }]
+  ["update-install", () => window.confirm(tr("updateConfirm")) ? bridge.installUpdate() : null]
 ]) {
   document.getElementById(id).addEventListener("click", async () => {
+    if (id === "update-check") {
+      menu.open = false;
+      showUpdateBalloon();
+    }
+    const revisionBeforeAction = updateStateRevision;
     try {
       const update = await action();
-      if (update) {
-        state.update = update;
-        renderUpdate();
+      if (update && revisionBeforeAction === updateStateRevision) {
+        applyUpdate(update);
       }
     } catch (error) {
-      state.update = { ...state.update, error: error instanceof Error ? error.message : String(error) };
-      renderUpdate();
+      showUpdateError(error);
     }
   });
 }
 document.getElementById("update-auto").addEventListener("change", async (event) => {
+  const previous = state.autoCheckUpdates;
+  autoUpdateChanged = true;
+  autoUpdateSaving = true;
+  state.autoCheckUpdates = event.target.checked;
+  renderUpdate();
   try {
     const result = await bridge.setAutoUpdates(event.target.checked);
     state.autoCheckUpdates = result.autoCheckUpdates;
   } catch (error) {
-    state.update = { ...state.update, error: error instanceof Error ? error.message : String(error) };
+    state.autoCheckUpdates = previous;
+    showUpdateError(error);
+  } finally {
+    autoUpdateSaving = false;
+    renderUpdate();
   }
-  renderUpdate();
 });
 
 document.getElementById("scope-button").addEventListener("click", async () => {
@@ -434,7 +517,7 @@ document.getElementById("setup-api-button").addEventListener("click", async (eve
   if (!window.confirm(tr("setupConfirm"))) return;
   const button = event.currentTarget;
   button.disabled = true;
-  document.getElementById("error-panel").hidden = true;
+  clearError();
   document.getElementById("success-panel").hidden = true;
   try {
     const result = await bridge.configureApi();
@@ -463,18 +546,21 @@ document.getElementById("port-form").addEventListener("submit", async (event) =>
   try {
     const result = await bridge.setPort(value);
     input.value = String(result.port);
-    document.getElementById("error-panel").hidden = true;
+    clearError();
   } catch (error) { showError(error instanceof Error ? error.message : tr("settingsError")); }
 });
 
+const initialUpdateRevision = updateStateRevision;
 bridge.getState().then((initial) => {
   state.locale = initial.locale;
-  state.status = initial.status;
-  state.update = initial.update;
-  state.autoCheckUpdates = initial.autoCheckUpdates;
-  state.models = new Map(initial.models.map((model) => [model.action, model]));
+  if (updateStateRevision === initialUpdateRevision) applyUpdate(initial.update);
+  if (!autoUpdateChanged) state.autoCheckUpdates = initial.autoCheckUpdates;
+  state.models = new Map(initial.models
+    .filter((model) => DASHBOARD_ACTIONS.has(model.action))
+    .map((model) => [model.action, model]));
   document.getElementById("locale-select").value = initial.locale;
   document.getElementById("port-input").value = String(initial.port);
+  applyConnection(initial.connection);
   renderAll();
-  if (initial.startupError) showError(initial.startupError);
+  if (initial.startupError && !errorChanged) showError(initial.startupError);
 }).catch((error) => showError(error instanceof Error ? error.message : "Could not load application state."));

@@ -68,8 +68,9 @@ interface WirePayload {
 }
 
 type Status = "connecting" | "connected" | "disconnected";
+export type LiveErrorKind = "connection" | "other";
 type SnapshotHandler = (snapshot: LiveMatchSnapshot) => void;
-type ErrorHandler = (error: Error) => void;
+type ErrorHandler = (error: Error, kind: LiveErrorKind) => void;
 type StatusHandler = (status: Status) => void;
 
 export class RlLiveConnector {
@@ -162,7 +163,7 @@ export class RlLiveConnector {
     });
 
     socket.on("error", (err: Error) => {
-      this.emitError(err);
+      this.emitError(err, "connection");
     });
 
     socket.on("close", () => {
@@ -181,9 +182,9 @@ export class RlLiveConnector {
     }
   }
 
-  private emitError(error: Error): void {
+  private emitError(error: Error, kind: LiveErrorKind = "other"): void {
     for (const handler of this.errorHandlers) {
-      handler(error);
+      handler(error, kind);
     }
   }
 

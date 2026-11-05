@@ -7,15 +7,22 @@ while open. Users can turn automatic checking off or check manually.
 Downloads and installation each require a user action. A downloaded update is
 **not** installed just because the user closes the app.
 
+The dashboard menu contains the manual check and automatic-check setting.
+Update status appears in an in-app balloon, including the startup result.
+The current-version notice closes after eight seconds unless it is being
+interacted with; available updates, download progress and errors can be closed
+or reopened from the menu.
+
 The updater accepts stable, newer versions only and checks the downloaded
 installer against the SHA-512 checksum in the release metadata. With the current
-configuration it does **not** verify the publisher's signature. The dashboard
-and installation confirmation disclose this. Installation requires Rocket
-League to be closed. Before invoking the installer, the desktop service stops
-its readers, drains pending log work and persists its local state. The installer
-restarts RocketStats; account data stays in the user-data directory.
+configuration it does **not** verify the publisher's signature. The app does
+not show a separate signature warning; Windows may display a SmartScreen
+warning for an unsigned installer. Installation requires Rocket League to be
+closed. Before invoking the installer, the desktop service stops its readers,
+drains pending log work and persists its local state. The installer restarts
+RocketStats; account data stays in the user-data directory.
 
-Update errors and download progress appear in the dashboard in all seven
+Update errors and download progress appear in the balloon in all seven
 languages. No remote release HTML or JavaScript is loaded into the renderer.
 
 ## Project-only GitHub CLI account
@@ -141,6 +148,4 @@ Before distribution, verify on a clean Windows profile:
 - a running game blocks installation and a closed game allows retry;
 - account statistics, scope and settings survive the update.
 
-A real GitHub release and live upgrade test remain outstanding. The generated
-installer executable is also subject to this environment's organization
-content-exclusion policy; do not bypass that restriction to inspect or execute it.
+A real installed upgrade test remains outstanding.
