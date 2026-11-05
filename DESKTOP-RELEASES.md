@@ -17,10 +17,19 @@ The updater accepts stable, newer versions only and checks the downloaded
 installer against the SHA-512 checksum in the release metadata. With the current
 configuration it does **not** verify the publisher's signature. The app does
 not show a separate signature warning; Windows may display a SmartScreen
-warning for an unsigned installer. Installation requires Rocket League to be
-closed. Before invoking the installer, the desktop service stops its readers,
-drains pending log work and persists its local state. The installer restarts
-RocketStats; account data stays in the user-data directory.
+warning for an unsigned installer. Rocket League can remain open. Before
+installation, the app checks the recent local match status and warns if a match
+is active or its status is unknown; users can cancel or proceed. The status is
+checked again after confirmation, and a changed status requires confirmation
+again. Match events or results may be missed while RocketStats restarts.
+A connected API alone does not establish the status: missing or
+more-than-15-second-old match observations are treated as unknown while the
+game is running, or if its process status cannot be checked.
+Before invoking the installer, the desktop service stops its readers, waits
+for in-flight log work to settle and persists its local state. The installer
+restarts RocketStats; account data stays in the user-data directory. If saving
+state or launching the installer fails, the app attempts to resume live tracking
+and reports any recovery failure.
 
 Update errors and download progress appear in the balloon in all seven
 languages. No remote release HTML or JavaScript is loaded into the renderer.
@@ -145,7 +154,8 @@ Before distribution, verify on a clean Windows profile:
 - an offline check is visible and retryable;
 - no download or installation occurs without consent;
 - closing the app alone never installs a downloaded update;
-- a running game blocks installation and a closed game allows retry;
+- an active or unknown match status shows a warning, and declining does not install;
+- an update can be installed with the game running after confirmation;
 - account statistics, scope and settings survive the update.
 
 A real installed upgrade test remains outstanding.

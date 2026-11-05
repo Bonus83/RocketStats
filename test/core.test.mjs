@@ -4,6 +4,7 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createServer } from "node:net";
+import { once } from "node:events";
 
 const { IdentityResolver } = await import(
   "../com.rocketstats.livestats.sdPlugin/bin/core/identity-resolver.js"
@@ -562,6 +563,54 @@ test("connector preserves support for line-delimited snapshot adapters", async (
   assert.equal(snapshot.banRemainingSeconds, 120);
   assert.equal(snapshot.queueType, "ranked_2v2");
   server.close();
+});
+
+test("a stopped connector emits no late or duplicate connection events", async () => {
+  let accept;
+  const accepted = new Promise((resolve) => { accept = resolve; });
+  const server = createServer((socket) => accept(socket));
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  const connector = new RlLiveConnector({
+    host: "127.0.0.1", port: address.port, reconnectDelayMs: 100
+  });
+  const statuses = [];
+  const errors = [];
+  const snapshots = [];
+  let connected;
+  const connection = new Promise((resolve) => { connected = resolve; });
+  connector.onStatus((status) => {
+    statuses.push(status);
+    if (status === "connected") connected();
+  });
+  connector.onError((error) => errors.push(error));
+  connector.onSnapshot((snapshot) => {
+    snapshots.push(snapshot.matchId);
+    connector.stop();
+  });
+  try {
+    connector.start();
+    const socket = await accepted;
+    await connection;
+    const closed = once(socket, "close");
+    socket.write(
+      JSON.stringify({ matchId: "first", inMatch: true }) +
+        JSON.stringify({ matchId: "late", inMatch: false })
+    );
+    await closed;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    assert.deepEqual(statuses, ["connecting", "connected", "disconnected"]);
+    assert.deepEqual(snapshots, ["first"]);
+    connector.stop();
+    assert.deepEqual(statuses, ["connecting", "connected", "disconnected"]);
+    assert.deepEqual(errors, []);
+  } finally {
+    connector.stop();
+    server.close();
+    await once(server, "close");
+  }
 });
 
 test("official API normalizer maps events without guessing the local player", () => {

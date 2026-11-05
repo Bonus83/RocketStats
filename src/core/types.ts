@@ -157,6 +157,8 @@ export interface LivePlayerStats {
 export interface LiveMatchSnapshot {
   matchId: string;
   isInMatch: boolean;
+  /** Local time when the feed last established whether a match was active. */
+  matchStatusObservedAt?: number;
   isOvertime: boolean;
   isPaused: boolean;
   gameClockSeconds: number;

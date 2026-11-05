@@ -134,6 +134,7 @@ export class RocketLeagueLogWatcher {
   private incompleteLine = "";
   private initialized = false;
   private started = false;
+  private hasStarted = false;
   private readQueue: Promise<void> = Promise.resolve();
 
   constructor(
@@ -155,20 +156,22 @@ export class RocketLeagueLogWatcher {
       this.handleFileChange
     );
 
-    try {
-      const file = await open(this.filePath, "r");
+    if (!this.hasStarted) {
       try {
-        const current = await file.stat();
-        this.offset = current.size;
-        this.fileIdentity = getFileIdentity(current);
-        this.anchor = await readAnchor(file, this.offset);
-      } finally {
-        await file.close();
-      }
-    } catch (error) {
-      if (!hasErrorCode(error, "ENOENT")) {
-        this.stop();
-        throw error;
+        const file = await open(this.filePath, "r");
+        try {
+          const current = await file.stat();
+          this.offset = current.size;
+          this.fileIdentity = getFileIdentity(current);
+          this.anchor = await readAnchor(file, this.offset);
+        } finally {
+          await file.close();
+        }
+      } catch (error) {
+        if (!hasErrorCode(error, "ENOENT")) {
+          this.stop();
+          throw error;
+        }
       }
     }
     this.initialized = true;
@@ -176,6 +179,7 @@ export class RocketLeagueLogWatcher {
     this.readQueue = initialRead;
     try {
       await initialRead;
+      this.hasStarted = true;
     } catch (error) {
       this.stop();
       throw error;

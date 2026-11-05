@@ -3,7 +3,7 @@ import { PluginLocale } from "../core/types.js";
 import { PluginState } from "../core/plugin-state.js";
 import { RocketLeagueLogWatcher } from "../connector/rocket-league-log-watcher.js";
 import { getRocketLeagueProcessStartTime } from "../core/rocket-league-process.js";
-import { LiveRuntime, LiveConnectionStatus, LiveErrorKind } from "../runtime/live-runtime.js";
+import { LiveRuntime, LiveConnectionStatus, LiveErrorKind, LiveMatchStatus } from "../runtime/live-runtime.js";
 import { ActionKind, KeyRenderModel } from "../render/key-renderer.js";
 
 export interface DesktopServiceOptions {
@@ -12,12 +12,14 @@ export interface DesktopServiceOptions {
   port: number;
   onModel: (model: KeyRenderModel) => void;
   onStatus: (status: LiveConnectionStatus) => void;
-  onError: (message: string, kind: LiveErrorKind) => void;
+  onError: (message: string, kind: LiveErrorKind, code?: string) => void;
 }
 
 export interface DesktopService {
   stop(): void;
+  getMatchStatus(): LiveMatchStatus;
   prepareForUpdate(): Promise<void>;
+  resumeAfterUpdateFailure(): Promise<void>;
   configureLocale(locale: PluginLocale): void;
   configurePort(port: number): void;
   toggleStatsScope(): Promise<void>;
@@ -44,6 +46,9 @@ export async function startDesktopService(
   let logWatcher: RocketLeagueLogWatcher | undefined;
   let identityRecoveryInProgress = false;
   let stopped = false;
+  let suspendedForUpdate = false;
+  let currentLocale = options.locale;
+  let currentPort = options.port;
   const recoverIdentity = (): void => {
     if (stopped || process.platform !== "win32" || !logWatcher || identityRecoveryInProgress) {
       return;
@@ -64,19 +69,53 @@ export async function startDesktopService(
     });
   };
 
-  const runtime = new LiveRuntime(state, { render: options.onModel }, {
+  const createRuntime = (): LiveRuntime => new LiveRuntime(state, { render: options.onModel }, {
     host: "127.0.0.1",
-    port: options.port,
+    port: currentPort,
     reconnectDelayMs: 3_000,
     actionKinds: ACTION_KINDS,
-    locale: options.locale,
+    locale: currentLocale,
     mmrPlaylist: "auto",
     eventBannerStats: ["goals", "assists", "saves"],
     animateEvents: true,
-    onError: (error, kind) => options.onError(error.message, kind),
+    onError: (error, kind) => options.onError(
+      error.message,
+      kind,
+      "code" in error && typeof error.code === "string" ? error.code : undefined
+    ),
     onConnected: recoverIdentity,
     onConnectionStatus: options.onStatus
   });
+  let runtime = createRuntime();
+
+  const resumeAfterUpdateFailure = async (): Promise<void> => {
+    if (!suspendedForUpdate || stopped) {
+      return;
+    }
+    runtime = createRuntime();
+    let watcherError: Error | undefined;
+    try {
+      await logWatcher?.start();
+    } catch (error) {
+      watcherError = error instanceof Error ? error : new Error(String(error));
+      logWatcher?.stop();
+      logWatcher = undefined;
+    }
+    if (stopped) {
+      logWatcher?.stop();
+      return;
+    }
+    try {
+      runtime.start();
+    } catch (error) {
+      logWatcher?.stop();
+      throw error;
+    }
+    suspendedForUpdate = false;
+    if (watcherError) {
+      throw new Error(`Could not resume the Rocket League log watcher: ${watcherError.message}`);
+    }
+  };
 
   try {
     const logPath = process.env.RL_LOG_PATH ??
@@ -110,13 +149,40 @@ export async function startDesktopService(
       runtime.stop();
       logWatcher?.stop();
     },
+    getMatchStatus: () => runtime.getMatchStatus(),
     prepareForUpdate: async () => {
-      runtime.stop();
-      await logWatcher?.stopAndDrain();
-      await state.persistActiveAccount();
+      if (stopped || suspendedForUpdate) {
+        throw new Error("The desktop service is not available for update preparation.");
+      }
+      suspendedForUpdate = true;
+      try {
+        runtime.stop();
+        await logWatcher?.stopAndDrain();
+        await state.persistActiveAccount();
+      } catch (error) {
+        try {
+          await resumeAfterUpdateFailure();
+        } catch (recoveryError) {
+          throw new AggregateError(
+            [error, recoveryError],
+            `Update preparation failed: ${error instanceof Error ? error.message : String(error)}. ` +
+              `Live tracking could not fully resume: ${
+                recoveryError instanceof Error ? recoveryError.message : String(recoveryError)
+              }`
+          );
+        }
+        throw error;
+      }
     },
-    configureLocale: (locale) => runtime.configureLocale(locale),
-    configurePort: (port) => runtime.configurePort(port),
+    resumeAfterUpdateFailure,
+    configureLocale: (locale) => {
+      runtime.configureLocale(locale);
+      currentLocale = locale;
+    },
+    configurePort: (port) => {
+      runtime.configurePort(port);
+      currentPort = port;
+    },
     toggleStatsScope: () => runtime.toggleStatsScope(),
     resetStats: () => runtime.resetStats()
   };

@@ -1,8 +1,10 @@
 const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const CHECKABLE = new Set(["idle", "current", "available", "error"]);
+const MATCH_STATUSES = new Set(["in-match", "not-in-match", "unknown"]);
 
 function createUpdateController({
-  updater, version, source, publisherVerification = false, disabledReason, onState, beforeInstall
+  updater, version, source, publisherVerification = false, disabledReason, onState, beforeInstall,
+  getMatchStatus, resumeAfterInstallFailure
 }) {
   let state = {
     phase: disabledReason || "idle",
@@ -14,6 +16,9 @@ function createUpdateController({
     error: null
   };
   let interval;
+  let installationPrepared = false;
+  let installationErrors = [];
+  let installationRecovery;
   const listeners = [];
   const publish = (next) => {
     state = { ...state, ...next };
@@ -21,9 +26,33 @@ function createUpdateController({
     return { ...state };
   };
   const errorMessage = (error) => error instanceof Error ? error.message : String(error);
+  const readMatchStatus = () => {
+    const status = getMatchStatus();
+    if (!MATCH_STATUSES.has(status)) throw new Error("Invalid match status returned by the desktop service.");
+    return status;
+  };
   const fail = (error) => publish({
     phase: "error", availableVersion: null, percent: null, error: errorMessage(error)
   });
+  const recordInstallationError = (error) => {
+    if (!installationErrors.includes(error)) installationErrors.push(error);
+  };
+  const recoverFailedInstallation = () => {
+    if (!installationRecovery) {
+      installationRecovery = (async () => {
+        try {
+          await resumeAfterInstallFailure();
+        } catch (error) {
+          installationErrors.push(new Error(`Live tracking could not fully resume: ${errorMessage(error)}`));
+        }
+        const error = installationErrors.length === 1
+          ? installationErrors[0]
+          : new AggregateError(installationErrors, installationErrors.map(errorMessage).join("; "));
+        return fail(error);
+      })();
+    }
+    return installationRecovery;
+  };
   const listen = (event, handler) => {
     updater.on(event, handler);
     listeners.push([event, handler]);
@@ -34,7 +63,18 @@ function createUpdateController({
     updater.autoInstallOnAppQuit = false;
     updater.allowPrerelease = false;
     updater.allowDowngrade = false;
-    listen("error", fail);
+    listen("error", (error) => {
+      if (state.phase !== "installing") {
+        fail(error);
+        return;
+      }
+      recordInstallationError(error);
+      if (installationPrepared) {
+        void recoverFailedInstallation().catch((recoveryError) => {
+          console.error("Could not report update installation failure:", recoveryError);
+        });
+      }
+    });
     listen("update-available", (info) => {
       if (state.phase === "checking") {
         publish({ phase: "available", availableVersion: info.version, error: null });
@@ -85,20 +125,39 @@ function createUpdateController({
       }
       return { ...state };
     },
-    async install() {
+    getMatchStatus() {
       if (state.phase !== "downloaded") throw new Error("An update must be downloaded before installing.");
+      return readMatchStatus();
+    },
+    async install(confirmedStatus) {
+      if (state.phase !== "downloaded") throw new Error("An update must be downloaded before installing.");
+      if (!MATCH_STATUSES.has(confirmedStatus)) throw new TypeError("A confirmed match status is required.");
+      const currentStatus = readMatchStatus();
+      if (currentStatus !== confirmedStatus) {
+        return { needsConfirmation: true, matchStatus: currentStatus };
+      }
+      installationPrepared = false;
+      installationErrors = [];
+      installationRecovery = undefined;
       publish({ phase: "installing", error: null });
       try {
         await beforeInstall();
       } catch (error) {
-        return publish({ phase: "downloaded", error: errorMessage(error) });
+        recordInstallationError(error);
+        return publish({
+          phase: "downloaded",
+          error: installationErrors.map(errorMessage).join("; ")
+        });
       }
+      installationPrepared = true;
+      if (installationErrors.length) return recoverFailedInstallation();
       try {
         updater.quitAndInstall(false, true);
       } catch (error) {
-        fail(error);
+        recordInstallationError(error);
+        return recoverFailedInstallation();
       }
-      return { ...state };
+      return installationRecovery ? installationRecovery : { ...state };
     },
     configureAutomaticChecks(enabled) {
       if (interval) clearInterval(interval);

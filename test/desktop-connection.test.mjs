@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { createRequire } from "node:module";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 import vm from "node:vm";
 import connectionModule from "../desktop/connection-state.cjs";
@@ -54,6 +57,178 @@ test("connection state retains transport errors until reconnection and emits ord
 
   events.at(-1).error = "mutated";
   assert.equal(connection.getState().error, null);
+});
+
+test("connection refusal is hidden only when Rocket League is not running", async () => {
+  let running = false;
+  let checks = 0;
+  const connection = createConnectionState(() => {}, {
+    isGameRunning: async () => { checks += 1; return running; },
+    onProcessCheckError: (error) => assert.fail(error.message)
+  });
+  connection.setStatus("disconnected");
+  await connection.setError(refused, "ECONNREFUSED");
+  assert.equal(connection.getState().error, null);
+
+  running = true;
+  connection.setStatus("connecting");
+  await connection.setError(refused, "ECONNREFUSED");
+  connection.setStatus("disconnected");
+  assert.equal(connection.getState().error, refused);
+
+  running = false;
+  await connection.setError(refused, "ECONNREFUSED");
+  assert.equal(connection.getState().error, null);
+  await connection.setError("socket permission denied", "EACCES");
+  assert.equal(connection.getState().error, "socket permission denied");
+  await connection.setError(refused);
+  assert.equal(connection.getState().error, refused);
+  assert.equal(checks, 3);
+});
+
+test("unknown game status keeps the connection error and reports the failed process check", async () => {
+  const errors = [];
+  const connection = createConnectionState(() => {}, {
+    isGameRunning: async () => { throw new Error("Process query failed"); },
+    onProcessCheckError: (error) => errors.push(error.message)
+  });
+  await connection.setError(refused, "ECONNREFUSED");
+  assert.equal(connection.getState().error, refused);
+  assert.deepEqual(errors, ["Process query failed"]);
+
+  const unavailable = createConnectionState(() => {});
+  await unavailable.setError(refused, "ECONNREFUSED");
+  assert.equal(unavailable.getState().error, refused);
+
+  const invalid = createConnectionState(() => {}, {
+    isGameRunning: async () => undefined,
+    onProcessCheckError: (error) => errors.push(error.message)
+  });
+  await invalid.setError(refused, "ECONNREFUSED");
+  assert.equal(invalid.getState().error, refused);
+  assert.match(errors.at(-1), /invalid result/);
+});
+
+test("late process checks cannot restore or hide newer connection errors", async () => {
+  const checks = [];
+  const connection = createConnectionState(() => {}, {
+    isGameRunning: () => new Promise((resolve) => checks.push(resolve)),
+    onProcessCheckError: (error) => assert.fail(error.message)
+  });
+  const first = connection.setError(refused, "ECONNREFUSED");
+  connection.setStatus("connected");
+  checks.shift()(true);
+  await first;
+  assert.equal(connection.getState().error, null);
+
+  connection.setStatus("disconnected");
+  const second = connection.setError(refused, "ECONNREFUSED");
+  connection.setStatus("connecting");
+  await connection.setError("new connection error", "EACCES");
+  checks.shift()(false);
+  await second;
+  assert.equal(connection.getState().error, "new connection error");
+});
+
+test("the desktop process check suppresses only expected closed-game refusals", async () => {
+  const mainUrl = new URL("../desktop/main.cjs", import.meta.url);
+  const realRequire = createRequire(mainUrl);
+  const errors = [];
+  let running = false;
+  let processError;
+  let malformedOutput = false;
+  let localizedOutput = false;
+  let checks = 0;
+  const app = {
+    setName() {}, requestSingleInstanceLock: () => true,
+    getPath: () => "unused-user-data", whenReady: () => new Promise(() => {}), on() {}
+  };
+  const context = vm.createContext({
+    __dirname: dirname(fileURLToPath(mainUrl)),
+    console: { error: (...args) => errors.push(args) },
+    process: { platform: "win32" },
+    require(id) {
+      if (id === "electron") {
+        return {
+          app, BrowserWindow: class {}, dialog: {}, ipcMain: { handle() {} }
+        };
+      }
+      if (id === "node:child_process") {
+        return {
+          execFile(command, args, options, callback) {
+            assert.equal(command, "tasklist");
+            const filtered = args[0] === "/FI";
+            assert.deepEqual(
+              [...args],
+              filtered
+                ? ["/FI", "IMAGENAME eq RocketLeague.exe", "/FO", "CSV", "/NH"]
+                : ["/FO", "CSV", "/NH"]
+            );
+            assert.ok(options.timeout > 0 && options.timeout <= 2500);
+            checks += 1;
+            let output;
+            if (malformedOutput) output = "Unexpected tasklist output";
+            else if (filtered && running) output = '"RocketLeague.exe","123","Console","1","50,000 K"';
+            else if (filtered) output = localizedOutput ? "INFORMACIÓN: No hay tareas." : "INFO: No tasks.";
+            else output = '"System","4","Services","0","2,000 K"';
+            setImmediate(() => callback(processError, output, ""));
+          }
+        };
+      }
+      return realRequire(id);
+    }
+  });
+  vm.runInContext(await readFile(mainUrl, "utf8"), context, { filename: fileURLToPath(mainUrl) });
+  const reportError = vm.runInContext("handleServiceError", context);
+  const connection = vm.runInContext("connectionState", context);
+  await reportError(refused, "connection", "ECONNREFUSED");
+  assert.equal(connection.getState().error, null);
+  running = true;
+  await reportError(refused, "connection", "ECONNREFUSED");
+  assert.equal(connection.getState().error, refused);
+  running = false;
+  await reportError(refused, "connection", "ECONNREFUSED");
+  assert.equal(connection.getState().error, null);
+
+  localizedOutput = true;
+  const checksBeforeFallback = checks;
+  await reportError(refused, "connection", "ECONNREFUSED");
+  assert.equal(connection.getState().error, null);
+  assert.equal(checks, checksBeforeFallback + 2);
+  localizedOutput = false;
+  malformedOutput = true;
+  await reportError(refused, "connection", "ECONNREFUSED");
+  assert.equal(connection.getState().error, refused);
+  assert.match(String(errors.at(-1)[1]), /invalid result/);
+  malformedOutput = false;
+  processError = new Error("tasklist failed asynchronously");
+  await reportError(refused, "connection", "ECONNREFUSED");
+  assert.equal(connection.getState().error, refused);
+  assert.match(String(errors.at(-1)[1]), /failed asynchronously/);
+  const checksBeforeOtherError = checks;
+  await reportError("socket permission denied", "connection", "EACCES");
+  assert.equal(connection.getState().error, "socket permission denied");
+  assert.equal(checks, checksBeforeOtherError);
+});
+
+test("closed-game refusal does not show a warning but unrelated errors stay visible", async () => {
+  let dispatch = () => {};
+  const connection = createConnectionState((event) => dispatch(event), {
+    isGameRunning: async () => false,
+    onProcessCheckError: (error) => assert.fail(error.message)
+  });
+  const { getElement, listeners } = await loadRenderer(connection);
+  dispatch = listeners.status;
+  await new Promise((resolve) => setImmediate(resolve));
+  connection.setStatus("disconnected");
+  await connection.setError(refused, "ECONNREFUSED");
+  assert.equal(getElement("error-panel").hidden, true);
+  assert.equal(getElement("connection-label").textContent, "Stats API disconnected");
+
+  listeners.error("The game log could not be read.");
+  await connection.setError(refused, "ECONNREFUSED");
+  assert.equal(getElement("error-panel").hidden, false);
+  assert.equal(getElement("error-text").textContent, "The game log could not be read.");
 });
 
 test("desktop removes a resolved connection error but preserves unrelated errors", async () => {

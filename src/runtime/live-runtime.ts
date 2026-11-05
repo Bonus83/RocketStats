@@ -20,6 +20,7 @@ export interface ActionSink {
 }
 
 export type LiveConnectionStatus = "connecting" | "connected" | "disconnected";
+export type LiveMatchStatus = "in-match" | "not-in-match" | "unknown";
 export type { LiveErrorKind } from "../connector/rl-live-connector.js";
 
 export interface LiveRuntimeOptions {
@@ -44,6 +45,7 @@ interface PendingMatchQueue {
 }
 
 const MAX_PENDING_QUEUE_AGE_MS = 5 * 60_000;
+const MAX_MATCH_STATUS_AGE_MS = 15_000;
 
 export class LiveRuntime {
   private readonly connector: RlLiveConnector;
@@ -112,6 +114,18 @@ export class LiveRuntime {
 
   stop(): void {
     this.connector.stop();
+  }
+
+  getMatchStatus(): LiveMatchStatus {
+    const snapshot = this.latestSnapshot;
+    if (!this.connectorConnected || !snapshot || snapshot.matchStatusObservedAt === undefined) {
+      return "unknown";
+    }
+    const age = Date.now() - snapshot.matchStatusObservedAt;
+    if (age < 0 || age > MAX_MATCH_STATUS_AGE_MS) {
+      return "unknown";
+    }
+    return snapshot.isInMatch ? "in-match" : "not-in-match";
   }
 
   async toggleStatsScope(): Promise<void> {

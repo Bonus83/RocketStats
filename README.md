@@ -58,6 +58,24 @@ npm run build
 npm test
 ```
 
+For small changes, use the targeted helpers instead of the full build and suite:
+
+```powershell
+npm run dev:affected   # changed files and the tests that cover them
+npm run dev:verify     # type-check (only if src\ changed) + affected tests
+npm run dev:check      # type-check and emit the desktop TypeScript graph
+node scripts/dev.mjs test ui update   # groups: ui, update, service, core, all
+```
+
+| Area | Files | Test group |
+| --- | --- | --- |
+| Desktop main process, IPC, process checks | `desktop/main.cjs` | `ui` |
+| Connection status and warning filter | `desktop/connection-state.cjs` | `ui` |
+| Desktop UI and texts in 7 languages | `desktop/renderer.js` | `ui`, `update` |
+| Update flow | `desktop/updater.cjs` | `update` |
+| Desktop service | `src/desktop/desktop-service.ts` | `service` |
+| Live feed, stats and accounts | `src/runtime`, `src/connector`, `src/core` | `core`, `service` |
+
 `npm run assets` crops the append-only logo sheet in `assets\logos` into the
 button images referenced by the plugin manifest, and creates the `.streamDeckProfile`
 bundles. New cards are detected from the transparent gutters and assigned in
@@ -162,9 +180,11 @@ button can enable the local feed after confirmation, only while Rocket League is
 closed; it changes only the Stats API port and packet-rate settings and backs up
 an existing config file. The app does not silently edit Rocket League
 configuration.
-If the feed is unavailable, the dashboard shows the connection error and
-retries automatically. Once connected, it clears that error without hiding
-unrelated setup or runtime errors.
+If Rocket League is not running on Windows, an expected connection refusal is
+not shown as an error; the dashboard still shows that the feed is disconnected
+and retries automatically. Connection errors remain visible when the game is
+running or its process status cannot be checked. Once connected, the dashboard
+clears the connection error without hiding unrelated setup or runtime errors.
 Live MMR still depends on the existing local log parser and its documented
 limitations.
 
@@ -172,9 +192,14 @@ The desktop updater uses stable GitHub Releases from `Bonus83/RocketStats`.
 Installed builds check at startup and every six hours (can be disabled);
 the result appears in an in-app balloon, and the menu provides a manual check,
 status and the automatic-check setting. Downloading and installing each require
-consent. Installation is blocked while Rocket League is running and persists
-local state before restarting. No update is installed merely by closing the
-app. Development builds do not check for updates.
+consent. Rocket League can stay open during installation. If a match is active,
+or its status cannot be determined, the confirmation warns that match events or
+the result may be missed during the RocketStats restart. Local state is persisted
+before restarting. No update is installed merely by closing the app.
+An API connection alone does not establish the match status: missing or
+more-than-15-second-old match observations are treated as unknown while the
+game is running, or if its process status cannot be checked.
+Development builds do not check for updates.
 
 A Windows signing certificate is optional. The current configuration does not
 verify an update publisher's signature: HTTPS and the checksum in GitHub's

@@ -1,6 +1,6 @@
 {
   "name": "rocketstats-elgato",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Rocket League live statistics for Elgato Stream Deck and desktop.",
   "private": true,
   "type": "module",
@@ -14,7 +14,10 @@
     "dev": "tsc -p tsconfig.json --watch",
     "desktop:dev": "npm run build && electron .",
     "desktop:dist": "npm run build && node scripts/build-desktop.mjs",
-    "desktop:release": "npm run build && node scripts/build-desktop.mjs --release"
+    "desktop:release": "npm run build && node scripts/build-desktop.mjs --release",
+    "dev:check": "node scripts/dev.mjs check",
+    "dev:affected": "node scripts/dev.mjs affected",
+    "dev:verify": "node scripts/dev.mjs verify"
   },
   "main": "desktop/main.cjs",
   "engines": {

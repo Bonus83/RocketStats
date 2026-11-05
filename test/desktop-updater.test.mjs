@@ -34,7 +34,8 @@ class FakeUpdater extends EventEmitter {
 function controllerFor(updater, extra = {}) {
   return createUpdateController({
     updater, version: "0.1.0", source: "example-owner/desktop-releases",
-    onState: () => {}, beforeInstall: async () => {}, ...extra
+    onState: () => {}, beforeInstall: async () => {},
+    getMatchStatus: () => "not-in-match", resumeAfterInstallFailure: async () => {}, ...extra
   });
 }
 
@@ -111,7 +112,7 @@ test("unconfigured and development builds do not make update requests", async ()
     assert.equal(controller.getState().phase, disabledReason);
     await assert.rejects(controller.check(), /not available/);
     await assert.rejects(controller.download(), /available update/);
-    await assert.rejects(controller.install(), /downloaded/);
+    await assert.rejects(controller.install("not-in-match"), /downloaded/);
     assert.equal(updater.checks, 0);
     assert.equal(updater.downloads, 0);
     assert.equal(updater.installs.length, 0);
@@ -136,12 +137,12 @@ test("updates require separate download and installation consent and flush befor
   await controller.check();
   assert.equal(controller.getState().phase, "available");
   assert.equal(updater.downloads, 0);
-  await assert.rejects(controller.install(), /downloaded/);
+  await assert.rejects(controller.install("not-in-match"), /downloaded/);
   await controller.download();
   assert.equal(controller.getState().phase, "downloaded");
   assert.ok(states.some((state) => state.phase === "downloading" && state.percent === 42));
   assert.equal(updater.installs.length, 0);
-  const installation = controller.install();
+  const installation = controller.install("not-in-match");
   assert.equal(controller.getState().phase, "installing");
   assert.equal(updater.installs.length, 0);
   releaseFlush();
@@ -188,7 +189,7 @@ test("offline and checksum failures are explicit and cannot install", async () =
   await controller.download();
   assert.equal(controller.getState().phase, "error");
   assert.match(controller.getState().error, /checksum/);
-  await assert.rejects(controller.install(), /downloaded/);
+  await assert.rejects(controller.install("not-in-match"), /downloaded/);
   assert.equal(updater.installs.length, 0);
   controller.dispose();
 });
@@ -206,29 +207,133 @@ test("publisher verification failures remain errors when signing is configured",
   await controller.download();
   assert.equal(controller.getState().phase, "error");
   assert.match(controller.getState().error, /publisher signature/);
-  await assert.rejects(controller.install(), /downloaded/);
+  await assert.rejects(controller.install("not-in-match"), /downloaded/);
   assert.equal(updater.installs.length, 0);
   controller.dispose();
 });
 
-test("game-running and persistence failures keep the downloaded update available for retry", async () => {
+test("persistence failures keep the downloaded update available for retry", async () => {
   const updater = new FakeUpdater();
   let blocked = true;
   const controller = controllerFor(updater, {
     beforeInstall: async () => {
-      if (blocked) throw new Error("Close Rocket League or resolve the state-save error first");
+      if (blocked) throw new Error("Could not save account state");
     }
   });
   await controller.check();
   await controller.download();
-  await controller.install();
+  await controller.install("not-in-match");
   assert.equal(controller.getState().phase, "downloaded");
-  assert.match(controller.getState().error, /Close Rocket League/);
+  assert.match(controller.getState().error, /Could not save account state/);
   assert.equal(updater.installs.length, 0);
   blocked = false;
-  await controller.install();
+  await controller.install("not-in-match");
   assert.equal(updater.installs.length, 1);
   controller.dispose();
+});
+
+test("installation rechecks match status and requires a fresh confirmation if it changed", async () => {
+  const updater = new FakeUpdater();
+  let matchStatus = "not-in-match";
+  let flushes = 0;
+  const controller = controllerFor(updater, {
+    getMatchStatus: () => matchStatus,
+    beforeInstall: async () => { flushes += 1; }
+  });
+  await controller.check();
+  await controller.download();
+  assert.equal(controller.getMatchStatus(), "not-in-match");
+  await assert.rejects(controller.install(), /confirmed match status/);
+  await assert.rejects(controller.install("invalid"), /confirmed match status/);
+
+  matchStatus = "in-match";
+  assert.deepEqual(await controller.install("not-in-match"), {
+    needsConfirmation: true, matchStatus: "in-match"
+  });
+  assert.equal(controller.getState().phase, "downloaded");
+  assert.equal(flushes, 0);
+  assert.equal(updater.installs.length, 0);
+
+  matchStatus = "unknown";
+  assert.deepEqual(await controller.install("in-match"), {
+    needsConfirmation: true, matchStatus: "unknown"
+  });
+  assert.equal(flushes, 0);
+  await controller.install("unknown");
+  assert.equal(flushes, 1);
+  assert.deepEqual(updater.installs, [[false, true]]);
+  controller.dispose();
+});
+
+test("invalid match status is surfaced instead of assuming no match", async () => {
+  const updater = new FakeUpdater();
+  const controller = controllerFor(updater, { getMatchStatus: () => undefined });
+  await controller.check();
+  await controller.download();
+  assert.throws(() => controller.getMatchStatus(), /Invalid match status/);
+  await assert.rejects(controller.install("not-in-match"), /Invalid match status/);
+  assert.equal(updater.installs.length, 0);
+  controller.dispose();
+});
+
+test("an installer launch failure resumes tracking and reports any recovery failure", async () => {
+  for (const recoveryFails of [false, true]) {
+    const updater = new FakeUpdater();
+    updater.quitAndInstall = () => { throw new Error("Installer launch failed"); };
+    let recoveries = 0;
+    const controller = controllerFor(updater, {
+      resumeAfterInstallFailure: async () => {
+        recoveries += 1;
+        if (recoveryFails) throw new Error("Feed restart failed");
+      }
+    });
+    await controller.check();
+    await controller.download();
+    await controller.install("not-in-match");
+    assert.equal(recoveries, 1);
+    assert.equal(controller.getState().phase, "error");
+    assert.match(controller.getState().error, /Installer launch failed/);
+    if (recoveryFails) assert.match(controller.getState().error, /Feed restart failed/);
+    controller.dispose();
+  }
+});
+
+test("updater error events during installation resume tracking exactly once", async () => {
+  for (const timing of ["preparation", "synchronous", "asynchronous", "event-and-throw"]) {
+    const updater = new FakeUpdater();
+    let recoveries = 0;
+    let launches = 0;
+    let signalFailure;
+    const failed = new Promise((resolve) => { signalFailure = resolve; });
+    const error = new Error(`Installer ${timing} failure`);
+    const controller = controllerFor(updater, {
+      onState: (state) => { if (state.phase === "error") signalFailure(state); },
+      beforeInstall: async () => {
+        if (timing === "preparation") updater.emit("error", error);
+      },
+      resumeAfterInstallFailure: async () => { recoveries += 1; }
+    });
+    updater.quitAndInstall = () => {
+      launches += 1;
+      if (timing === "asynchronous") {
+        setImmediate(() => updater.emit("error", error));
+      } else {
+        updater.emit("error", error);
+        if (timing === "event-and-throw") throw error;
+      }
+    };
+    try {
+      await controller.check();
+      await controller.download();
+      await controller.install("not-in-match");
+      const state = await failed;
+      assert.equal(recoveries, 1, timing);
+      assert.equal(launches, timing === "preparation" ? 0 : 1, timing);
+      assert.match(state.error, new RegExp(`Installer ${timing} failure`));
+    } finally {
+      controller.dispose();
+    }
+  }
 });
 
 test("automatic checks start without downloading and can be disabled and disposed", async () => {
@@ -260,6 +365,7 @@ test("update UI localizes all seven languages and gates download and restart con
   let installations = 0;
   let confirmed = false;
   let confirmation = "";
+  let matchStatus = "not-in-match";
   const initialUpdate = { phase: "unconfigured", version: "0.1.0", source: null, publisherVerification: false };
   const bridge = {
     onModel() {}, onStatus() {}, onError() {},
@@ -269,6 +375,7 @@ test("update UI localizes all seven languages and gates download and restart con
       connection: { status: "disconnected", error: null, revision: 0 }, models: [],
       update: initialUpdate, autoCheckUpdates: true
     }),
+    getUpdateMatchStatus: async () => matchStatus,
     installUpdate: async () => { installations += 1; return { ...initialUpdate, phase: "installing" }; },
     setLocale: async (locale) => ({ locale })
   };
@@ -297,9 +404,17 @@ test("update UI localizes all seven languages and gates download and restart con
       phase: "downloaded", version: "0.1.0", source: "Bonus83/RocketStats",
       publisherVerification: false, availableVersion: "0.2.0", percent: 100
     });
-    await getElement("update-install").listeners.get("click")();
-    assert.equal(confirmation, texts[locale].updateConfirm);
+    for (const [status, warning] of [
+      ["not-in-match", ""],
+      ["in-match", texts[locale].updateMatchActive],
+      ["unknown", texts[locale].updateMatchUnknown]
+    ]) {
+      matchStatus = status;
+      await getElement("update-install").listeners.get("click")();
+      assert.equal(confirmation, [warning, texts[locale].updateConfirm].filter(Boolean).join("\n\n"));
+    }
   }
+  matchStatus = "not-in-match";
   onUpdate({
     phase: "available", version: "0.1.0", source: "Bonus83/RocketStats",
     publisherVerification: false, availableVersion: "0.2.0"

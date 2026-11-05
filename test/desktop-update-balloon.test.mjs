@@ -34,23 +34,32 @@ async function createHarness(currentUpdate, getState = async () => initialState(
     getState,
     checkUpdate: async () => currentUpdate,
     downloadUpdate: async () => currentUpdate,
+    getUpdateMatchStatus: async () => "not-in-match",
     installUpdate: async () => currentUpdate,
     setAutoUpdates: async (enabled) => ({ autoCheckUpdates: enabled })
   };
   let confirmed = false;
   let confirmation = "";
+  const confirmationHistory = [];
+  const confirmationChoices = [];
   const source = await readFile(new URL("../desktop/renderer.js", import.meta.url), "utf8");
   vm.runInNewContext(source, {
     document: dom.document, setTimeout: dom.setTimeout, clearTimeout: dom.clearTimeout,
     window: {
       rocketStatsDesktop: bridge,
-      confirm(message) { confirmation = message; return confirmed; }
+      confirm(message) {
+        confirmation = message;
+        confirmationHistory.push(message);
+        return confirmationChoices.length ? confirmationChoices.shift() : confirmed;
+      }
     }
   });
   return {
     ...dom, bridge, listeners,
     confirm(value) { confirmed = value; },
-    confirmation: () => confirmation
+    confirmNext(...values) { confirmationChoices.push(...values); },
+    confirmation: () => confirmation,
+    confirmations: () => [...confirmationHistory]
   };
 }
 
@@ -173,17 +182,81 @@ test("available updates remain actionable after dismissal without automatic inst
   assert.equal(installations, 0);
   assert.equal(
     h.confirmation(),
-    "Rocket League must be closed. Install this update and restart RocketStats? Your account data will be kept."
+    "Install this update and restart RocketStats? Your account data will be kept."
   );
   h.confirm(true);
   await h.getElement("update-install").listeners.get("click")();
   assert.equal(installations, 1);
 
   h.listeners.update(update("downloaded", {
-    availableVersion: "0.2.0", percent: 100, error: "Close Rocket League first."
+    availableVersion: "0.2.0", percent: 100, error: "Could not save account state."
   }));
   assert.equal(h.getElement("update-error").hidden, false);
-  assert.equal(h.getElement("update-error").textContent, "Close Rocket League first.");
+  assert.equal(h.getElement("update-error").textContent, "Could not save account state.");
+  assert.equal(h.getElement("update-install").disabled, false);
+});
+
+test("match and unknown-status warnings allow canceling or explicitly continuing", async () => {
+  for (const [status, expectedWarning] of [
+    ["in-match", /A match is in progress/],
+    ["unknown", /match status could not be determined/]
+  ]) {
+    const h = await createHarness(update("downloaded", { availableVersion: "0.2.0" }));
+    await settle();
+    h.bridge.getUpdateMatchStatus = async () => status;
+    const attempts = [];
+    h.bridge.installUpdate = async (confirmedStatus) => {
+      attempts.push(confirmedStatus);
+      return update("installing");
+    };
+    await h.getElement("update-install").listeners.get("click")();
+    assert.match(h.confirmation(), expectedWarning);
+    assert.match(h.confirmation(), /result may be missed/);
+    assert.equal(attempts.length, 0);
+    h.confirm(true);
+    await h.getElement("update-install").listeners.get("click")();
+    assert.deepEqual(attempts, [status]);
+  }
+});
+
+test("a match starting during confirmation requires a new warning and consent", async () => {
+  const h = await createHarness(update("downloaded", { availableVersion: "0.2.0" }));
+  await settle();
+  let matchStatus = "not-in-match";
+  const attempts = [];
+  h.bridge.getUpdateMatchStatus = async () => matchStatus;
+  h.bridge.installUpdate = async (confirmedStatus) => {
+    attempts.push(confirmedStatus);
+    if (confirmedStatus !== matchStatus) {
+      return { needsConfirmation: true, matchStatus };
+    }
+    return update("installing");
+  };
+  h.confirmNext(true, false);
+  const initialConfirm = h.bridge.installUpdate;
+  h.bridge.installUpdate = async (confirmedStatus) => {
+    if (confirmedStatus === "not-in-match") matchStatus = "in-match";
+    return initialConfirm(confirmedStatus);
+  };
+  await h.getElement("update-install").listeners.get("click")();
+  assert.deepEqual(attempts, ["not-in-match"]);
+  assert.equal(h.confirmations().length, 2);
+  assert.match(h.confirmations()[1], /A match is in progress/);
+  h.confirm(true);
+  await h.getElement("update-install").listeners.get("click")();
+  assert.deepEqual(attempts, ["not-in-match", "in-match"]);
+});
+
+test("a failed match-status lookup shows an error without installing", async () => {
+  const h = await createHarness(update("downloaded"));
+  await settle();
+  let installs = 0;
+  h.bridge.getUpdateMatchStatus = async () => { throw new Error("Match status unavailable"); };
+  h.bridge.installUpdate = async () => { installs += 1; return update("installing"); };
+  h.confirm(true);
+  await h.getElement("update-install").listeners.get("click")();
+  assert.equal(installs, 0);
+  assert.match(h.getElement("update-error").textContent, /Match status unavailable/);
   assert.equal(h.getElement("update-install").disabled, false);
 });
 

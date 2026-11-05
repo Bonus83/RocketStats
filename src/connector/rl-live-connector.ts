@@ -135,6 +135,9 @@ export class RlLiveConnector {
   }
 
   stop(): void {
+    if (this.destroyed) {
+      return;
+    }
     this.destroyed = true;
     this.started = false;
     if (this.reconnectTimer) {
@@ -154,19 +157,29 @@ export class RlLiveConnector {
     this.decoder = new StringDecoder("utf8");
 
     socket.on("connect", () => {
+      if (this.destroyed) {
+        return;
+      }
       this.officialNormalizer.reset();
       this.emitStatus("connected");
     });
 
     socket.on("data", (chunk: Buffer) => {
-      this.onData(chunk);
+      if (!this.destroyed) {
+        this.onData(chunk);
+      }
     });
 
     socket.on("error", (err: Error) => {
-      this.emitError(err, "connection");
+      if (!this.destroyed) {
+        this.emitError(err, "connection");
+      }
     });
 
     socket.on("close", () => {
+      if (this.destroyed) {
+        return;
+      }
       this.emitStatus("disconnected");
       if (!this.destroyed) {
         this.reconnectTimer = setTimeout(() => this.connect(), this.options.reconnectDelayMs);
@@ -202,7 +215,7 @@ export class RlLiveConnector {
       return;
     }
 
-    while (this.readBuffer.length > 0) {
+    while (!this.destroyed && this.readBuffer.length > 0) {
       const firstNonWhitespace = this.readBuffer.search(/\S/);
       if (firstNonWhitespace < 0) {
         this.readBuffer = "";
@@ -297,6 +310,9 @@ export class RlLiveConnector {
       rankedReconnectResultApplied: Boolean(wire.rankedReconnectResultApplied),
       updatedAt: this.toNonNegativeNumber(wire.updatedAt, Date.now())
     };
+    if (typeof wire.inMatch === "boolean") {
+      snapshot.matchStatusObservedAt = Date.now();
+    }
     if (wire.queueType) {
       snapshot.queueType = wire.queueType;
     }

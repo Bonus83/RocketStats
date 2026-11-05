@@ -1,5 +1,5 @@
 const { app, BrowserWindow, dialog, ipcMain } = require("electron");
-const { execFileSync } = require("node:child_process");
+const { execFile, execFileSync } = require("node:child_process");
 const {
   copyFile, mkdir, readFile, rename, writeFile
 } = require("node:fs/promises");
@@ -13,6 +13,9 @@ const { createUpdateController } = require("./updater.cjs");
 const APP_NAME = "RocketStats Desktop";
 const LOCALES = new Set(["de", "en", "pl", "fr", "es", "pt", "ru"]);
 const DEFAULT_PORT = 49123;
+const TASKLIST_CSV_ARGS = ["/FO", "CSV", "/NH"];
+const TASKLIST_GAME_ARGS = ["/FI", "IMAGENAME eq RocketLeague.exe", ...TASKLIST_CSV_ARGS];
+const PROCESS_CHECK_TIMEOUT_MS = 2_500;
 
 app.setName(APP_NAME);
 const singleInstance = app.requestSingleInstanceLock();
@@ -64,13 +67,75 @@ function saveSettings() {
   renameSync(temporaryPath, settingsPath);
 }
 
-function assertRocketLeagueClosed(message) {
+function hasRocketLeagueProcess(output) {
+  if (typeof output !== "string" || !/^\s*"(?:[^"]|"")*","\d+",/m.test(output)) {
+    throw new Error("The Rocket League process query returned an invalid result.");
+  }
+  return /^\s*"RocketLeague\.exe","\d+",/im.test(output);
+}
+
+function isRocketLeagueRunning() {
   const output = execFileSync(
     "tasklist",
     ["/FI", "IMAGENAME eq RocketLeague.exe", "/NH"],
     { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], windowsHide: true }
   );
-  if (/^\s*RocketLeague\.exe\s/im.test(output)) throw new Error(message);
+  return /^\s*RocketLeague\.exe\s/im.test(output);
+}
+
+function queryTasklist(args, timeout) {
+  return new Promise((resolve, reject) => {
+    execFile(
+      "tasklist",
+      args,
+      { encoding: "utf8", timeout, windowsHide: true },
+      (error, stdout) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(stdout);
+      }
+    );
+  });
+}
+
+async function isRocketLeagueRunningAsync() {
+  const deadline = Date.now() + PROCESS_CHECK_TIMEOUT_MS;
+  const filtered = await queryTasklist(TASKLIST_GAME_ARGS, PROCESS_CHECK_TIMEOUT_MS);
+  if (typeof filtered === "string") {
+    if (/^\s*"RocketLeague\.exe","\d+",/im.test(filtered)) return true;
+    if (/^INFO:\s*\S[^\r\n]*$/i.test(filtered.trim())) return false;
+  }
+  const remaining = deadline - Date.now();
+  if (remaining <= 0) throw new Error("The Rocket League process query timed out.");
+  return hasRocketLeagueProcess(await queryTasklist(TASKLIST_CSV_ARGS, remaining));
+}
+
+function assertRocketLeagueClosed(message) {
+  if (isRocketLeagueRunning()) throw new Error(message);
+}
+
+function getUpdateMatchStatus() {
+  if (!service) throw new Error("RocketStats Desktop is still starting.");
+  const status = service.getMatchStatus();
+  if (status !== "unknown") return status;
+  try {
+    if (!isRocketLeagueRunning()) return "not-in-match";
+  } catch (error) {
+    console.error("Could not check whether Rocket League is running:", error);
+  }
+  return "unknown";
+}
+
+async function prepareUpdateInstallation() {
+  if (!service) throw new Error("RocketStats Desktop is still starting.");
+  await service.prepareForUpdate();
+}
+
+async function resumeAfterUpdateFailure() {
+  if (!service) throw new Error("RocketStats Desktop is still starting.");
+  await service.resumeAfterUpdateFailure();
 }
 
 function requireUpdateController(event) {
@@ -90,7 +155,20 @@ function send(channel, payload) {
   }
 }
 
-const connectionState = createConnectionState((connection) => send("desktop:status", connection));
+const connectionState = createConnectionState((connection) => send("desktop:status", connection), {
+  isGameRunning: process.platform === "win32" ? isRocketLeagueRunningAsync : undefined,
+  onProcessCheckError: (error) => console.error("Could not check whether Rocket League is running:", error)
+});
+
+function handleServiceError(message, kind, code) {
+  if (kind === "connection") {
+    return connectionState.setError(message, code).catch((error) => {
+      console.error("Could not update the connection status:", error);
+    });
+  }
+  startupError = message;
+  send("desktop:error", message);
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -132,7 +210,10 @@ ipcMain.handle("desktop:get-state", () => ({
 
 ipcMain.handle("desktop:check-update", (event) => requireUpdateController(event).check());
 ipcMain.handle("desktop:download-update", (event) => requireUpdateController(event).download());
-ipcMain.handle("desktop:install-update", (event) => requireUpdateController(event).install());
+ipcMain.handle("desktop:update-match-status", (event) => requireUpdateController(event).getMatchStatus());
+ipcMain.handle("desktop:install-update", (event, confirmedStatus) =>
+  requireUpdateController(event).install(confirmedStatus)
+);
 ipcMain.handle("desktop:set-auto-updates", (event, enabled) => {
   const controller = requireUpdateController(event);
   if (typeof enabled !== "boolean") throw new TypeError("Automatic update checking must be a boolean.");
@@ -271,11 +352,9 @@ app.whenReady().then(async () => {
       publisherVerification: Boolean(config?.publisherNames.length),
       disabledReason,
       onState: (update) => send("desktop:update", update),
-      beforeInstall: async () => {
-        if (!service) throw new Error("RocketStats Desktop is still starting.");
-        assertRocketLeagueClosed("Close Rocket League before installing an update.");
-        await service.prepareForUpdate();
-      }
+      getMatchStatus: getUpdateMatchStatus,
+      beforeInstall: prepareUpdateInstallation,
+      resumeAfterInstallFailure: resumeAfterUpdateFailure
     });
     createWindow();
     const moduleUrl = pathToFileURL(
@@ -291,14 +370,7 @@ app.whenReady().then(async () => {
         send("desktop:model", model);
       },
       onStatus: (nextStatus) => connectionState.setStatus(nextStatus),
-      onError: (message, kind) => {
-        if (kind === "connection") {
-          connectionState.setError(message);
-        } else {
-          startupError = message;
-          send("desktop:error", message);
-        }
-      }
+      onError: handleServiceError
     });
     updateController.configureAutomaticChecks(autoCheckUpdates);
   } catch (error) {

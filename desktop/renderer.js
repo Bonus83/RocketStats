@@ -21,7 +21,9 @@ const TEXT = {
     menu: "Menü", updateTitle: "Anwendungsupdates", updateAuto: "Automatisch nach Updates suchen",
     updateShow: "Update-Status anzeigen", updateClose: "Update-Hinweis schließen",
     updateCheck: "Nach Updates suchen", updateDownload: "Herunterladen", updateInstall: "Installieren und neu starten",
-    updateConfirm: "Rocket League muss geschlossen sein. Dieses Update installieren und RocketStats neu starten? Deine Kontodaten bleiben erhalten.",
+    updateConfirm: "Dieses Update installieren und RocketStats neu starten? Deine Kontodaten bleiben erhalten.",
+    updateMatchActive: "Ein Match läuft. Während des Neustarts von RocketStats können Matchereignisse oder das Ergebnis verloren gehen. Installiere möglichst nach dem Match.",
+    updateMatchUnknown: "Der Matchstatus kann nicht ermittelt werden. Falls gerade ein Match läuft, können während des Neustarts Matchereignisse oder das Ergebnis verloren gehen.",
     updateNetwork: "Updateprüfungen kontaktieren GitHub. Es werden keine Spiel- oder Kontodaten übertragen.",
     update_starting: "Updater wird gestartet…", update_unconfigured: "Keine Updatequelle eingerichtet.",
     update_development: "Updates sind im Entwicklungsmodus deaktiviert.", update_unsupported: "Updates sind nur für die installierte Windows-Version verfügbar.",
@@ -52,7 +54,9 @@ const TEXT = {
     menu: "Menu", updateTitle: "Application updates", updateAuto: "Automatically check for updates",
     updateShow: "Show update status", updateClose: "Close update notification",
     updateCheck: "Check for updates", updateDownload: "Download", updateInstall: "Install and restart",
-    updateConfirm: "Rocket League must be closed. Install this update and restart RocketStats? Your account data will be kept.",
+    updateConfirm: "Install this update and restart RocketStats? Your account data will be kept.",
+    updateMatchActive: "A match is in progress. Match events or the result may be missed while RocketStats restarts. Consider installing after the match.",
+    updateMatchUnknown: "The match status could not be determined. If a match is in progress, its events or result may be missed while RocketStats restarts.",
     updateNetwork: "Update checks contact GitHub. No game or account data is transmitted.",
     update_starting: "Starting updater…", update_unconfigured: "No update source is configured.",
     update_development: "Updates are disabled in development mode.", update_unsupported: "Updates are available only in the installed Windows version.",
@@ -83,7 +87,9 @@ const TEXT = {
     menu: "Menu", updateTitle: "Aktualizacje aplikacji", updateAuto: "Automatycznie sprawdzaj aktualizacje",
     updateShow: "Pokaż stan aktualizacji", updateClose: "Zamknij powiadomienie o aktualizacji",
     updateCheck: "Sprawdź aktualizacje", updateDownload: "Pobierz", updateInstall: "Zainstaluj i uruchom ponownie",
-    updateConfirm: "Rocket League musi być zamknięte. Zainstalować tę aktualizację i ponownie uruchomić RocketStats? Dane kont pozostaną.",
+    updateConfirm: "Zainstalować tę aktualizację i ponownie uruchomić RocketStats? Dane kont pozostaną zachowane.",
+    updateMatchActive: "Trwa mecz. Podczas ponownego uruchamiania RocketStats zdarzenia lub wynik meczu mogą nie zostać zapisane. Najlepiej zainstalować aktualizację po meczu.",
+    updateMatchUnknown: "Nie można ustalić, czy trwa mecz. Jeśli tak, zdarzenia lub wynik mogą nie zostać zapisane podczas ponownego uruchamiania RocketStats.",
     updateNetwork: "Sprawdzanie aktualizacji łączy się z GitHub. Dane gry i kont nie są przesyłane.",
     update_starting: "Uruchamianie aktualizatora…", update_unconfigured: "Nie skonfigurowano źródła aktualizacji.",
     update_development: "Aktualizacje są wyłączone w trybie deweloperskim.", update_unsupported: "Aktualizacje są dostępne tylko w zainstalowanej wersji Windows.",
@@ -114,7 +120,9 @@ const TEXT = {
     menu: "Menu", updateTitle: "Mises à jour", updateAuto: "Rechercher automatiquement les mises à jour",
     updateShow: "Afficher l’état des mises à jour", updateClose: "Fermer la notification de mise à jour",
     updateCheck: "Rechercher", updateDownload: "Télécharger", updateInstall: "Installer et redémarrer",
-    updateConfirm: "Rocket League doit être fermé. Installer cette mise à jour et redémarrer RocketStats ? Vos données de compte seront conservées.",
+    updateConfirm: "Installer cette mise à jour et redémarrer RocketStats ? Vos données de compte seront conservées.",
+    updateMatchActive: "Un match est en cours. Pendant le redémarrage de RocketStats, des événements ou le résultat du match peuvent ne pas être enregistrés. Installez de préférence la mise à jour après le match.",
+    updateMatchUnknown: "Impossible de déterminer si un match est en cours. Si c’est le cas, des événements ou le résultat peuvent ne pas être enregistrés pendant le redémarrage de RocketStats.",
     updateNetwork: "Les recherches contactent GitHub. Aucune donnée de jeu ou de compte n’est transmise.",
     update_starting: "Démarrage des mises à jour…", update_unconfigured: "Aucune source de mise à jour n’est configurée.",
     update_development: "Les mises à jour sont désactivées en développement.", update_unsupported: "Les mises à jour sont réservées à la version Windows installée.",
@@ -145,7 +153,9 @@ const TEXT = {
     menu: "Menú", updateTitle: "Actualizaciones", updateAuto: "Buscar actualizaciones automáticamente",
     updateShow: "Mostrar estado de actualización", updateClose: "Cerrar aviso de actualización",
     updateCheck: "Buscar actualizaciones", updateDownload: "Descargar", updateInstall: "Instalar y reiniciar",
-    updateConfirm: "Rocket League debe estar cerrado. ¿Instalar esta actualización y reiniciar RocketStats? Se conservarán los datos de las cuentas.",
+    updateConfirm: "¿Instalar esta actualización y reiniciar RocketStats? Se conservarán los datos de las cuentas.",
+    updateMatchActive: "Hay una partida en curso. Durante el reinicio de RocketStats podrían no registrarse eventos o el resultado. Es preferible instalar la actualización después de la partida.",
+    updateMatchUnknown: "No se puede determinar si hay una partida en curso. Si la hay, podrían no registrarse eventos o el resultado durante el reinicio de RocketStats.",
     updateNetwork: "La búsqueda contacta con GitHub. No se transmiten datos del juego ni de las cuentas.",
     update_starting: "Iniciando actualizador…", update_unconfigured: "No hay una fuente de actualizaciones configurada.",
     update_development: "Las actualizaciones están desactivadas en desarrollo.", update_unsupported: "Las actualizaciones solo están disponibles en la versión instalada de Windows.",
@@ -176,7 +186,9 @@ const TEXT = {
     menu: "Menu", updateTitle: "Atualizações", updateAuto: "Verificar atualizações automaticamente",
     updateShow: "Mostrar status da atualização", updateClose: "Fechar aviso de atualização",
     updateCheck: "Verificar atualizações", updateDownload: "Baixar", updateInstall: "Instalar e reiniciar",
-    updateConfirm: "Rocket League deve estar fechado. Instalar esta atualização e reiniciar RocketStats? Os dados das contas serão mantidos.",
+    updateConfirm: "Instalar esta atualização e reiniciar RocketStats? Os dados das contas serão mantidos.",
+    updateMatchActive: "Há uma partida em andamento. Durante a reinicialização do RocketStats, eventos ou o resultado da partida podem não ser registrados. É melhor instalar a atualização após a partida.",
+    updateMatchUnknown: "Não foi possível determinar se há uma partida em andamento. Se houver, eventos ou o resultado podem não ser registrados durante a reinicialização do RocketStats.",
     updateNetwork: "As verificações acessam o GitHub. Nenhum dado do jogo ou das contas é transmitido.",
     update_starting: "Iniciando atualizador…", update_unconfigured: "Nenhuma fonte de atualização está configurada.",
     update_development: "Atualizações desativadas no modo de desenvolvimento.", update_unsupported: "Atualizações disponíveis apenas na versão Windows instalada.",
@@ -207,7 +219,9 @@ const TEXT = {
     menu: "Меню", updateTitle: "Обновления приложения", updateAuto: "Автоматически проверять обновления",
     updateShow: "Показать состояние обновлений", updateClose: "Закрыть уведомление об обновлении",
     updateCheck: "Проверить обновления", updateDownload: "Скачать", updateInstall: "Установить и перезапустить",
-    updateConfirm: "Rocket League должна быть закрыта. Установить это обновление и перезапустить RocketStats? Данные учётных записей сохранятся.",
+    updateConfirm: "Установить это обновление и перезапустить RocketStats? Данные учётных записей сохранятся.",
+    updateMatchActive: "Матч продолжается. Во время перезапуска RocketStats события или результат матча могут не сохраниться. Лучше установить обновление после матча.",
+    updateMatchUnknown: "Не удалось определить, идёт ли матч. Если матч продолжается, его события или результат могут не сохраниться во время перезапуска RocketStats.",
     updateNetwork: "Проверки обращаются к GitHub. Данные игры и учётных записей не передаются.",
     update_starting: "Запуск обновления…", update_unconfigured: "Источник обновлений не настроен.",
     update_development: "Обновления отключены в режиме разработки.", update_unsupported: "Обновления доступны только в установленной версии для Windows.",
@@ -232,6 +246,7 @@ let errorChanged = false;
 let updateStateRevision = 0;
 let autoUpdateChanged = false;
 let autoUpdateSaving = false;
+let updateInstallPending = false;
 let updateHideTimer;
 
 const UPDATE_BALLOON_MS = 8000;
@@ -338,7 +353,7 @@ function renderUpdate() {
   const install = document.getElementById("update-install");
   install.textContent = tr("updateInstall");
   install.hidden = !["downloaded", "installing"].includes(update.phase);
-  install.disabled = update.phase !== "downloaded";
+  install.disabled = update.phase !== "downloaded" || updateInstallPending;
   const progress = document.getElementById("update-progress");
   progress.hidden = !["downloading", "downloaded"].includes(update.phase);
   progress.value = update.percent || 0;
@@ -467,10 +482,54 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+function updateInstallConfirmation(matchStatus) {
+  let warning;
+  switch (matchStatus) {
+    case "in-match":
+      warning = tr("updateMatchActive");
+      break;
+    case "unknown":
+      warning = tr("updateMatchUnknown");
+      break;
+    case "not-in-match":
+      return tr("updateConfirm");
+    default:
+      throw new Error("Invalid match status returned by the updater.");
+  }
+  return `${warning}\n\n${tr("updateConfirm")}`;
+}
+
+async function requestUpdateInstall() {
+  if (updateInstallPending) return null;
+  updateInstallPending = true;
+  renderUpdate();
+  try {
+    let matchStatus = await bridge.getUpdateMatchStatus();
+    while (true) {
+      if (!window.confirm(updateInstallConfirmation(matchStatus))) return null;
+      const result = await bridge.installUpdate(matchStatus);
+      if (!result || typeof result !== "object") {
+        throw new Error("The updater returned an invalid installation result.");
+      }
+      if (result.needsConfirmation === true) {
+        matchStatus = result.matchStatus;
+        continue;
+      }
+      if (typeof result.phase !== "string") {
+        throw new Error("The updater returned an invalid installation state.");
+      }
+      return result;
+    }
+  } finally {
+    updateInstallPending = false;
+    renderUpdate();
+  }
+}
+
 for (const [id, action] of [
   ["update-check", () => bridge.checkUpdate()],
   ["update-download", () => bridge.downloadUpdate()],
-  ["update-install", () => window.confirm(tr("updateConfirm")) ? bridge.installUpdate() : null]
+  ["update-install", requestUpdateInstall]
 ]) {
   document.getElementById(id).addEventListener("click", async () => {
     if (id === "update-check") {

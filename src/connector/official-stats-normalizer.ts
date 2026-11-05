@@ -10,6 +10,11 @@ import { queueTypeFromPlaylistId } from "../core/playlists.js";
 
 type JsonRecord = Record<string, unknown>;
 
+const MATCH_STATUS_EVENTS = new Set([
+  "UpdateState", "MatchCreated", "MatchInitialized", "RoundStarted",
+  "CountdownBegin", "MatchEnded", "MatchDestroyed"
+]);
+
 export class OfficialStatsNormalizer {
   private snapshot: LiveMatchSnapshot = createEmptySnapshot();
   private matchFinished = false;
@@ -128,6 +133,9 @@ export class OfficialStatsNormalizer {
         return undefined;
     }
 
+    if (MATCH_STATUS_EVENTS.has(eventName)) {
+      this.snapshot.matchStatusObservedAt = now;
+    }
     return structuredClone(this.snapshot);
   }
 

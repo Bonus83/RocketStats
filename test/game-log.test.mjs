@@ -226,6 +226,45 @@ test("log watcher tails an existing game log without replaying old queue events"
   }
 });
 
+test("restarting a stopped log watcher processes new lines without replaying old events", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "rocketstats-log-resume-"));
+  const filePath = join(directory, "Launch.log");
+  const account = "Steam|76561198000000002|0";
+  await writeFile(filePath, `${matchmakingLines().join("\n")}\n`);
+  const queues = [];
+  const identities = [];
+  const errors = [];
+  const watcher = new RocketLeagueLogWatcher(
+    filePath,
+    (queue) => queues.push(queue),
+    (error) => errors.push(error),
+    20,
+    (accountId) => identities.push(accountId)
+  );
+  try {
+    await watcher.start();
+    await watcher.stopAndDrain();
+    await appendFile(filePath, `${loginLine(account)}\n${matchmakingLines({ playlist: 10 }).join("\n")}\n`);
+    await watcher.start();
+    assert.deepEqual(identities, [account]);
+    assert.deepEqual(queues, [{ queueType: "ranked_1v1", mmr: 1356 }]);
+
+    await watcher.stopAndDrain();
+    const newAccount = "Steam|76561198000000003|0";
+    await writeFile(filePath, `${loginLine(newAccount)}\n${matchmakingLines({ playlist: 13 }).join("\n")}\n`);
+    await watcher.start();
+    assert.deepEqual(identities, [account, undefined, newAccount]);
+    assert.deepEqual(queues, [
+      { queueType: "ranked_1v1", mmr: 1356 },
+      { queueType: "ranked_3v3", mmr: 1356 }
+    ]);
+    assert.deepEqual(errors, []);
+  } finally {
+    await watcher.stopAndDrain();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 test("log watcher detects the game log when it appears after startup", async () => {
   const directory = await mkdtemp(join(tmpdir(), "rocketstats-log-create-"));
   const filePath = join(directory, "Launch.log");
