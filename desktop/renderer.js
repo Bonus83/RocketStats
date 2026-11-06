@@ -636,7 +636,7 @@ bridge.onModel((model) => {
 bridge.onStatus(applyConnection);
 bridge.onError(showError);
 bridge.onUpdate(applyUpdate);
-bridge.onSession(applySession);
+bridge.onSession?.(applySession);
 document.getElementById("history-select").addEventListener("change", (event) => {
   historyPlaylist = event.target.value;
   renderMmrHistory();
