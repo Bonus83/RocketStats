@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld("rocketStatsDesktop", Object.freeze({
   setPort: (port) => ipcRenderer.invoke("desktop:set-port", port),
   toggleScope: () => ipcRenderer.invoke("desktop:toggle-scope"),
   resetStats: () => ipcRenderer.invoke("desktop:reset-stats"),
+  getMmrHistory: () => ipcRenderer.invoke("desktop:mmr-history"),
   configureApi: () => ipcRenderer.invoke("desktop:configure-api"),
   checkUpdate: () => ipcRenderer.invoke("desktop:check-update"),
   downloadUpdate: () => ipcRenderer.invoke("desktop:download-update"),

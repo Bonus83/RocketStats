@@ -58,10 +58,16 @@ export interface MatchRecord {
   excludedFromStats?: boolean;
 }
 
+export interface MmrHistoryPoint {
+  at: number;
+  mmr: number;
+}
+
 export interface RankRecord {
   playlist: string;
   mmr?: number;
   estimatedRank?: string;
+  history?: MmrHistoryPoint[];
 }
 
 export type RankDivision = 1 | 2 | 3 | 4;

@@ -25,7 +25,8 @@ export function createDesktopDom() {
   return {
     getElement,
     document: {
-      getElementById: getElement, createElement: fakeElement, documentElement: { lang: "" },
+      getElementById: getElement, createElement: fakeElement, createElementNS: (_ns, name) => ({ ...fakeElement(), tagName: name }),
+      documentElement: { lang: "" },
       activeElement: null, listeners: new Map(),
       addEventListener(name, callback) { this.listeners.set(name, callback); }
     },

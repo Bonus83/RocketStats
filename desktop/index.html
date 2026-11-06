@@ -106,6 +106,24 @@
         <div id="ranked-grid" class="card-grid"></div>
       </section>
 
+      <section class="dashboard-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" id="history-eyebrow">HISTORY</p>
+            <h2 id="history-heading">MMR history</h2>
+          </div>
+          <label class="history-mode">
+            <span id="history-mode-label">Mode</span>
+            <select id="history-select"></select>
+          </label>
+        </div>
+        <div class="history-panel">
+          <svg id="history-chart" class="history-chart" viewBox="0 0 640 200" role="img"></svg>
+          <p id="history-summary" class="history-summary"></p>
+          <p id="history-empty" class="empty-state" hidden></p>
+        </div>
+      </section>
+
     </main>
     <script src="./renderer.js"></script>
   </body>

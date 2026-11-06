@@ -71,7 +71,16 @@ export class AccountStore {
     for (const [accountId, account] of Object.entries(input.accounts ?? {})) {
       normalized.accounts[accountId] = {
         ...account,
-        rankByPlaylist: account.rankByPlaylist ?? [],
+        rankByPlaylist: (account.rankByPlaylist ?? []).map((rank) => ({
+          ...rank,
+          ...(Array.isArray(rank.history)
+            ? {
+                history: rank.history.filter(
+                  (point) => Number.isFinite(point?.at) && Number.isFinite(point?.mmr)
+                )
+              }
+            : {})
+        })),
         streak: account.streak ?? { type: "none", count: 0 },
         records: {
           ...DEFAULT_RECORDS,

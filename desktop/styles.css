@@ -105,3 +105,11 @@ input { width: 88px; }
   .scope-control { flex-basis: 100%; justify-content: space-between; }
   .card-grid { grid-template-columns: repeat(auto-fit, minmax(138px, 1fr)); }
 }
+.history-mode { display: flex; align-items: center; gap: 8px; color: #8d9bb0; font-size: 12px; }
+.history-panel { padding: 14px; border: 1px solid #202e41; border-radius: 12px; background: linear-gradient(145deg, #121d2c, #0d1521 72%); }
+.history-chart { display: block; width: 100%; height: auto; max-height: 260px; }
+.history-chart[hidden], .history-summary[hidden] { display: none; }
+.history-area { fill: rgba(87, 152, 244, 0.14); }
+.history-line { fill: none; stroke: #5798f4; stroke-width: 2.5; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.history-dot { fill: #e8edf7; stroke: #5798f4; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.history-summary { margin: 10px 0 0; color: #b7c3d4; font-size: 12px; }

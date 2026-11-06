@@ -302,6 +302,34 @@ test("streak engine replaces provisional early-leave result after reconnect", ()
   assert.equal(duplicateResult.records.length, 1);
 });
 
+test("plugin state keeps MMR history per mode and account and persists it", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "rocketstats-tests-"));
+  const file = join(dir, "state.json");
+  const options = { statePath: file, identityGraceWindowMs: 10_000, reconnectWindowMs: 30_000 };
+  try {
+    const state = new PluginState(options);
+    await state.initialize();
+    state.resolveIdentity({ accountId: "a", liveDisplayName: "A", observedAt: 1000 });
+    await state.setPlaylistRank("ranked_2v2", 900, undefined, 10);
+    await state.setPlaylistRank("ranked_2v2", 900, undefined, 11);
+    await state.setPlaylistRank("ranked_2v2", 912, undefined, 12);
+    await state.setPlaylistRank("ranked_3v3", 700, undefined, 13);
+    state.resolveIdentity({ accountId: "b", liveDisplayName: "B", observedAt: 2000 });
+    await state.setPlaylistRank("ranked_2v2", 1500, undefined, 14);
+    assert.deepEqual(state.getMmrHistory(), { ranked_2v2: [{ at: 14, mmr: 1500 }] });
+
+    const reloaded = new PluginState(options);
+    await reloaded.initialize();
+    reloaded.resolveIdentity({ accountId: "a", liveDisplayName: "A", observedAt: 3000 });
+    assert.deepEqual(reloaded.getMmrHistory(), {
+      ranked_2v2: [{ at: 10, mmr: 900 }, { at: 12, mmr: 912 }],
+      ranked_3v3: [{ at: 13, mmr: 700 }]
+    });
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test("plugin state keeps streaks separated by account", async () => {
   const dir = await mkdtemp(join(tmpdir(), "rocketstats-tests-"));
   const file = join(dir, "state.json");

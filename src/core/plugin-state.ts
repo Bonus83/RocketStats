@@ -9,11 +9,14 @@ import {
   DEFAULT_RECORDS,
   LiveMatchSnapshot,
   MatchRecord,
+  MmrHistoryPoint,
   MmrSummary,
   PersistedState,
   QueueType,
   StatsScope
 } from "./types.js";
+
+const MMR_HISTORY_LIMIT = 500;
 
 export interface PluginStateOptions {
   statePath: string;
@@ -331,26 +334,41 @@ export class PluginState {
     return { wins, losses };
   }
 
-  async setPlaylistRank(playlist: string, mmr: number, estimatedRank?: string): Promise<void> {
+  async setPlaylistRank(
+    playlist: string,
+    mmr: number,
+    estimatedRank?: string,
+    now = Date.now()
+  ): Promise<void> {
     const account = this.getActiveAccount();
-    const existing = account.rankByPlaylist.find((item) => item.playlist === playlist);
-    if (existing) {
-      existing.mmr = mmr;
-      if (estimatedRank) {
-        existing.estimatedRank = estimatedRank;
-      }
-    } else {
-      const nextRank: { playlist: string; mmr: number; estimatedRank?: string } = {
-        playlist,
-        mmr
-      };
-      if (estimatedRank) {
-        nextRank.estimatedRank = estimatedRank;
-      }
-      account.rankByPlaylist.push(nextRank);
+    let rank = account.rankByPlaylist.find((item) => item.playlist === playlist);
+    if (!rank) {
+      rank = { playlist };
+      account.rankByPlaylist.push(rank);
     }
-    account.updatedAt = Date.now();
+    rank.mmr = mmr;
+    if (estimatedRank) {
+      rank.estimatedRank = estimatedRank;
+    }
+    const history = rank.history ?? [];
+    if (history.at(-1)?.mmr !== mmr) {
+      history.push({ at: now, mmr });
+      rank.history = history.slice(-MMR_HISTORY_LIMIT);
+    }
+    account.updatedAt = now;
     await this.store.save(this.state);
+  }
+
+  /** MMR history of the active account, one series per playlist, oldest point first. */
+  getMmrHistory(): Record<string, MmrHistoryPoint[]> {
+    if (!this.hasActiveAccount()) {
+      return {};
+    }
+    return Object.fromEntries(
+      this.getActiveAccount()
+        .rankByPlaylist.filter((rank) => rank.history?.length)
+        .map((rank) => [rank.playlist, rank.history!.map((point) => ({ ...point }))])
+    );
   }
 
   getActiveAccount(): AccountStats {

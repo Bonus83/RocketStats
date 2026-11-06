@@ -2,6 +2,7 @@ const TEXT = {
   de: {
     connecting: "Verbinde mit lokaler Stats-API…", connected: "Stats-API verbunden", disconnected: "Stats-API getrennt",
     matchTag: "LIVE-MATCH", matchHeading: "Spielübersicht", rankedTag: "RANGLISTE", rankedHeading: "Rang & Bilanz",
+    historyTag: "VERLAUF", historyHeading: "MMR-Verlauf", historyMode: "Modus", historyEmpty: "Noch keine MMR-Werte für diesen Modus.", historyPoints: "Werte",
     statsTag: "SPIELERSTATISTIKEN", statsHeading: "Match-Statistiken", scopeTag: "SIEG / NIEDERLAGE",
     allModes: "Alle Modi", currentMode: "Aktueller Modus", switchScope: "Ansicht umschalten",
     reset: "S/N zurücksetzen", language: "Sprache", port: "Lokaler API-Port", apply: "Übernehmen",
@@ -35,6 +36,7 @@ const TEXT = {
   en: {
     connecting: "Connecting to local Stats API…", connected: "Stats API connected", disconnected: "Stats API disconnected",
     matchTag: "LIVE MATCH", matchHeading: "Match overview", rankedTag: "RANKED", rankedHeading: "Rank & record",
+    historyTag: "HISTORY", historyHeading: "MMR history", historyMode: "Mode", historyEmpty: "No MMR values for this mode yet.", historyPoints: "values",
     statsTag: "PLAYER STATS", statsHeading: "Match statistics", scopeTag: "WIN / LOSS SCOPE",
     allModes: "All modes", currentMode: "Current mode", switchScope: "Switch scope",
     reset: "Reset W/L", language: "Language", port: "Local API port", apply: "Apply",
@@ -68,6 +70,7 @@ const TEXT = {
   pl: {
     connecting: "Łączenie z lokalnym Stats API…", connected: "Połączono ze Stats API", disconnected: "Rozłączono ze Stats API",
     matchTag: "MECZ NA ŻYWO", matchHeading: "Podsumowanie meczu", rankedTag: "RANKING", rankedHeading: "Ranga i bilans",
+    historyTag: "HISTORIA", historyHeading: "Historia MMR", historyMode: "Tryb", historyEmpty: "Brak wartości MMR dla tego trybu.", historyPoints: "wartości",
     statsTag: "STATYSTYKI GRACZA", statsHeading: "Statystyki meczu", scopeTag: "ZAKRES ZWYCIĘSTW / PORAŻEK",
     allModes: "Wszystkie tryby", currentMode: "Bieżący tryb", switchScope: "Zmień zakres",
     reset: "Reset W/P", language: "Język", port: "Lokalny port API", apply: "Zastosuj",
@@ -101,6 +104,7 @@ const TEXT = {
   fr: {
     connecting: "Connexion à l’API Stats locale…", connected: "API Stats connectée", disconnected: "API Stats déconnectée",
     matchTag: "MATCH EN DIRECT", matchHeading: "Aperçu du match", rankedTag: "CLASSÉ", rankedHeading: "Rang et bilan",
+    historyTag: "HISTORIQUE", historyHeading: "Historique MMR", historyMode: "Mode", historyEmpty: "Aucune valeur MMR pour ce mode.", historyPoints: "valeurs",
     statsTag: "STATS DU JOUEUR", statsHeading: "Statistiques du match", scopeTag: "PORTÉE VICTOIRES / DÉFAITES",
     allModes: "Tous les modes", currentMode: "Mode actuel", switchScope: "Changer la portée",
     reset: "Réinitialiser V/D", language: "Langue", port: "Port API local", apply: "Appliquer",
@@ -134,6 +138,7 @@ const TEXT = {
   es: {
     connecting: "Conectando a Stats API local…", connected: "Stats API conectada", disconnected: "Stats API desconectada",
     matchTag: "PARTIDA EN VIVO", matchHeading: "Resumen de partida", rankedTag: "CLASIFICATORIA", rankedHeading: "Rango y registro",
+    historyTag: "HISTORIAL", historyHeading: "Historial de MMR", historyMode: "Modo", historyEmpty: "Aún no hay valores de MMR para este modo.", historyPoints: "valores",
     statsTag: "ESTADÍSTICAS", statsHeading: "Estadísticas de partida", scopeTag: "ÁMBITO DE VICTORIAS / DERROTAS",
     allModes: "Todos los modos", currentMode: "Modo actual", switchScope: "Cambiar ámbito",
     reset: "Restablecer V/D", language: "Idioma", port: "Puerto API local", apply: "Aplicar",
@@ -167,6 +172,7 @@ const TEXT = {
   pt: {
     connecting: "Conectando à Stats API local…", connected: "Stats API conectada", disconnected: "Stats API desconectada",
     matchTag: "PARTIDA AO VIVO", matchHeading: "Visão geral", rankedTag: "RANQUEADA", rankedHeading: "Rank e histórico",
+    historyTag: "HISTÓRICO", historyHeading: "Histórico de MMR", historyMode: "Modo", historyEmpty: "Ainda não há valores de MMR para este modo.", historyPoints: "valores",
     statsTag: "ESTATÍSTICAS", statsHeading: "Estatísticas da partida", scopeTag: "ESCOPO DE VITÓRIAS / DERROTAS",
     allModes: "Todos os modos", currentMode: "Modo atual", switchScope: "Alterar escopo",
     reset: "Redefinir V/D", language: "Idioma", port: "Porta da API local", apply: "Aplicar",
@@ -200,6 +206,7 @@ const TEXT = {
   ru: {
     connecting: "Подключение к локальному Stats API…", connected: "Stats API подключено", disconnected: "Stats API отключено",
     matchTag: "ТЕКУЩИЙ МАТЧ", matchHeading: "Обзор матча", rankedTag: "РЕЙТИНГ", rankedHeading: "Ранг и результаты",
+    historyTag: "ИСТОРИЯ", historyHeading: "История MMR", historyMode: "Режим", historyEmpty: "Для этого режима пока нет значений MMR.", historyPoints: "значений",
     statsTag: "СТАТИСТИКА ИГРОКА", statsHeading: "Статистика матча", scopeTag: "УЧЁТ ПОБЕД / ПОРАЖЕНИЙ",
     allModes: "Все режимы", currentMode: "Текущий режим", switchScope: "Сменить охват",
     reset: "Сбросить П/П", language: "Язык", port: "Локальный порт API", apply: "Применить",
@@ -232,7 +239,7 @@ const TEXT = {
   }
 };
 
-const RANKED_ACTIONS = ["mmr", "rank", "mmr-wl", "streak", "records", "ban-countdown"];
+const RANKED_ACTIONS = ["rank", "mmr-wl", "streak", "records", "ban-countdown"];
 const DASHBOARD_ACTIONS = new Set([...RANKED_ACTIONS, "stats-scope"]);
 const LABELS = {
   mmr: "mmr", rank: "rank", "mmr-wl": "mmrWl", streak: "streak", records: "records", "ban-countdown": "ban"
@@ -286,6 +293,111 @@ function renderCard(action, model) {
     card.append(footer);
   }
   return card;
+}
+
+const PLAYLIST_LABELS = {
+  ranked_1v1: "Ranked 1v1", ranked_2v2: "Ranked 2v2", ranked_3v3: "Ranked 3v3", ranked_4v4: "Ranked 4v4",
+  ranked_hoops: "Hoops", ranked_rumble: "Rumble", ranked_dropshot: "Dropshot",
+  ranked_snow_day: "Snow Day", ranked_heatseeker: "Heatseeker", casual: "Casual", tournament: "Tournament"
+};
+const SVG_NS = "http://www.w3.org/2000/svg";
+const CHART = { width: 640, height: 200, padX: 8, padY: 16 };
+let mmrHistory = {};
+let historyPlaylist;
+let historyTimer;
+let historyRequest = 0;
+
+function svgElement(name, attributes) {
+  const element = document.createElementNS(SVG_NS, name);
+  for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, String(value));
+  return element;
+}
+
+function chartPoints(points) {
+  const values = points.map((point) => point.mmr);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = Math.max(max - min, 1);
+  const innerWidth = CHART.width - CHART.padX * 2;
+  const innerHeight = CHART.height - CHART.padY * 2;
+  return points.map((point, index) => ({
+    x: CHART.padX + (points.length === 1 ? innerWidth / 2 : (innerWidth * index) / (points.length - 1)),
+    y: CHART.padY + innerHeight - ((point.mmr - min) / span) * innerHeight
+  }));
+}
+
+function renderMmrHistory() {
+  document.getElementById("history-eyebrow").textContent = tr("historyTag");
+  document.getElementById("history-heading").textContent = tr("historyHeading");
+  document.getElementById("history-mode-label").textContent = tr("historyMode");
+
+  const playlists = Object.keys(mmrHistory).filter((key) => mmrHistory[key].length);
+  if (!playlists.includes(historyPlaylist)) {
+    historyPlaylist = [...playlists].sort((a, b) => mmrHistory[b].at(-1).at - mmrHistory[a].at(-1).at)[0];
+  }
+  const select = document.getElementById("history-select");
+  select.replaceChildren(...playlists.map((key) => {
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = PLAYLIST_LABELS[key] || key;
+    return option;
+  }));
+  select.value = historyPlaylist || "";
+  select.disabled = playlists.length === 0;
+
+  const chart = document.getElementById("history-chart");
+  const summary = document.getElementById("history-summary");
+  const empty = document.getElementById("history-empty");
+  const points = historyPlaylist ? mmrHistory[historyPlaylist] : [];
+  chart.replaceChildren();
+  chart.hidden = points.length === 0;
+  summary.hidden = points.length === 0;
+  empty.hidden = points.length > 0;
+  empty.textContent = tr("historyEmpty");
+  if (!points.length) {
+    summary.textContent = "";
+    return;
+  }
+
+  const coords = chartPoints(points);
+  const line = coords.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
+  const bottom = CHART.height - CHART.padY;
+  chart.append(
+    svgElement("polygon", {
+      class: "history-area",
+      points: `${coords[0].x.toFixed(1)},${bottom} ${line} ${coords.at(-1).x.toFixed(1)},${bottom}`
+    }),
+    svgElement("polyline", { class: "history-line", points: line })
+  );
+  for (const [index, point] of coords.entries()) {
+    const dot = svgElement("circle", { class: "history-dot", cx: point.x.toFixed(1), cy: point.y.toFixed(1), r: 3 });
+    const title = svgElement("title", {});
+    title.textContent = `${points[index].mmr} · ${new Date(points[index].at).toLocaleString(state.locale)}`;
+    dot.append(title);
+    chart.append(dot);
+  }
+  chart.setAttribute("aria-label", `${tr("historyHeading")} ${PLAYLIST_LABELS[historyPlaylist] || historyPlaylist}`);
+
+  const values = points.map((point) => point.mmr);
+  const change = values.at(-1) - values[0];
+  summary.textContent = `${values.at(-1)} (${change >= 0 ? "+" : ""}${change}) · ` +
+    `Min ${Math.min(...values)} · Max ${Math.max(...values)} · ${points.length} ${tr("historyPoints")}`;
+}
+
+function refreshMmrHistory(delay = 300) {
+  if (typeof bridge.getMmrHistory !== "function") return;
+  clearTimeout(historyTimer);
+  historyTimer = setTimeout(async () => {
+    const request = ++historyRequest;
+    try {
+      const history = await bridge.getMmrHistory();
+      if (request !== historyRequest) return;
+      mmrHistory = history && typeof history === "object" ? history : {};
+      renderMmrHistory();
+    } catch {
+      // History is optional; the cards keep working without it.
+    }
+  }, delay);
 }
 
 function renderGroup(groupId, actions) {
@@ -423,6 +535,7 @@ function renderAll() {
   renderScope();
   renderUpdate();
   renderGroup("ranked-grid", RANKED_ACTIONS);
+  renderMmrHistory();
 }
 
 function renderError() {
@@ -457,10 +570,15 @@ bridge.onModel((model) => {
   if (!DASHBOARD_ACTIONS.has(model.action)) return;
   state.models.set(model.action, model);
   renderAll();
+  if (model.action === "rank" || model.action === "mmr-wl") refreshMmrHistory();
 });
 bridge.onStatus(applyConnection);
 bridge.onError(showError);
 bridge.onUpdate(applyUpdate);
+document.getElementById("history-select").addEventListener("change", (event) => {
+  historyPlaylist = event.target.value;
+  renderMmrHistory();
+});
 
 const menu = document.getElementById("app-menu");
 document.getElementById("update-close").addEventListener("click", hideUpdateBalloon);
@@ -621,5 +739,6 @@ bridge.getState().then((initial) => {
   document.getElementById("port-input").value = String(initial.port);
   applyConnection(initial.connection);
   renderAll();
+  refreshMmrHistory(0);
   if (initial.startupError && !errorChanged) showError(initial.startupError);
 }).catch((error) => showError(error instanceof Error ? error.message : "Could not load application state."));

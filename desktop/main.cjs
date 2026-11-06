@@ -261,6 +261,8 @@ ipcMain.handle("desktop:reset-stats", async () => {
   await service.resetStats();
 });
 
+ipcMain.handle("desktop:mmr-history", () => service?.getMmrHistory() ?? {});
+
 ipcMain.handle("desktop:configure-api", async () => {
   if (!service) throw new Error("RocketStats Desktop is still starting.");
   if (apiSetupInProgress) {

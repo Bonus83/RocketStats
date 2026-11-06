@@ -159,6 +159,11 @@ bans. Live match and player-stat cards (including boost, goals, timer, score,
 queue, speed and possession) are not displayed. The local feed still supports
 account statistics and record tracking; Stream Deck actions are unchanged.
 
+Below the cards, an MMR history graph shows how the rating developed. History is
+stored per account and per mode (`rankByPlaylist[].history` in `state.json`, up
+to 500 changes per mode); pick the mode in the dropdown. Points are added only
+when the MMR value changes.
+
 For development:
 
 ```powershell
