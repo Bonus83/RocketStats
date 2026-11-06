@@ -23,6 +23,7 @@ if (!singleInstance) app.quit();
 
 let mainWindow;
 let service;
+let sessionPromptPending = false;
 let updateController;
 let locale;
 let port;
@@ -205,6 +206,7 @@ ipcMain.handle("desktop:get-state", () => ({
   port,
   startupError,
   autoCheckUpdates,
+  session: getSessionState(),
   update: updateController?.getState() ?? { phase: "starting", version: app.getVersion() }
 }));
 
@@ -262,6 +264,32 @@ ipcMain.handle("desktop:reset-stats", async () => {
 });
 
 ipcMain.handle("desktop:mmr-history", () => service?.getMmrHistory() ?? {});
+
+function getSessionState() {
+  return service ? { ...service.getSessionInfo(), promptPending: sessionPromptPending } : null;
+}
+
+function publishSession() {
+  send("desktop:session", getSessionState());
+}
+
+ipcMain.handle("desktop:set-period", async (_event, period) => {
+  if (!service) throw new Error("RocketStats Desktop is still starting.");
+  if (!["session", "cleared", "alltime"].includes(period)) {
+    throw new RangeError("Unknown statistics period.");
+  }
+  await service.setStatsPeriod(period);
+  publishSession();
+  return getSessionState();
+});
+
+ipcMain.handle("desktop:session-decision", async (_event, startNew) => {
+  if (!service) throw new Error("RocketStats Desktop is still starting.");
+  sessionPromptPending = false;
+  if (startNew === true) await service.startNewSession();
+  publishSession();
+  return getSessionState();
+});
 
 ipcMain.handle("desktop:configure-api", async () => {
   if (!service) throw new Error("RocketStats Desktop is still starting.");
@@ -374,6 +402,13 @@ app.whenReady().then(async () => {
       onStatus: (nextStatus) => connectionState.setStatus(nextStatus),
       onError: handleServiceError
     });
+    // Ask about the previous session only if it actually contains matches.
+    if (service.getSessionInfo().matchCount > 0) {
+      sessionPromptPending = true;
+    } else {
+      await service.startNewSession();
+    }
+    publishSession();
     updateController.configureAutomaticChecks(autoCheckUpdates);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

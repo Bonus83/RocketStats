@@ -3,7 +3,8 @@ import {
   createEmptySnapshot,
   LiveMatchSnapshot,
   PluginLocale,
-  QueueType
+  QueueType,
+  StatsPeriod
 } from "../core/types.js";
 import { PluginState } from "../core/plugin-state.js";
 import { RlLiveConnector, LiveErrorKind } from "../connector/rl-live-connector.js";
@@ -139,6 +140,29 @@ export class LiveRuntime {
     }
     await this.pluginState.resetStats();
     this.renderActions(this.latestSnapshot ?? createEmptySnapshot());
+  }
+
+  async setStatsPeriod(period: StatsPeriod): Promise<void> {
+    await this.pluginState.setStatsPeriod(period);
+    this.renderActions(this.latestSnapshot ?? createEmptySnapshot());
+  }
+
+  async cycleStatsPeriod(): Promise<void> {
+    await this.pluginState.cycleStatsPeriod();
+    this.renderActions(this.latestSnapshot ?? createEmptySnapshot());
+  }
+
+  async startNewSession(): Promise<void> {
+    await this.pluginState.startNewSession();
+    this.renderActions(this.latestSnapshot ?? createEmptySnapshot());
+  }
+
+  getSessionInfo(): { period: StatsPeriod; startedAt: number | undefined; matchCount: number } {
+    return {
+      period: this.pluginState.getStatsPeriod(),
+      startedAt: this.pluginState.getSessionStartedAt(),
+      matchCount: this.pluginState.getSessionMatchCount()
+    };
   }
 
   configurePort(port: number): void {
@@ -345,7 +369,7 @@ export class LiveRuntime {
     }
 
     this.matchQueueType = queueType;
-    if (this.pluginState.getLastMmrPlaylist() !== queueType) {
+    if (queueType !== "unknown" && this.pluginState.getLastMmrPlaylist() !== queueType) {
       void this.pluginState.setLastMmrPlaylist(queueType).catch(this.reportError);
     }
 
@@ -353,7 +377,7 @@ export class LiveRuntime {
       return;
     }
     this.pendingQueue = undefined;
-    if (pendingMatchesAccount && applicable.queue.queueType === queueType &&
+    if (queueType !== "unknown" && pendingMatchesAccount && applicable.queue.queueType === queueType &&
       applicable.queue.mmr !== undefined) {
       void this.pluginState.setPlaylistRank(
         queueType,
@@ -395,10 +419,10 @@ export class LiveRuntime {
       }
     }
 
-    if (this.pluginState.getLastMmrPlaylist() !== queue.queueType) {
+    if (queue.queueType !== "unknown" && this.pluginState.getLastMmrPlaylist() !== queue.queueType) {
       void this.pluginState.setLastMmrPlaylist(queue.queueType).catch(this.reportError);
     }
-    if (queue.mmr !== undefined) {
+    if (queue.queueType !== "unknown" && queue.mmr !== undefined) {
       void this.pluginState.setPlaylistRank(
         queue.queueType,
         queue.mmr,

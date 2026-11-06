@@ -13,6 +13,8 @@ import {
   MmrSummary,
   PersistedState,
   QueueType,
+  StatsPeriod,
+  STATS_PERIODS,
   StatsScope
 } from "./types.js";
 
@@ -202,6 +204,57 @@ export class PluginState {
     return next;
   }
 
+  getStatsPeriod(): StatsPeriod {
+    return this.state.statsPeriod ?? "cleared";
+  }
+
+  async setStatsPeriod(period: StatsPeriod): Promise<void> {
+    if (!STATS_PERIODS.includes(period) || this.getStatsPeriod() === period) {
+      return;
+    }
+    this.state.statsPeriod = period;
+    await this.store.save(this.state);
+  }
+
+  async cycleStatsPeriod(): Promise<StatsPeriod> {
+    const index = STATS_PERIODS.indexOf(this.getStatsPeriod());
+    const next = STATS_PERIODS[(index + 1) % STATS_PERIODS.length] ?? "cleared";
+    await this.setStatsPeriod(next);
+    return next;
+  }
+
+  /** Start of the current session; undefined until a session was started explicitly. */
+  getSessionStartedAt(): number | undefined {
+    return this.state.sessionStartedAt;
+  }
+
+  /** Counted matches (all accounts) finished since the current session started. */
+  getSessionMatchCount(): number {
+    const start = this.state.sessionStartedAt ?? 0;
+    return this.state.matches.filter((match) =>
+      !match.supersededByMatchId &&
+      (match.outcome === "win" || match.outcome === "loss") &&
+      (match.endedAt ?? match.startedAt) >= start
+    ).length;
+  }
+
+  async startNewSession(now = Date.now()): Promise<void> {
+    this.state.sessionStartedAt = now;
+    await this.store.save(this.state);
+  }
+
+  private isInStatsPeriod(match: MatchRecord): boolean {
+    const period = this.getStatsPeriod();
+    if (period === "alltime") {
+      return true;
+    }
+    if (match.excludedFromStats) {
+      return false;
+    }
+    return period !== "session" ||
+      (match.endedAt ?? match.startedAt) >= (this.state.sessionStartedAt ?? 0);
+  }
+
   /** The mode used by the "mode" scope: the last loaded playlist of the active account. */
   getStatsMode(): QueueType | undefined {
     return this.hasActiveAccount() ? this.getActiveAccount().lastMmrPlaylist : undefined;
@@ -232,6 +285,9 @@ export class PluginState {
   private getScopedStreaks(): ReturnType<PluginState["computeStreaks"]> {
     const account = this.getActiveAccount();
     if (this.getStatsScope() === "all") {
+      if (this.getStatsPeriod() !== "cleared") {
+        return this.computeStreaks(account.accountId, undefined, true);
+      }
       return {
         streak: account.streak,
         longestWinStreak: account.records.longestWinStreak,
@@ -241,7 +297,7 @@ export class PluginState {
     const mode = account.lastMmrPlaylist;
     return mode === undefined
       ? { streak: { type: "none", count: 0 }, longestWinStreak: 0, longestLossStreak: 0 }
-      : this.computeStreaks(account.accountId, mode);
+      : this.computeStreaks(account.accountId, mode, true);
   }
 
   getMmrSummary(playlist?: string): MmrSummary {
@@ -280,7 +336,7 @@ export class PluginState {
     return this.getActiveAccount().lastMmrPlaylist;
   }
 
-  async setLastMmrPlaylist(playlist: QueueType): Promise<void> {
+  async setLastMmrPlaylist(playlist: Exclude<QueueType, "unknown">): Promise<void> {
     const account = this.getActiveAccount();
     if (account.lastMmrPlaylist === playlist) {
       return;
@@ -320,7 +376,7 @@ export class PluginState {
       if (
         match.accountId !== account.accountId ||
         match.supersededByMatchId ||
-        match.excludedFromStats ||
+        !this.isInStatsPeriod(match) ||
         (mode !== undefined && match.queueType !== mode)
       ) {
         continue;
@@ -416,7 +472,7 @@ export class PluginState {
     account.records.longestLossStreak = summary.longestLossStreak;
   }
 
-  private computeStreaks(accountId: string, queueType?: QueueType): {
+  private computeStreaks(accountId: string, queueType?: QueueType, usePeriod = false): {
     streak: AccountStats["streak"];
     longestWinStreak: number;
     longestLossStreak: number;
@@ -425,7 +481,7 @@ export class PluginState {
       .filter((match) =>
         match.accountId === accountId &&
         !match.supersededByMatchId &&
-        !match.excludedFromStats &&
+        (usePeriod ? this.isInStatsPeriod(match) : !match.excludedFromStats) &&
         (queueType === undefined || match.queueType === queueType)
       )
       .sort((left, right) =>

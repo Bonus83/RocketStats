@@ -12,7 +12,7 @@ const removed = [
 ];
 const model = (action, value = action) => ({ action, title: action, value });
 
-async function loadDashboard(locale, mmrHistory) {
+async function loadDashboard(locale, mmrHistory, session = null) {
   const [html, source] = await Promise.all([
     readFile(new URL("../desktop/index.html", import.meta.url), "utf8"),
     readFile(new URL("../desktop/renderer.js", import.meta.url), "utf8")
@@ -25,14 +25,24 @@ async function loadDashboard(locale, mmrHistory) {
   };
   const listeners = {};
   const calls = { scope: 0, reset: 0 };
+  const sessionCalls = [];
   const bridge = {
     onModel(callback) { listeners.model = callback; },
     onStatus() {}, onError() {}, onUpdate() {},
+    onSession(callback) { listeners.session = callback; },
     toggleScope: async () => { calls.scope += 1; },
     resetStats: async () => { calls.reset += 1; },
+    setStatsPeriod: async (period) => {
+      sessionCalls.push(["period", period]);
+      return { ...session, period };
+    },
+    decideSession: async (startNew) => {
+      sessionCalls.push(["decide", startNew]);
+      return { ...session, promptPending: false, matchCount: startNew ? 0 : session.matchCount };
+    },
     ...(mmrHistory ? { getMmrHistory: async () => mmrHistory } : {}),
     getState: async () => ({
-      locale, port: 49123, autoCheckUpdates: false,
+      locale, port: 49123, autoCheckUpdates: false, session,
       connection: { status: "connected", error: null, revision: 0 },
       update: { phase: "idle", version: "0.1.0" },
       models: [...retained, ...removed].map((action) => model(action))
@@ -44,8 +54,42 @@ async function loadDashboard(locale, mmrHistory) {
   });
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(dom.getElement("error-panel").hidden, true);
-  return { ...dom, html, listeners, calls };
+  return { ...dom, html, listeners, calls, sessionCalls };
 }
+
+test("desktop asks on start whether to continue the last session and switches the period", async () => {
+  const h = await loadDashboard("de", undefined, {
+    period: "session", startedAt: 1000, matchCount: 3, promptPending: true
+  });
+  assert.equal(h.getElement("session-panel").hidden, false);
+  assert.match(h.getElement("session-text").textContent, /3 Spiele/);
+  const select = h.getElement("period-select");
+  assert.deepEqual(select.children.map((option) => option.value), ["session", "cleared", "alltime"]);
+  assert.deepEqual(
+    select.children.map((option) => option.textContent),
+    ["Aktuelle Session", "Seit Zurücksetzen", "Gesamt"]
+  );
+  assert.equal(select.value, "session");
+
+  await h.getElement("session-continue").listeners.get("click")();
+  assert.equal(h.getElement("session-panel").hidden, true);
+  await select.listeners.get("change")({ target: { value: "alltime" } });
+  assert.equal(select.value, "alltime");
+  await h.getElement("new-session-button").listeners.get("click")();
+  assert.deepEqual(h.sessionCalls, [["decide", false], ["period", "alltime"], ["decide", true]]);
+
+  h.listeners.session({ period: "cleared", startedAt: 2000, matchCount: 2, promptPending: true });
+  assert.equal(h.getElement("session-panel").hidden, false);
+  await h.getElement("session-new").listeners.get("click")();
+  assert.equal(h.getElement("session-panel").hidden, true);
+});
+
+test("desktop disables period controls until the service is ready", async () => {
+  const h = await loadDashboard("en");
+  assert.equal(h.getElement("period-select").disabled, true);
+  assert.equal(h.getElement("new-session-button").disabled, true);
+  assert.equal(h.getElement("session-panel").hidden, true);
+});
 
 test("desktop displays account statistics without live match or player-stat sections in all languages", async () => {
   for (const locale of ["de", "en", "pl", "fr", "es", "pt", "ru"]) {

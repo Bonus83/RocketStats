@@ -2,7 +2,8 @@ import { existsSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
-import { DEFAULT_RECORDS, PersistedState } from "./types.js";
+import { isSelectablePlaylist } from "./playlists.js";
+import { DEFAULT_RECORDS, MatchRecord, PersistedState, QueueType, RankRecord } from "./types.js";
 
 const INITIAL_STATE: PersistedState = {
   schemaVersion: 1,
@@ -65,11 +66,17 @@ export class AccountStore {
     if (input.statsScope === "all" || input.statsScope === "mode") {
       normalized.statsScope = input.statsScope;
     }
+    if (input.statsPeriod === "session" || input.statsPeriod === "cleared" || input.statsPeriod === "alltime") {
+      normalized.statsPeriod = input.statsPeriod;
+    }
+    if (typeof input.sessionStartedAt === "number" && Number.isFinite(input.sessionStartedAt)) {
+      normalized.sessionStartedAt = input.sessionStartedAt;
+    }
     normalized.matches = input.matches ?? [];
     normalized.pendingReconnect = input.pendingReconnect ?? [];
 
     for (const [accountId, account] of Object.entries(input.accounts ?? {})) {
-      normalized.accounts[accountId] = {
+      const normalizedAccount = {
         ...account,
         rankByPlaylist: (account.rankByPlaylist ?? []).map((rank) => ({
           ...rank,
@@ -88,10 +95,55 @@ export class AccountStore {
         },
         updatedAt: account.updatedAt ?? Date.now()
       };
+      if (normalizedAccount.lastMmrPlaylist === "unknown") {
+        const recovered = recoverLastKnownPlaylist(
+          accountId,
+          normalizedAccount.rankByPlaylist,
+          normalized.matches
+        );
+        if (recovered !== undefined) {
+          normalizedAccount.lastMmrPlaylist = recovered;
+        }
+      }
+      normalized.accounts[accountId] = normalizedAccount;
     }
 
     return normalized;
   }
+}
+
+function recoverLastKnownPlaylist(
+  accountId: string,
+  ranks: RankRecord[],
+  matches: MatchRecord[]
+): QueueType | undefined {
+  let latestPlaylist: QueueType | undefined;
+  let latestAt = -Infinity;
+  const observed = (playlist: QueueType, at: number): void => {
+    if (Number.isFinite(at) && at > latestAt) {
+      latestAt = at;
+      latestPlaylist = playlist;
+    }
+  };
+
+  for (const match of matches) {
+    if (match.accountId === accountId && isSelectablePlaylist(match.queueType)) {
+      observed(match.queueType, match.endedAt ?? match.startedAt);
+    }
+  }
+
+  const modesWithMmr = new Set<QueueType>();
+  for (const rank of ranks) {
+    if (!isSelectablePlaylist(rank.playlist) || typeof rank.mmr !== "number" || !Number.isFinite(rank.mmr)) {
+      continue;
+    }
+    modesWithMmr.add(rank.playlist);
+    for (const point of Array.isArray(rank.history) ? rank.history : []) {
+      observed(rank.playlist, point.at);
+    }
+  }
+
+  return latestPlaylist ?? (modesWithMmr.size === 1 ? modesWithMmr.values().next().value : undefined);
 }
 
 function isMissingFileError(error: unknown): boolean {

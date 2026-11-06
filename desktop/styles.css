@@ -53,6 +53,10 @@ main { max-width: 1500px; margin: 0 auto; padding: 22px clamp(22px, 4vw, 58px) 5
 .error-panel { display: block; margin-top: 12px; padding: 13px 15px; border: 1px solid #714044; border-radius: 12px; background: #26171d; color: #f2b5b4; font-size: 12px; line-height: 1.5; }
 .error-panel p { margin-top: 4px; }
 .success-panel { margin-top: 12px; padding: 12px 15px; border: 1px solid #285742; border-radius: 12px; background: #10251e; color: #9de0bd; font-size: 12px; line-height: 1.5; }
+.session-panel { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 12px; padding: 12px 15px; border: 1px solid #2a4566; border-radius: 12px; background: #101c2d; color: #d7e4f8; font-size: 12px; }
+.session-panel[hidden] { display: none; }
+.session-panel p { margin: 0; }
+.session-actions { display: flex; gap: 8px; }
 
 .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 16px 0 30px; padding: 14px; border: 1px solid #1b293c; border-radius: 14px; background: rgba(13, 21, 33, .85); }
 .scope-control { display: flex; align-items: center; gap: 18px; flex: 1 1 260px; }

@@ -5,6 +5,10 @@ const TEXT = {
     historyTag: "VERLAUF", historyHeading: "MMR-Verlauf", historyMode: "Modus", historyEmpty: "Noch keine MMR-Werte für diesen Modus.", historyPoints: "Werte",
     statsTag: "SPIELERSTATISTIKEN", statsHeading: "Match-Statistiken", scopeTag: "SIEG / NIEDERLAGE",
     allModes: "Alle Modi", currentMode: "Aktueller Modus", switchScope: "Ansicht umschalten",
+    period: "Zeitraum", periodSession: "Aktuelle Session", periodCleared: "Seit Zurücksetzen", periodAlltime: "Gesamt",
+    newSession: "Neue Session", newSessionConfirm: "Neue Session starten? Die Statistik der aktuellen Session beginnt dann bei null; ältere Spiele bleiben unter \u201eSeit Zurücksetzen\u201c und \u201eGesamt\u201c erhalten.",
+    sessionPrompt: (count) => `Die letzte Session enthält ${count} ${count === 1 ? "Spiel" : "Spiele"}. Fortsetzen oder neue Session starten?`,
+    sessionNew: "Neue Session starten", sessionContinue: "Session fortsetzen", sessionError: "Die Session konnte nicht geändert werden.",
     reset: "S/N zurücksetzen", language: "Sprache", port: "Lokaler API-Port", apply: "Übernehmen",
     setupButton: "Lokale Stats-API einrichten",
     setupConfirm: "Rocket League muss geschlossen sein. Es werden ausschließlich Port und PacketSendRate in der Stats-API-Konfiguration geändert. Eine vorhandene Datei wird vorher gesichert; falls sie fehlt, wird sie erstellt. Fortfahren?",
@@ -39,6 +43,10 @@ const TEXT = {
     historyTag: "HISTORY", historyHeading: "MMR history", historyMode: "Mode", historyEmpty: "No MMR values for this mode yet.", historyPoints: "values",
     statsTag: "PLAYER STATS", statsHeading: "Match statistics", scopeTag: "WIN / LOSS SCOPE",
     allModes: "All modes", currentMode: "Current mode", switchScope: "Switch scope",
+    period: "Period", periodSession: "Current session", periodCleared: "Since reset", periodAlltime: "All time",
+    newSession: "New session", newSessionConfirm: "Start a new session? Session stats start from zero; older matches stay in \u201cSince reset\u201d and \u201cAll time\u201d.",
+    sessionPrompt: (count) => `The last session has ${count} ${count === 1 ? "match" : "matches"}. Continue it or start a new session?`,
+    sessionNew: "Start new session", sessionContinue: "Continue session", sessionError: "The session could not be changed.",
     reset: "Reset W/L", language: "Language", port: "Local API port", apply: "Apply",
     setupButton: "Set up local Stats API",
     setupConfirm: "Rocket League must be closed. This changes only Port and PacketSendRate in its Stats API configuration. An existing file is backed up; if absent, it is created. Continue?",
@@ -73,6 +81,10 @@ const TEXT = {
     historyTag: "HISTORIA", historyHeading: "Historia MMR", historyMode: "Tryb", historyEmpty: "Brak wartości MMR dla tego trybu.", historyPoints: "wartości",
     statsTag: "STATYSTYKI GRACZA", statsHeading: "Statystyki meczu", scopeTag: "ZAKRES ZWYCIĘSTW / PORAŻEK",
     allModes: "Wszystkie tryby", currentMode: "Bieżący tryb", switchScope: "Zmień zakres",
+    period: "Okres", periodSession: "Bieżąca sesja", periodCleared: "Od resetu", periodAlltime: "Cały czas",
+    newSession: "Nowa sesja", newSessionConfirm: "Rozpocząć nową sesję? Statystyki sesji zaczną się od zera; starsze mecze pozostaną w \u201eOd resetu\u201d i \u201eCały czas\u201d.",
+    sessionPrompt: (count) => `Ostatnia sesja zawiera meczów: ${count}. Kontynuować ją czy rozpocząć nową?`,
+    sessionNew: "Nowa sesja", sessionContinue: "Kontynuuj sesję", sessionError: "Nie udało się zmienić sesji.",
     reset: "Reset W/P", language: "Język", port: "Lokalny port API", apply: "Zastosuj",
     setupButton: "Skonfiguruj lokalne Stats API",
     setupConfirm: "Rocket League musi być zamknięte. Zmienione zostaną wyłącznie Port i PacketSendRate w konfiguracji Stats API. Istniejący plik zostanie wcześniej skopiowany; jeśli go nie ma, zostanie utworzony. Kontynuować?",
@@ -107,6 +119,10 @@ const TEXT = {
     historyTag: "HISTORIQUE", historyHeading: "Historique MMR", historyMode: "Mode", historyEmpty: "Aucune valeur MMR pour ce mode.", historyPoints: "valeurs",
     statsTag: "STATS DU JOUEUR", statsHeading: "Statistiques du match", scopeTag: "PORTÉE VICTOIRES / DÉFAITES",
     allModes: "Tous les modes", currentMode: "Mode actuel", switchScope: "Changer la portée",
+    period: "Période", periodSession: "Session actuelle", periodCleared: "Depuis la réinitialisation", periodAlltime: "Depuis toujours",
+    newSession: "Nouvelle session", newSessionConfirm: "Démarrer une nouvelle session ? Les stats de session repartent de zéro ; les anciens matchs restent dans « Depuis la réinitialisation » et « Depuis toujours ».",
+    sessionPrompt: (count) => `La dernière session contient ${count} match${count === 1 ? "" : "s"}. La poursuivre ou en démarrer une nouvelle ?`,
+    sessionNew: "Nouvelle session", sessionContinue: "Poursuivre la session", sessionError: "Impossible de modifier la session.",
     reset: "Réinitialiser V/D", language: "Langue", port: "Port API local", apply: "Appliquer",
     setupButton: "Configurer l’API Stats locale",
     setupConfirm: "Rocket League doit être fermé. Seuls Port et PacketSendRate seront modifiés dans sa configuration Stats API. Le fichier existant sera sauvegardé ; s’il n’existe pas, il sera créé. Continuer ?",
@@ -141,6 +157,10 @@ const TEXT = {
     historyTag: "HISTORIAL", historyHeading: "Historial de MMR", historyMode: "Modo", historyEmpty: "Aún no hay valores de MMR para este modo.", historyPoints: "valores",
     statsTag: "ESTADÍSTICAS", statsHeading: "Estadísticas de partida", scopeTag: "ÁMBITO DE VICTORIAS / DERROTAS",
     allModes: "Todos los modos", currentMode: "Modo actual", switchScope: "Cambiar ámbito",
+    period: "Periodo", periodSession: "Sesión actual", periodCleared: "Desde el reinicio", periodAlltime: "Todo el tiempo",
+    newSession: "Nueva sesión", newSessionConfirm: "¿Iniciar una nueva sesión? Las estadísticas de la sesión empiezan de cero; las partidas anteriores siguen en «Desde el reinicio» y «Todo el tiempo».",
+    sessionPrompt: (count) => `La última sesión tiene ${count} ${count === 1 ? "partida" : "partidas"}. ¿Continuarla o iniciar una nueva?`,
+    sessionNew: "Nueva sesión", sessionContinue: "Continuar sesión", sessionError: "No se pudo cambiar la sesión.",
     reset: "Restablecer V/D", language: "Idioma", port: "Puerto API local", apply: "Aplicar",
     setupButton: "Configurar Stats API local",
     setupConfirm: "Rocket League debe estar cerrado. Solo se cambiarán Port y PacketSendRate en su configuración de Stats API. Se guardará una copia del archivo existente; si no existe, se creará. ¿Continuar?",
@@ -175,6 +195,10 @@ const TEXT = {
     historyTag: "HISTÓRICO", historyHeading: "Histórico de MMR", historyMode: "Modo", historyEmpty: "Ainda não há valores de MMR para este modo.", historyPoints: "valores",
     statsTag: "ESTATÍSTICAS", statsHeading: "Estatísticas da partida", scopeTag: "ESCOPO DE VITÓRIAS / DERROTAS",
     allModes: "Todos os modos", currentMode: "Modo atual", switchScope: "Alterar escopo",
+    period: "Período", periodSession: "Sessão atual", periodCleared: "Desde a redefinição", periodAlltime: "Todo o período",
+    newSession: "Nova sessão", newSessionConfirm: "Iniciar uma nova sessão? As estatísticas da sessão começam do zero; as partidas antigas continuam em \u201cDesde a redefinição\u201d e \u201cTodo o período\u201d.",
+    sessionPrompt: (count) => `A última sessão tem ${count} ${count === 1 ? "partida" : "partidas"}. Continuar ou iniciar uma nova sessão?`,
+    sessionNew: "Nova sessão", sessionContinue: "Continuar sessão", sessionError: "Não foi possível alterar a sessão.",
     reset: "Redefinir V/D", language: "Idioma", port: "Porta da API local", apply: "Aplicar",
     setupButton: "Configurar Stats API local",
     setupConfirm: "Rocket League deve estar fechado. Apenas Port e PacketSendRate serão alterados na configuração da Stats API. O arquivo existente será copiado; se não existir, será criado. Continuar?",
@@ -209,6 +233,10 @@ const TEXT = {
     historyTag: "ИСТОРИЯ", historyHeading: "История MMR", historyMode: "Режим", historyEmpty: "Для этого режима пока нет значений MMR.", historyPoints: "значений",
     statsTag: "СТАТИСТИКА ИГРОКА", statsHeading: "Статистика матча", scopeTag: "УЧЁТ ПОБЕД / ПОРАЖЕНИЙ",
     allModes: "Все режимы", currentMode: "Текущий режим", switchScope: "Сменить охват",
+    period: "Период", periodSession: "Текущая сессия", periodCleared: "С момента сброса", periodAlltime: "За всё время",
+    newSession: "Новая сессия", newSessionConfirm: "Начать новую сессию? Статистика сессии начнётся с нуля; прошлые матчи останутся в «С момента сброса» и «За всё время».",
+    sessionPrompt: (count) => `В прошлой сессии матчей: ${count}. Продолжить её или начать новую?`,
+    sessionNew: "Новая сессия", sessionContinue: "Продолжить сессию", sessionError: "Не удалось изменить сессию.",
     reset: "Сбросить П/П", language: "Язык", port: "Локальный порт API", apply: "Применить",
     setupButton: "Настроить локальный Stats API",
     setupConfirm: "Rocket League должна быть закрыта. В конфигурации Stats API будут изменены только Port и PacketSendRate. Существующий файл будет сохранён в резервную копию; если его нет, он будет создан. Продолжить?",
@@ -247,7 +275,8 @@ const LABELS = {
 const state = {
   locale: "en", models: new Map(),
   connection: { status: "connecting", error: null, revision: -1 }, error: null,
-  update: { phase: "starting", version: "" }, autoCheckUpdates: true
+  update: { phase: "starting", version: "" }, autoCheckUpdates: true,
+  session: null
 };
 let errorChanged = false;
 let updateStateRevision = 0;
@@ -433,6 +462,37 @@ function renderScope() {
     : tr("allModes");
 }
 
+function renderSession() {
+  const session = state.session;
+  const select = document.getElementById("period-select");
+  document.getElementById("period-label").textContent = tr("period");
+  select.replaceChildren(...["session", "cleared", "alltime"].map((period) => {
+    const option = document.createElement("option");
+    option.value = period;
+    option.textContent = tr(`period${period[0].toUpperCase()}${period.slice(1)}`);
+    return option;
+  }));
+  select.disabled = !session;
+  if (session) select.value = session.period;
+  const newButton = document.getElementById("new-session-button");
+  newButton.textContent = tr("newSession");
+  newButton.disabled = !session;
+  const panel = document.getElementById("session-panel");
+  panel.hidden = !session?.promptPending;
+  document.getElementById("session-text").textContent = tr("sessionPrompt")(session?.matchCount ?? 0);
+  document.getElementById("session-new").textContent = tr("sessionNew");
+  document.getElementById("session-continue").textContent = tr("sessionContinue");
+}
+
+function applySession(session) {
+  state.session = session;
+  renderSession();
+}
+
+async function decideSession(startNew) {
+  try { applySession(await bridge.decideSession(startNew)); } catch { showError(tr("sessionError")); }
+}
+
 function renderUpdate() {
   const update = state.update;
   const disabled = ["starting", "unconfigured", "development", "unsupported"].includes(update.phase);
@@ -533,6 +593,7 @@ function renderAll() {
   renderStatus();
   renderError();
   renderScope();
+  renderSession();
   renderUpdate();
   renderGroup("ranked-grid", RANKED_ACTIONS);
   renderMmrHistory();
@@ -575,6 +636,7 @@ bridge.onModel((model) => {
 bridge.onStatus(applyConnection);
 bridge.onError(showError);
 bridge.onUpdate(applyUpdate);
+bridge.onSession(applySession);
 document.getElementById("history-select").addEventListener("change", (event) => {
   historyPlaylist = event.target.value;
   renderMmrHistory();
@@ -690,6 +752,18 @@ document.getElementById("reset-button").addEventListener("click", async () => {
   if (!window.confirm(tr("resetConfirm"))) return;
   try { await bridge.resetStats(); } catch { showError(tr("resetError")); }
 });
+document.getElementById("period-select").addEventListener("change", async (event) => {
+  try { applySession(await bridge.setStatsPeriod(event.target.value)); } catch {
+    showError(tr("sessionError"));
+    renderSession();
+  }
+});
+document.getElementById("new-session-button").addEventListener("click", async () => {
+  if (!window.confirm(tr("newSessionConfirm"))) return;
+  await decideSession(true);
+});
+document.getElementById("session-new").addEventListener("click", () => decideSession(true));
+document.getElementById("session-continue").addEventListener("click", () => decideSession(false));
 document.getElementById("setup-api-button").addEventListener("click", async (event) => {
   if (!window.confirm(tr("setupConfirm"))) return;
   const button = event.currentTarget;
@@ -732,6 +806,7 @@ bridge.getState().then((initial) => {
   state.locale = initial.locale;
   if (updateStateRevision === initialUpdateRevision) applyUpdate(initial.update);
   if (!autoUpdateChanged) state.autoCheckUpdates = initial.autoCheckUpdates;
+  if (initial.session && !state.session) state.session = initial.session;
   state.models = new Map(initial.models
     .filter((model) => DASHBOARD_ACTIONS.has(model.action))
     .map((model) => [model.action, model]));

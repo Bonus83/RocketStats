@@ -1,5 +1,5 @@
 import { getRocketLeaguePaths } from "../core/rocket-league-paths.js";
-import { MmrHistoryPoint, PluginLocale } from "../core/types.js";
+import { MmrHistoryPoint, PluginLocale, StatsPeriod } from "../core/types.js";
 import { PluginState } from "../core/plugin-state.js";
 import { RocketLeagueLogWatcher } from "../connector/rocket-league-log-watcher.js";
 import { getRocketLeagueProcessStartTime } from "../core/rocket-league-process.js";
@@ -24,6 +24,9 @@ export interface DesktopService {
   configurePort(port: number): void;
   toggleStatsScope(): Promise<void>;
   resetStats(): Promise<void>;
+  setStatsPeriod(period: StatsPeriod): Promise<void>;
+  startNewSession(): Promise<void>;
+  getSessionInfo(): { period: StatsPeriod; startedAt: number | undefined; matchCount: number };
   getMmrHistory(): Record<string, MmrHistoryPoint[]>;
 }
 
@@ -186,6 +189,9 @@ export async function startDesktopService(
     },
     toggleStatsScope: () => runtime.toggleStatsScope(),
     resetStats: () => runtime.resetStats(),
+    setStatsPeriod: (period) => runtime.setStatsPeriod(period),
+    startNewSession: () => runtime.startNewSession(),
+    getSessionInfo: () => runtime.getSessionInfo(),
     getMmrHistory: () => state.getMmrHistory()
   };
 }

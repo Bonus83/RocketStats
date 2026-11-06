@@ -73,7 +73,7 @@ async function createHarness(t) {
     host: "127.0.0.1",
     port: address.port,
     reconnectDelayMs: 100,
-    actionKinds: ["mmr", "rank"],
+    actionKinds: ["mmr", "rank", "mmr-wl"],
     locale: "de",
     mmrPlaylist: "auto",
     eventBannerStats: [],
@@ -245,7 +245,57 @@ test("automatic MMR changes only on a loaded mode and restores cached values", a
   await h.update("five", 0);
   assert.equal(h.titles.at(-1), "MMR 1v1\n1100\nChampion III");
   await h.update("five", 999);
-  assert.equal(h.titles.at(-1), "MMR ?\n---");
+  assert.equal(h.titles.at(-1), "MMR 1v1\n1100\nChampion III");
+  assert.deepEqual(h.errors, []);
+});
+
+test("unknown playlist events retain the last rank without mixing accounts or modes", async (t) => {
+  const h = await createHarness(t);
+  const latest = (action) => h.models.filter((model) => model.action === action).at(-1);
+  const fixedImages = [];
+  h.bus.bind("rank", {
+    setTitle: () => {},
+    setImage: (image) => { fixedImages.push(image); }
+  }, { playlistMode: "manual", playlist: "ranked_2v2" });
+
+  h.runtime.recordGameLogIdentity(ACCOUNT_A);
+  h.runtime.recordGameLogQueue({ queueType: "ranked_2v2", mmr: 1200 });
+  await h.send("MatchCreated", "doubles");
+  await h.update("doubles", 11);
+  const knownRank = latest("rank").image;
+  assert.equal(latest("mmr-wl").value, "1200");
+  assert.equal(latest("mmr-wl").mmrPlaylist, "ranked_2v2");
+  await h.send("MatchEnded", "doubles", { WinnerTeamNum: 0 });
+
+  const unknownMatchId = "F".repeat(32);
+  h.runtime.recordGameLogQueue({ queueType: "unknown" });
+  h.runtime.recordGameLogQueue({ queueType: "unknown", matchId: unknownMatchId });
+  assert.equal(h.state.getLastMmrPlaylist(), "ranked_2v2");
+  assert.equal(latest("rank").image, knownRank);
+  assert.equal(latest("mmr-wl").value, "1200");
+
+  await h.send("MatchCreated", unknownMatchId);
+  await h.update(unknownMatchId, 999);
+  assert.equal(h.state.getLastMmrPlaylist(), "ranked_2v2");
+  assert.equal(latest("rank").image, knownRank);
+  assert.equal(latest("mmr-wl").mmrPlaylist, "ranked_2v2");
+  assert.equal(latest("mmr-wl").value, "1200");
+  await h.send("MatchEnded", unknownMatchId, { WinnerTeamNum: 0 });
+  assert.equal(h.state.getStateSnapshot().matches.at(-1).queueType, "unknown");
+
+  h.runtime.recordGameLogIdentity(ACCOUNT_B);
+  assert.equal(latest("mmr-wl").value, "---");
+  assert.notEqual(latest("rank").image, knownRank);
+  h.runtime.recordGameLogIdentity(ACCOUNT_A);
+  assert.equal(latest("rank").image, knownRank);
+  assert.equal(latest("mmr-wl").value, "1200");
+
+  await h.send("MatchCreated", "new-known-mode");
+  await h.update("new-known-mode", 13);
+  assert.equal(latest("mmr-wl").mmrPlaylist, "ranked_3v3");
+  assert.equal(latest("mmr-wl").value, "---");
+  assert.notEqual(latest("rank").image, knownRank);
+  assert.equal(fixedImages.at(-1), knownRank);
   assert.deepEqual(h.errors, []);
 });
 

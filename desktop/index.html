@@ -67,6 +67,14 @@
       </section>
       <section id="success-panel" class="success-panel" hidden aria-live="polite"></section>
 
+      <section id="session-panel" class="session-panel" hidden aria-live="polite">
+        <p id="session-text">Continue the previous session or start a new one?</p>
+        <div class="session-actions">
+          <button id="session-new" class="button secondary" type="button">Start new session</button>
+          <button id="session-continue" class="button secondary" type="button">Continue session</button>
+        </div>
+      </section>
+
       <section class="controls" aria-label="Dashboard controls">
         <div class="scope-control">
           <div>
@@ -75,6 +83,11 @@
           </div>
           <button id="scope-button" class="button secondary" type="button">Switch scope</button>
         </div>
+        <div class="setting-control">
+          <label for="period-select" id="period-label">Period</label>
+          <select id="period-select"></select>
+        </div>
+        <button id="new-session-button" class="button secondary" type="button">New session</button>
         <button id="reset-button" class="button danger" type="button">Reset W/L</button>
         <button id="setup-api-button" class="button secondary" type="button">Set up local Stats API</button>
         <div class="setting-control">

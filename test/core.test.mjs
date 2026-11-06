@@ -210,6 +210,67 @@ test("account store serializes concurrent atomic saves", async () => {
   }
 });
 
+test("account store restores overwritten unknown modes from account-specific evidence", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "rocketstats-store-tests-"));
+  const file = join(dir, "state.json");
+  const account = (accountId, rankByPlaylist, lastMmrPlaylist = "unknown") => ({
+    accountId, rankByPlaylist, lastMmrPlaylist
+  });
+  const match = (accountId, queueType, endedAt) => ({
+    accountId, queueType, matchId: `${accountId}-${endedAt}`, startedAt: endedAt, endedAt,
+    outcome: "win", endedNormally: true, wasEarlyLeave: false, wasRankedReconnect: false
+  });
+  try {
+    const store = new AccountStore(file);
+    await store.save({
+      schemaVersion: 1,
+      activeAccountId: "a",
+      accounts: {
+        a: account("a", [
+          { playlist: "ranked_2v2", mmr: 1200, history: [{ at: 100, mmr: 1200 }] },
+          { playlist: "ranked_1v1", mmr: 900, history: [{ at: 300, mmr: 900 }] }
+        ]),
+        b: account("b", [{ playlist: "ranked_3v3", mmr: 1000 }]),
+        c: account("c", [
+          { playlist: "ranked_1v1", mmr: 800 },
+          { playlist: "ranked_2v2", mmr: 1100 }
+        ]),
+        d: account("d", [{ playlist: "ranked_2v2", mmr: 1200 }], "ranked_2v2"),
+        e: account("e", [{ playlist: "ranked_1v1", mmr: 800, history: [{ at: 100, mmr: 800 }] }])
+      },
+      matches: [
+        match("a", "ranked_2v2", 200),
+        match("a", "unknown", 400),
+        match("d", "ranked_1v1", 500),
+        match("e", "ranked_3v3", 600),
+        match("another-account", "ranked_1v1", 1000)
+      ],
+      pendingReconnect: []
+    });
+
+    const restored = await store.load();
+    assert.equal(restored.accounts.a.lastMmrPlaylist, "ranked_1v1");
+    assert.equal(restored.accounts.b.lastMmrPlaylist, "ranked_3v3");
+    assert.equal(restored.accounts.c.lastMmrPlaylist, "unknown");
+    assert.equal(restored.accounts.d.lastMmrPlaylist, "ranked_2v2");
+    assert.equal(restored.accounts.e.lastMmrPlaylist, "ranked_3v3");
+
+    await store.save(restored);
+    const state = new PluginState({ statePath: file, identityGraceWindowMs: 1000, reconnectWindowMs: 1000 });
+    await state.initialize();
+    assert.equal(state.getLastMmrPlaylist(), "ranked_1v1");
+    assert.equal(state.getMmrSummary().value, "900");
+    state.resolveIdentity({ accountId: "b", observedAt: 1000 });
+    assert.equal(state.getLastMmrPlaylist(), "ranked_3v3");
+    assert.equal(state.getMmrSummary().value, "1000");
+    state.resolveIdentity({ accountId: "e", observedAt: 2000 });
+    assert.equal(state.getLastMmrPlaylist(), "ranked_3v3");
+    assert.equal(state.getMmrSummary().value, "---");
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test("streak engine replaces provisional early-leave result after reconnect", () => {
   const engine = new StreakEngine(60_000);
   const baseStreak = { type: "none", count: 0 };

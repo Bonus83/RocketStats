@@ -109,10 +109,17 @@ export interface PendingReconnect {
 
 export type StatsScope = "all" | "mode";
 
+/** Time range of the W/L statistics: current session, since the last reset, or everything. */
+export type StatsPeriod = "session" | "cleared" | "alltime";
+
+export const STATS_PERIODS: readonly StatsPeriod[] = ["session", "cleared", "alltime"];
+
 export interface PersistedState {
   schemaVersion: 1;
   activeAccountId?: string;
   statsScope?: StatsScope;
+  statsPeriod?: StatsPeriod;
+  sessionStartedAt?: number;
   accounts: Record<string, AccountStats>;
   matches: MatchRecord[];
   pendingReconnect: PendingReconnect[];

@@ -12,6 +12,11 @@ This repository now contains the first implementation slice for a Rocket League 
 - Win/loss reset key: hold for 2 seconds to reset streak and records of the active
   account for the current scope (MMR is kept). Both keys use generated artwork
   until logos are appended to the logo sheet
+- Statistics period (desktop app): W/L counts, streak and records can show the
+  current session, everything since the last reset, or all time (including reset
+  matches). On start, the app asks whether to continue the previous session or start
+  a new one (only if it contains matches); "New session" starts one at any time.
+  Period and session start are saved; the Stream Deck plugin uses the saved period
 - Rank key: shows the icon, colour-matched rank name, tier and estimated division of the current mode
   (estimated from the stored MMR; icons are cut from `assets/ranks/rank-sheet.png` per
   `assets/ranks/catalog.json`). Ambiguous or missing division data shows `DIV ?`.
@@ -265,16 +270,20 @@ logged-in account.
 
 The MMR key shows the mode and its stored value for the active account.
 Searching, returning to the menu, and ending a match do not change the selected
-mode. A new selection is saved only once a match state has loaded and its
+mode. A new selection is saved only once a recognized mode has loaded and its
 account is confirmed. `Game.PlaylistId`, when present, takes precedence over the
 reserved playlist; otherwise a matching log reservation is used after a new
 match loads. Match GUIDs in both sources can also correlate delayed log events.
 The log alone is also sufficient: once a solo reservation is followed by the
 server map load and its `MatchGUID` for the same primary login, that mode and
 its MMR are stored even if the Stats API has not confirmed the match.
-Unrecognized modes show `MMR ?` and `---`; missing or invalid mode data leaves
-the previous selection unchanged. `---` always means that no MMR value has been
-recorded yet for that mode and account.
+Missing or unrecognized mode data leaves the last confirmed mode, MMR and rank
+visible; match results for an unrecognized mode are still recorded as unknown.
+A newly recognized mode without a saved MMR shows `---` instead of another
+mode's rank. Older selections overwritten with `unknown` can be recovered
+from the account's latest recorded match or MMR history, or from its only
+stored MMR mode. If no unambiguous evidence exists, the mode remains unknown
+until a recognized one is loaded.
 
 For solo ranked queues, the game log contains the pre-match skill value and
 the reserved playlist. The plugin recognizes 1v1, 2v2, 3v3, 4v4 Quads, Hoops, Rumble,

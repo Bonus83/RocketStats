@@ -150,3 +150,39 @@ test("scope and reset keys render the current scope in the key language", () => 
   const mmr = renderAction("mmr", snapshot, { mmrValue: "---", mmrPlaylist: "ranked_2v2" });
   assert.equal(mmr.footer, "");
 });
+
+test("stats period switches between session, since reset and all time and persists", async (t) => {
+  const { state, reload } = await createState(t);
+  await play(state, "ranked_2v2", "win");
+  await play(state, "ranked_2v2", "loss");
+  await state.resetStats();
+  await play(state, "ranked_2v2", "win");
+  await play(state, "ranked_2v2", "win");
+  await state.startNewSession(clock + 1);
+  await play(state, "ranked_2v2", "loss");
+
+  assert.equal(state.getStatsPeriod(), "cleared");
+  assert.deepEqual(state.getWinLossCounts(), { wins: 2, losses: 1 });
+  assert.equal(state.getRecordsLabel(), "W2 L1");
+
+  assert.equal(await state.cycleStatsPeriod(), "alltime");
+  assert.deepEqual(state.getWinLossCounts(), { wins: 3, losses: 2 });
+  assert.equal(state.getStreakLabel(), "L1");
+  assert.equal(state.getRecordsLabel(), "W2 L1");
+
+  assert.equal(await state.cycleStatsPeriod(), "session");
+  assert.deepEqual(state.getWinLossCounts(), { wins: 0, losses: 1 });
+  assert.equal(state.getRecordsLabel(), "W0 L1");
+  assert.equal(state.getSessionMatchCount(), 1);
+
+  await state.setStatsScope("mode");
+  await state.setLastMmrPlaylist("ranked_2v2");
+  assert.deepEqual(state.getWinLossCounts(), { wins: 0, losses: 1 });
+
+  const restored = await reload();
+  assert.equal(restored.getStatsPeriod(), "session");
+  assert.equal(restored.getSessionStartedAt(), clock - 999);
+  await restored.startNewSession(clock + 1);
+  assert.equal(restored.getSessionMatchCount(), 0);
+  assert.deepEqual(restored.getWinLossCounts(), { wins: 0, losses: 0 });
+});
