@@ -1,15 +1,15 @@
 const TEXT = {
   de: {
     connecting: "Verbinde mit lokaler Stats-API…", connected: "Stats-API verbunden", disconnected: "Stats-API getrennt",
-    matchTag: "LIVE-MATCH", matchHeading: "Spielübersicht", rankedTag: "RANGLISTE", rankedHeading: "Rang & Bilanz",
-    historyTag: "VERLAUF", historyHeading: "MMR-Verlauf", historyMode: "Modus", historyEmpty: "Noch keine MMR-Werte für diesen Modus.", historyPoints: "Werte",
-    statsTag: "SPIELERSTATISTIKEN", statsHeading: "Match-Statistiken", scopeTag: "SIEG / NIEDERLAGE",
+    matchTag: "LIVE-MATCH", matchHeading: "Spielübersicht", rankedHeading: "Rang & Bilanz",
+    historyHeading: "MMR-Verlauf", historyMode: "Modus", historyDate: "Datum", historyChange: "Änderung zum vorherigen Wert", historyEmpty: "Noch keine MMR-Werte für diesen Modus.", historyPoints: "Werte",
+    statsTag: "SPIELERSTATISTIKEN", statsHeading: "Match-Statistiken", statsScopeTag: "STATISTIKEN",
     allModes: "Alle Modi", currentMode: "Aktueller Modus", switchScope: "Ansicht umschalten",
     period: "Zeitraum", periodSession: "Aktuelle Session", periodCleared: "Seit Zurücksetzen", periodAlltime: "Gesamt",
     newSession: "Neue Session", newSessionConfirm: "Neue Session starten? Die Statistik der aktuellen Session beginnt dann bei null; ältere Spiele bleiben unter \u201eSeit Zurücksetzen\u201c und \u201eGesamt\u201c erhalten.",
     sessionPrompt: (count) => `Die letzte Session enthält ${count} ${count === 1 ? "Spiel" : "Spiele"}. Fortsetzen oder neue Session starten?`,
     sessionNew: "Neue Session starten", sessionContinue: "Session fortsetzen", sessionError: "Die Session konnte nicht geändert werden.",
-    reset: "S/N zurücksetzen", language: "Sprache", port: "Lokaler API-Port", apply: "Übernehmen",
+    reset: "Sieg/Niederlage zurücksetzen", language: "Sprache", port: "Lokaler API-Port", apply: "Übernehmen",
     setupButton: "Lokale Stats-API einrichten",
     setupConfirm: "Rocket League muss geschlossen sein. Es werden ausschließlich Port und PacketSendRate in der Stats-API-Konfiguration geändert. Eine vorhandene Datei wird vorher gesichert; falls sie fehlt, wird sie erstellt. Fortfahren?",
     setupSuccess: "Stats-API eingerichtet. Starte Rocket League neu, damit sie den Feed bereitstellt.",
@@ -39,9 +39,9 @@ const TEXT = {
   },
   en: {
     connecting: "Connecting to local Stats API…", connected: "Stats API connected", disconnected: "Stats API disconnected",
-    matchTag: "LIVE MATCH", matchHeading: "Match overview", rankedTag: "RANKED", rankedHeading: "Rank & record",
-    historyTag: "HISTORY", historyHeading: "MMR history", historyMode: "Mode", historyEmpty: "No MMR values for this mode yet.", historyPoints: "values",
-    statsTag: "PLAYER STATS", statsHeading: "Match statistics", scopeTag: "WIN / LOSS SCOPE",
+    matchTag: "LIVE MATCH", matchHeading: "Match overview", rankedHeading: "Rank & record",
+    historyHeading: "MMR history", historyMode: "Mode", historyDate: "Date", historyChange: "Change from previous", historyEmpty: "No MMR values for this mode yet.", historyPoints: "values",
+    statsTag: "PLAYER STATS", statsHeading: "Match statistics", statsScopeTag: "STATISTICS",
     allModes: "All modes", currentMode: "Current mode", switchScope: "Switch scope",
     period: "Period", periodSession: "Current session", periodCleared: "Since reset", periodAlltime: "All time",
     newSession: "New session", newSessionConfirm: "Start a new session? Session stats start from zero; older matches stay in \u201cSince reset\u201d and \u201cAll time\u201d.",
@@ -77,9 +77,9 @@ const TEXT = {
   },
   pl: {
     connecting: "Łączenie z lokalnym Stats API…", connected: "Połączono ze Stats API", disconnected: "Rozłączono ze Stats API",
-    matchTag: "MECZ NA ŻYWO", matchHeading: "Podsumowanie meczu", rankedTag: "RANKING", rankedHeading: "Ranga i bilans",
-    historyTag: "HISTORIA", historyHeading: "Historia MMR", historyMode: "Tryb", historyEmpty: "Brak wartości MMR dla tego trybu.", historyPoints: "wartości",
-    statsTag: "STATYSTYKI GRACZA", statsHeading: "Statystyki meczu", scopeTag: "ZAKRES ZWYCIĘSTW / PORAŻEK",
+    matchTag: "MECZ NA ŻYWO", matchHeading: "Podsumowanie meczu", rankedHeading: "Ranga i bilans",
+    historyHeading: "Historia MMR", historyMode: "Tryb", historyDate: "Data", historyChange: "Zmiana od poprzedniego punktu", historyEmpty: "Brak wartości MMR dla tego trybu.", historyPoints: "wartości",
+    statsTag: "STATYSTYKI GRACZA", statsHeading: "Statystyki meczu", statsScopeTag: "STATYSTYKI",
     allModes: "Wszystkie tryby", currentMode: "Bieżący tryb", switchScope: "Zmień zakres",
     period: "Okres", periodSession: "Bieżąca sesja", periodCleared: "Od resetu", periodAlltime: "Cały czas",
     newSession: "Nowa sesja", newSessionConfirm: "Rozpocząć nową sesję? Statystyki sesji zaczną się od zera; starsze mecze pozostaną w \u201eOd resetu\u201d i \u201eCały czas\u201d.",
@@ -115,9 +115,9 @@ const TEXT = {
   },
   fr: {
     connecting: "Connexion à l’API Stats locale…", connected: "API Stats connectée", disconnected: "API Stats déconnectée",
-    matchTag: "MATCH EN DIRECT", matchHeading: "Aperçu du match", rankedTag: "CLASSÉ", rankedHeading: "Rang et bilan",
-    historyTag: "HISTORIQUE", historyHeading: "Historique MMR", historyMode: "Mode", historyEmpty: "Aucune valeur MMR pour ce mode.", historyPoints: "valeurs",
-    statsTag: "STATS DU JOUEUR", statsHeading: "Statistiques du match", scopeTag: "PORTÉE VICTOIRES / DÉFAITES",
+    matchTag: "MATCH EN DIRECT", matchHeading: "Aperçu du match", rankedHeading: "Rang et bilan",
+    historyHeading: "Historique MMR", historyMode: "Mode", historyDate: "Date", historyChange: "Écart depuis le point précédent", historyEmpty: "Aucune valeur MMR pour ce mode.", historyPoints: "valeurs",
+    statsTag: "STATS DU JOUEUR", statsHeading: "Statistiques du match", statsScopeTag: "STATISTIQUES",
     allModes: "Tous les modes", currentMode: "Mode actuel", switchScope: "Changer la portée",
     period: "Période", periodSession: "Session actuelle", periodCleared: "Depuis la réinitialisation", periodAlltime: "Depuis toujours",
     newSession: "Nouvelle session", newSessionConfirm: "Démarrer une nouvelle session ? Les stats de session repartent de zéro ; les anciens matchs restent dans « Depuis la réinitialisation » et « Depuis toujours ».",
@@ -153,9 +153,9 @@ const TEXT = {
   },
   es: {
     connecting: "Conectando a Stats API local…", connected: "Stats API conectada", disconnected: "Stats API desconectada",
-    matchTag: "PARTIDA EN VIVO", matchHeading: "Resumen de partida", rankedTag: "CLASIFICATORIA", rankedHeading: "Rango y registro",
-    historyTag: "HISTORIAL", historyHeading: "Historial de MMR", historyMode: "Modo", historyEmpty: "Aún no hay valores de MMR para este modo.", historyPoints: "valores",
-    statsTag: "ESTADÍSTICAS", statsHeading: "Estadísticas de partida", scopeTag: "ÁMBITO DE VICTORIAS / DERROTAS",
+    matchTag: "PARTIDA EN VIVO", matchHeading: "Resumen de partida", rankedHeading: "Rango y registro",
+    historyHeading: "Historial de MMR", historyMode: "Modo", historyDate: "Fecha", historyChange: "Cambio desde el punto anterior", historyEmpty: "Aún no hay valores de MMR para este modo.", historyPoints: "valores",
+    statsTag: "ESTADÍSTICAS", statsHeading: "Estadísticas de partida", statsScopeTag: "ESTADÍSTICAS",
     allModes: "Todos los modos", currentMode: "Modo actual", switchScope: "Cambiar ámbito",
     period: "Periodo", periodSession: "Sesión actual", periodCleared: "Desde el reinicio", periodAlltime: "Todo el tiempo",
     newSession: "Nueva sesión", newSessionConfirm: "¿Iniciar una nueva sesión? Las estadísticas de la sesión empiezan de cero; las partidas anteriores siguen en «Desde el reinicio» y «Todo el tiempo».",
@@ -191,9 +191,9 @@ const TEXT = {
   },
   pt: {
     connecting: "Conectando à Stats API local…", connected: "Stats API conectada", disconnected: "Stats API desconectada",
-    matchTag: "PARTIDA AO VIVO", matchHeading: "Visão geral", rankedTag: "RANQUEADA", rankedHeading: "Rank e histórico",
-    historyTag: "HISTÓRICO", historyHeading: "Histórico de MMR", historyMode: "Modo", historyEmpty: "Ainda não há valores de MMR para este modo.", historyPoints: "valores",
-    statsTag: "ESTATÍSTICAS", statsHeading: "Estatísticas da partida", scopeTag: "ESCOPO DE VITÓRIAS / DERROTAS",
+    matchTag: "PARTIDA AO VIVO", matchHeading: "Visão geral", rankedHeading: "Rank e histórico",
+    historyHeading: "Histórico de MMR", historyMode: "Modo", historyDate: "Data", historyChange: "Variação desde o ponto anterior", historyEmpty: "Ainda não há valores de MMR para este modo.", historyPoints: "valores",
+    statsTag: "ESTATÍSTICAS", statsHeading: "Estatísticas da partida", statsScopeTag: "ESTATÍSTICAS",
     allModes: "Todos os modos", currentMode: "Modo atual", switchScope: "Alterar escopo",
     period: "Período", periodSession: "Sessão atual", periodCleared: "Desde a redefinição", periodAlltime: "Todo o período",
     newSession: "Nova sessão", newSessionConfirm: "Iniciar uma nova sessão? As estatísticas da sessão começam do zero; as partidas antigas continuam em \u201cDesde a redefinição\u201d e \u201cTodo o período\u201d.",
@@ -229,9 +229,9 @@ const TEXT = {
   },
   ru: {
     connecting: "Подключение к локальному Stats API…", connected: "Stats API подключено", disconnected: "Stats API отключено",
-    matchTag: "ТЕКУЩИЙ МАТЧ", matchHeading: "Обзор матча", rankedTag: "РЕЙТИНГ", rankedHeading: "Ранг и результаты",
-    historyTag: "ИСТОРИЯ", historyHeading: "История MMR", historyMode: "Режим", historyEmpty: "Для этого режима пока нет значений MMR.", historyPoints: "значений",
-    statsTag: "СТАТИСТИКА ИГРОКА", statsHeading: "Статистика матча", scopeTag: "УЧЁТ ПОБЕД / ПОРАЖЕНИЙ",
+    matchTag: "ТЕКУЩИЙ МАТЧ", matchHeading: "Обзор матча", rankedHeading: "Ранг и результаты",
+    historyHeading: "История MMR", historyMode: "Режим", historyDate: "Дата", historyChange: "Изменение с предыдущей точки", historyEmpty: "Для этого режима пока нет значений MMR.", historyPoints: "значений",
+    statsTag: "СТАТИСТИКА ИГРОКА", statsHeading: "Статистика матча", statsScopeTag: "СТАТИСТИКА",
     allModes: "Все режимы", currentMode: "Текущий режим", switchScope: "Сменить охват",
     period: "Период", periodSession: "Текущая сессия", periodCleared: "С момента сброса", periodAlltime: "За всё время",
     newSession: "Новая сессия", newSessionConfirm: "Начать новую сессию? Статистика сессии начнётся с нуля; прошлые матчи останутся в «С момента сброса» и «За всё время».",
@@ -267,9 +267,19 @@ const TEXT = {
   }
 };
 
+const CONFIG_TEXT = {
+  de: { open: "Konfiguration öffnen", heading: "Konfiguration", close: "Schließen" },
+  en: { open: "Open settings", heading: "Settings", close: "Close" },
+  pl: { open: "Otwórz konfigurację", heading: "Konfiguracja", close: "Zamknij" },
+  fr: { open: "Ouvrir la configuration", heading: "Configuration", close: "Fermer" },
+  es: { open: "Abrir configuración", heading: "Configuración", close: "Cerrar" },
+  pt: { open: "Abrir configurações", heading: "Configuração", close: "Fechar" },
+  ru: { open: "Открыть настройки", heading: "Настройки", close: "Закрыть" }
+};
+
 const ACCOUNT_TEXT = {
   de: {
-    accountTag: "PLATTFORMKONTEN", accountHeading: "Konten und Kandidaten",
+    accountHeading: "Konten und Kandidaten",
     accountPending: "Mehrere mögliche Konten – bitte dein Konto auswählen.",
     accountWaiting: "Noch kein Konto ausgewählt.", accountVerified: "Spielkonto bestätigt",
     accountManual: "Manuell ausgewählt", accountInferred: "Automatisch vermutet (nicht bestätigt)",
@@ -283,7 +293,7 @@ const ACCOUNT_TEXT = {
     accountRemoveConfirm: "Diese ID aus der Kontoliste entfernen? Gespeicherte Matchdaten bleiben erhalten."
   },
   en: {
-    accountTag: "PLATFORM ACCOUNTS", accountHeading: "Accounts and candidates",
+    accountHeading: "Accounts and candidates",
     accountPending: "Several accounts are possible — select your account.",
     accountWaiting: "No account selected yet.", accountVerified: "Game account verified",
     accountManual: "Manually selected", accountInferred: "Automatically suggested (not verified)",
@@ -297,7 +307,7 @@ const ACCOUNT_TEXT = {
     accountRemoveConfirm: "Remove this ID from your account list? Saved match data will be kept."
   },
   pl: {
-    accountTag: "KONTA PLATFORM", accountHeading: "Konta i kandydaci",
+    accountHeading: "Konta i kandydaci",
     accountPending: "Możliwych jest kilka kont — wybierz swoje konto.",
     accountWaiting: "Nie wybrano jeszcze konta.", accountVerified: "Konto gry zweryfikowane",
     accountManual: "Wybrane ręcznie", accountInferred: "Wykryte automatycznie (niezweryfikowane)",
@@ -311,7 +321,7 @@ const ACCOUNT_TEXT = {
     accountRemoveConfirm: "Usunąć ten ID z listy kont? Zapisane dane meczów zostaną zachowane."
   },
   fr: {
-    accountTag: "COMPTES DE PLATEFORME", accountHeading: "Comptes et candidats",
+    accountHeading: "Comptes et candidats",
     accountPending: "Plusieurs comptes sont possibles : choisissez votre compte.",
     accountWaiting: "Aucun compte sélectionné.", accountVerified: "Compte du jeu vérifié",
     accountManual: "Sélection manuelle", accountInferred: "Suggestion automatique (non vérifiée)",
@@ -325,7 +335,7 @@ const ACCOUNT_TEXT = {
     accountRemoveConfirm: "Retirer cet ID de la liste ? Les données de match enregistrées seront conservées."
   },
   es: {
-    accountTag: "CUENTAS DE PLATAFORMA", accountHeading: "Cuentas y candidatos",
+    accountHeading: "Cuentas y candidatos",
     accountPending: "Hay varias cuentas posibles; selecciona la tuya.",
     accountWaiting: "Aún no hay una cuenta seleccionada.", accountVerified: "Cuenta del juego verificada",
     accountManual: "Selección manual", accountInferred: "Sugerencia automática (sin verificar)",
@@ -339,7 +349,7 @@ const ACCOUNT_TEXT = {
     accountRemoveConfirm: "¿Quitar este ID de la lista? Se conservarán los datos de las partidas."
   },
   pt: {
-    accountTag: "CONTAS DE PLATAFORMA", accountHeading: "Contas e candidatos",
+    accountHeading: "Contas e candidatos",
     accountPending: "Há várias contas possíveis; selecione a sua.",
     accountWaiting: "Nenhuma conta selecionada.", accountVerified: "Conta do jogo verificada",
     accountManual: "Selecionada manualmente", accountInferred: "Sugestão automática (não verificada)",
@@ -353,7 +363,7 @@ const ACCOUNT_TEXT = {
     accountRemoveConfirm: "Remover este ID da lista? Os dados das partidas serão mantidos."
   },
   ru: {
-    accountTag: "УЧЁТНЫЕ ЗАПИСИ ПЛАТФОРМ", accountHeading: "Учётные записи и кандидаты",
+    accountHeading: "Учётные записи и кандидаты",
     accountPending: "Возможно несколько учётных записей — выберите свою.",
     accountWaiting: "Учётная запись ещё не выбрана.", accountVerified: "Игровая учётная запись подтверждена",
     accountManual: "Выбрана вручную", accountInferred: "Определена автоматически (не подтверждена)",
@@ -373,11 +383,20 @@ const DASHBOARD_ACTIONS = new Set([...RANKED_ACTIONS, "stats-scope"]);
 const LABELS = {
   mmr: "mmr", rank: "rank", "mmr-wl": "mmrWl", streak: "streak", records: "records", "ban-countdown": "ban"
 };
+const BUILD_LABELS = {
+  de: { build: "Build", development: "Entwicklungsbuild", locale: "de-DE" },
+  en: { build: "Build", development: "Development build", locale: "en-US" },
+  pl: { build: "Kompilacja", development: "Wersja deweloperska", locale: "pl-PL" },
+  fr: { build: "Build", development: "Version de développement", locale: "fr-FR" },
+  es: { build: "Compilación", development: "Versión de desarrollo", locale: "es-ES" },
+  pt: { build: "Build", development: "Versão de desenvolvimento", locale: "pt-PT" },
+  ru: { build: "Сборка", development: "Версия для разработки", locale: "ru-RU" }
+};
 const state = {
   locale: "en", models: new Map(),
   connection: { status: "connecting", error: null, revision: -1 }, error: null,
   update: { phase: "starting", version: "" }, autoCheckUpdates: true,
-  session: null, accounts: null
+  session: null, accounts: null, version: "", buildDate: null
 };
 let errorChanged = false;
 let updateStateRevision = 0;
@@ -388,6 +407,8 @@ let updateHideTimer;
 let accountChoice = "";
 let accountsBusy = false;
 let accountsRenderSignature = "";
+let accountsPanelInitialized = false;
+let lastAccountIdentity = "";
 
 const UPDATE_BALLOON_MS = 8000;
 const UPDATE_NOTIFICATION_PHASES = new Set([
@@ -403,7 +424,6 @@ function renderAccounts() {
   const signature = JSON.stringify([state.locale, state.accounts, accountChoice, accountsBusy]);
   if (signature === accountsRenderSignature) return;
   accountsRenderSignature = signature;
-  document.getElementById("accounts-eyebrow").textContent = tr("accountTag");
   document.getElementById("accounts-heading").textContent = tr("accountHeading");
   document.getElementById("accounts-hint").textContent = tr("accountHint");
   document.getElementById("accounts-select-label").textContent = tr("accountSelect");
@@ -414,6 +434,15 @@ function renderAccounts() {
   document.getElementById("accounts-add").textContent = tr("accountAdd");
 
   const accounts = state.accounts;
+  const accountPanel = document.getElementById("accounts-panel");
+  const accountIdentity = accounts?.verifiedAccountId ?? accounts?.selectedAccountId ?? "";
+  if (!accountsPanelInitialized) {
+    accountPanel.open = !accountIdentity;
+    accountsPanelInitialized = true;
+  } else if (accountIdentity !== lastAccountIdentity) {
+    accountPanel.open = !accountIdentity;
+  }
+  lastAccountIdentity = accountIdentity;
   const entries = accounts?.accounts ?? [];
   if (!entries.some((entry) => entry.accountId === accountChoice)) {
     accountChoice = accounts?.activeAccountId ?? accounts?.selectedAccountId ?? entries[0]?.accountId ?? "";
@@ -446,7 +475,7 @@ function renderAccounts() {
   document.getElementById("accounts-add").disabled = !accounts || accountsBusy;
   const active = entries.find((entry) => entry.accountId === accounts?.activeAccountId);
   let status = tr("accountWaiting");
-  if (accounts?.selectionRequired) {
+  if (accounts?.selectionRequired && !accountIdentity) {
     status = tr("accountPending");
   } else if (accounts?.activeAccountId) {
     const kind = accounts.verifiedAccountId ? "accountVerified" :
@@ -506,7 +535,7 @@ const PLAYLIST_LABELS = {
   ranked_snow_day: "Snow Day", ranked_heatseeker: "Heatseeker", casual: "Casual", tournament: "Tournament"
 };
 const SVG_NS = "http://www.w3.org/2000/svg";
-const CHART = { width: 640, height: 200, padX: 8, padY: 16 };
+const CHART = { width: 640, height: 240, padLeft: 68, padRight: 12, padTop: 16, padBottom: 50 };
 let mmrHistory = {};
 let historyPlaylist;
 let historyTimer;
@@ -518,21 +547,30 @@ function svgElement(name, attributes) {
   return element;
 }
 
+function formatHistoryDate(date) {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${day}.${month}.${date.getFullYear()}`;
+}
+
 function chartPoints(points) {
   const values = points.map((point) => point.mmr);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const span = Math.max(max - min, 1);
-  const innerWidth = CHART.width - CHART.padX * 2;
-  const innerHeight = CHART.height - CHART.padY * 2;
+  let min = Math.min(...values);
+  let max = Math.max(...values);
+  if (min === max) {
+    min -= 5;
+    max += 5;
+  }
+  const span = max - min;
+  const innerWidth = CHART.width - CHART.padLeft - CHART.padRight;
+  const innerHeight = CHART.height - CHART.padTop - CHART.padBottom;
   return points.map((point, index) => ({
-    x: CHART.padX + (points.length === 1 ? innerWidth / 2 : (innerWidth * index) / (points.length - 1)),
-    y: CHART.padY + innerHeight - ((point.mmr - min) / span) * innerHeight
+    x: CHART.padLeft + (points.length === 1 ? innerWidth / 2 : (innerWidth * index) / (points.length - 1)),
+    y: CHART.padTop + innerHeight - ((point.mmr - min) / span) * innerHeight
   }));
 }
 
 function renderMmrHistory() {
-  document.getElementById("history-eyebrow").textContent = tr("historyTag");
   document.getElementById("history-heading").textContent = tr("historyHeading");
   document.getElementById("history-mode-label").textContent = tr("historyMode");
 
@@ -551,11 +589,17 @@ function renderMmrHistory() {
   select.disabled = playlists.length === 0;
 
   const chart = document.getElementById("history-chart");
+  const legend = document.getElementById("history-legend");
+  const legendLabel = document.getElementById("history-legend-label");
+  const tooltip = document.getElementById("history-tooltip");
   const summary = document.getElementById("history-summary");
   const empty = document.getElementById("history-empty");
   const points = historyPlaylist ? mmrHistory[historyPlaylist] : [];
   chart.replaceChildren();
+  tooltip.hidden = true;
+  tooltip.className = "history-tooltip";
   chart.hidden = points.length === 0;
+  legend.hidden = points.length === 0;
   summary.hidden = points.length === 0;
   empty.hidden = points.length > 0;
   empty.textContent = tr("historyEmpty");
@@ -566,7 +610,73 @@ function renderMmrHistory() {
 
   const coords = chartPoints(points);
   const line = coords.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
-  const bottom = CHART.height - CHART.padY;
+  const bottom = CHART.height - CHART.padBottom;
+  const values = points.map((point) => point.mmr);
+  let min = Math.min(...values);
+  let max = Math.max(...values);
+  if (min === max) {
+    min -= 5;
+    max += 5;
+  }
+  const tickYs = [CHART.padTop, (CHART.padTop + bottom) / 2, bottom];
+  for (const [index, y] of tickYs.entries()) {
+    const value = Math.round(max - ((max - min) * index) / (tickYs.length - 1));
+    const label = svgElement("text", {
+      class: "history-tick-label",
+      x: CHART.padLeft - 8,
+      y: (y + 4).toFixed(1),
+      "text-anchor": "end"
+    });
+    label.textContent = String(value);
+    chart.append(
+      svgElement("line", {
+        class: index === tickYs.length - 1 ? "history-axis" : "history-gridline",
+        x1: CHART.padLeft,
+        y1: y.toFixed(1),
+        x2: CHART.width - CHART.padRight,
+        y2: y.toFixed(1)
+      }),
+      label
+    );
+  }
+  const yAxisLabel = svgElement("text", {
+    class: "history-axis-label",
+    x: 15,
+    y: ((CHART.padTop + bottom) / 2).toFixed(1),
+    transform: `rotate(-90 15 ${(CHART.padTop + bottom) / 2})`,
+    "text-anchor": "middle"
+  });
+  yAxisLabel.textContent = tr("mmr");
+  const xAxisLabel = svgElement("text", {
+    class: "history-axis-label",
+    x: (CHART.width / 2).toFixed(1),
+    y: (CHART.height - 4).toFixed(1),
+    "text-anchor": "middle"
+  });
+  xAxisLabel.textContent = tr("historyDate");
+  chart.append(
+    svgElement("line", {
+      class: "history-axis",
+      x1: CHART.padLeft,
+      y1: CHART.padTop,
+      x2: CHART.padLeft,
+      y2: bottom
+    }),
+    yAxisLabel,
+    xAxisLabel
+  );
+  const dateIndexes = points.length === 1 ? [0] : [0, points.length - 1];
+  for (const index of dateIndexes) {
+    const point = coords[index];
+    const dateLabel = svgElement("text", {
+      class: "history-tick-label",
+      x: point.x.toFixed(1),
+      y: (bottom + 17).toFixed(1),
+      "text-anchor": index === 0 ? "start" : index === points.length - 1 ? "end" : "middle"
+    });
+    dateLabel.textContent = formatHistoryDate(new Date(points[index].at));
+    chart.append(dateLabel);
+  }
   chart.append(
     svgElement("polygon", {
       class: "history-area",
@@ -575,15 +685,77 @@ function renderMmrHistory() {
     svgElement("polyline", { class: "history-line", points: line })
   );
   for (const [index, point] of coords.entries()) {
-    const dot = svgElement("circle", { class: "history-dot", cx: point.x.toFixed(1), cy: point.y.toFixed(1), r: 3 });
+    const entry = points[index];
+    const delta = index > 0 ? entry.mmr - points[index - 1].mmr : null;
+    const pointDate = new Date(entry.at);
+    const date = `${formatHistoryDate(pointDate)} ${pointDate.toLocaleTimeString(state.locale)}`;
+    const pointLabelLines = [
+      PLAYLIST_LABELS[historyPlaylist] || historyPlaylist,
+      `${tr("mmr")}: ${entry.mmr}`,
+      ...(delta === null ? [] : [`${tr("historyChange")}: ${delta >= 0 ? "+" : ""}${delta}`]),
+      `${tr("historyDate")}: ${date}`
+    ];
+    const pointLabel = pointLabelLines.join("\n");
+    const hitTarget = svgElement("circle", {
+      class: "history-hit-target",
+      cx: point.x.toFixed(1),
+      cy: point.y.toFixed(1),
+      r: 11,
+      tabindex: 0,
+      focusable: "true",
+      "aria-label": pointLabel,
+      "aria-describedby": "history-tooltip"
+    });
     const title = svgElement("title", {});
-    title.textContent = `${points[index].mmr} · ${new Date(points[index].at).toLocaleString(state.locale)}`;
-    dot.append(title);
-    chart.append(dot);
+    title.textContent = pointLabel;
+    hitTarget.append(title);
+    const showTooltip = (event) => {
+      tooltip.replaceChildren(...pointLabelLines.map((text, lineIndex) => {
+        const line = document.createElement("span");
+        line.textContent = text;
+        if (lineIndex === 0) line.className = "history-tooltip-mode";
+        return line;
+      }));
+      const rect = hitTarget.getBoundingClientRect?.();
+      const clientX = Number.isFinite(event.clientX)
+        ? event.clientX
+        : rect ? rect.left + rect.width / 2 : 640;
+      const clientY = Number.isFinite(event.clientY)
+        ? event.clientY
+        : rect ? rect.top + rect.height / 2 : 120;
+      const tooltipHeight = tooltip.offsetHeight || pointLabelLines.length * 20;
+      const tooltipWidth = tooltip.offsetWidth || 200;
+      tooltip.className = clientY < tooltipHeight + 20
+        ? "history-tooltip below"
+        : "history-tooltip";
+      tooltip.style.left = `${Math.max(tooltipWidth / 2 + 8,
+        Math.min(clientX, (window.innerWidth || 1280) - tooltipWidth / 2 - 8))}px`;
+      tooltip.style.top = `${clientY}px`;
+      tooltip.hidden = false;
+    };
+    const hideTooltip = () => { tooltip.hidden = true; };
+    hitTarget.addEventListener("pointerenter", showTooltip);
+    hitTarget.addEventListener("pointermove", (event) => {
+      if (!tooltip.hidden) showTooltip(event);
+    });
+    hitTarget.addEventListener("pointerleave", () => {
+      if (document.activeElement !== hitTarget) hideTooltip();
+    });
+    hitTarget.addEventListener("focus", showTooltip);
+    hitTarget.addEventListener("blur", hideTooltip);
+    chart.append(
+      hitTarget,
+      svgElement("circle", {
+        class: "history-dot",
+        cx: point.x.toFixed(1),
+        cy: point.y.toFixed(1),
+        r: 4
+      })
+    );
   }
   chart.setAttribute("aria-label", `${tr("historyHeading")} ${PLAYLIST_LABELS[historyPlaylist] || historyPlaylist}`);
+  legendLabel.textContent = `${tr("mmr")} · ${PLAYLIST_LABELS[historyPlaylist] || historyPlaylist}`;
 
-  const values = points.map((point) => point.mmr);
   const change = values.at(-1) - values[0];
   summary.textContent = `${values.at(-1)} (${change >= 0 ? "+" : ""}${change}) · ` +
     `Min ${Math.min(...values)} · Max ${Math.max(...values)} · ${points.length} ${tr("historyPoints")}`;
@@ -757,9 +929,23 @@ function showUpdateError(error) {
 
 function renderAll() {
   document.documentElement.lang = state.locale;
-  document.getElementById("ranked-eyebrow").textContent = tr("rankedTag");
+  const configText = CONFIG_TEXT[state.locale] ?? CONFIG_TEXT.en;
+  document.getElementById("config-open").setAttribute("aria-label", configText.open);
+  document.getElementById("config-open").title = configText.open;
+  document.getElementById("config-heading").textContent = configText.heading;
+  document.getElementById("config-close").textContent = configText.close;
+  const buildInfo = BUILD_LABELS[state.locale] ?? BUILD_LABELS.en;
+  const hasBuildDate = typeof state.buildDate === "string" &&
+    !Number.isNaN(Date.parse(state.buildDate));
+  const buildDate = hasBuildDate
+    ? new Intl.DateTimeFormat(buildInfo.locale, {
+      dateStyle: "medium", timeZone: "UTC"
+    }).format(new Date(state.buildDate))
+    : buildInfo.development;
+  document.getElementById("build-info").textContent =
+    `v${state.version || "—"} · ${hasBuildDate ? `${buildInfo.build} ${buildDate}` : buildDate}`;
   document.getElementById("ranked-heading").textContent = tr("rankedHeading");
-  document.getElementById("scope-eyebrow").textContent = tr("scopeTag");
+  document.getElementById("scope-eyebrow").textContent = tr("statsScopeTag");
   document.getElementById("scope-button").textContent = tr("switchScope");
   document.getElementById("reset-button").textContent = tr("reset");
   document.getElementById("setup-api-button").textContent = tr("setupButton");
@@ -973,6 +1159,15 @@ document.getElementById("update-auto").addEventListener("change", async (event) 
 document.getElementById("scope-button").addEventListener("click", async () => {
   try { await bridge.toggleScope(); } catch { showError(tr("scopeError")); }
 });
+const configurationDialog = document.getElementById("config-dialog");
+document.getElementById("config-open").addEventListener("click", () => {
+  document.getElementById("config-status").textContent = "";
+  configurationDialog.showModal();
+});
+document.getElementById("config-close").addEventListener("click", () => configurationDialog.close());
+configurationDialog.addEventListener("click", (event) => {
+  if (event.target === configurationDialog) configurationDialog.close();
+});
 document.getElementById("reset-button").addEventListener("click", async () => {
   if (!window.confirm(tr("resetConfirm"))) return;
   try { await bridge.resetStats(); } catch { showError(tr("resetError")); }
@@ -1002,8 +1197,11 @@ document.getElementById("setup-api-button").addEventListener("click", async (eve
       ? tr("alreadyConfigured")
       : tr("setupSuccess");
     document.getElementById("success-panel").hidden = false;
+    configurationDialog.close();
   } catch (error) {
-    showError(error instanceof Error ? error.message : tr("settingsError"));
+    const message = error instanceof Error ? error.message : tr("settingsError");
+    document.getElementById("config-status").textContent = message;
+    showError(message);
   } finally {
     button.disabled = false;
   }
@@ -1012,8 +1210,13 @@ document.getElementById("locale-select").addEventListener("change", async (event
   try {
     const result = await bridge.setLocale(event.target.value);
     state.locale = result.locale;
+    document.getElementById("config-status").textContent = "";
     renderAll();
-  } catch { showError(tr("settingsError")); }
+  } catch {
+    const message = tr("settingsError");
+    document.getElementById("config-status").textContent = message;
+    showError(message);
+  }
 });
 document.getElementById("port-form").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -1022,13 +1225,20 @@ document.getElementById("port-form").addEventListener("submit", async (event) =>
   try {
     const result = await bridge.setPort(value);
     input.value = String(result.port);
+    document.getElementById("config-status").textContent = "";
     clearError();
-  } catch (error) { showError(error instanceof Error ? error.message : tr("settingsError")); }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : tr("settingsError");
+    document.getElementById("config-status").textContent = message;
+    showError(message);
+  }
 });
 
 const initialUpdateRevision = updateStateRevision;
 bridge.getState().then((initial) => {
   state.locale = initial.locale;
+  state.version = initial.version;
+  state.buildDate = initial.buildDate;
   if (updateStateRevision === initialUpdateRevision) applyUpdate(initial.update);
   if (!autoUpdateChanged) state.autoCheckUpdates = initial.autoCheckUpdates;
   if (initial.session && !state.session) state.session = initial.session;

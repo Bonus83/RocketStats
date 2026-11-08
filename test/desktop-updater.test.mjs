@@ -43,6 +43,10 @@ test("release config supports unsigned releases and optional pinned publishers",
   const empty = { owner: "", repo: "", publisherNames: [] };
   assert.equal(parseUpdateConfig(empty), null);
   assert.equal(desktopBuildConfig(null, false).publish, null);
+  assert.match(desktopBuildConfig(null, false).extraMetadata.buildDate, /^\d{4}-\d\d-\d\dT/);
+  const buildDate = "2026-11-08T18:51:15.000Z";
+  assert.deepEqual(desktopBuildConfig(null, false, buildDate).extraMetadata, { buildDate });
+  assert.throws(() => desktopBuildConfig(null, false, "not-a-date"), /build date/);
   assert.throws(() => desktopBuildConfig(null, true), /requires/);
   for (const invalid of [
     { ...releaseConfig, owner: "" },
@@ -147,7 +151,7 @@ test("updates require separate download and installation consent and flush befor
   assert.equal(updater.installs.length, 0);
   releaseFlush();
   await installation;
-  assert.deepEqual(updater.installs, [[false, true]]);
+  assert.deepEqual(updater.installs, [[true, true]]);
   controller.dispose();
 });
 
@@ -261,7 +265,7 @@ test("installation rechecks match status and requires a fresh confirmation if it
   assert.equal(flushes, 0);
   await controller.install("unknown");
   assert.equal(flushes, 1);
-  assert.deepEqual(updater.installs, [[false, true]]);
+  assert.deepEqual(updater.installs, [[true, true]]);
   controller.dispose();
 });
 

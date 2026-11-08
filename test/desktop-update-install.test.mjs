@@ -107,7 +107,7 @@ test("desktop update IPC checks match status without blocking a running game", a
   assert.equal(installs.length, 0);
   await handlers.get("desktop:install-update")(event, "in-match");
   assert.equal(prepared, 1);
-  assert.deepEqual(installs, [[false, true]]);
+  assert.deepEqual(installs, [[true, true]]);
   assert.throws(
     () => handlers.get("desktop:update-match-status")({ sender: {}, senderFrame: frame }),
     /only be controlled from the desktop dashboard/

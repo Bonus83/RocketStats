@@ -152,7 +152,7 @@ function createUpdateController({
       installationPrepared = true;
       if (installationErrors.length) return recoverFailedInstallation();
       try {
-        updater.quitAndInstall(false, true);
+        updater.quitAndInstall(true, true);
       } catch (error) {
         recordInstallationError(error);
         return recoverFailedInstallation();

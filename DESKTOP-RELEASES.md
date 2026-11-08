@@ -6,6 +6,8 @@ Configured, installed Windows builds check once at startup and every six hours
 while open. Users can turn automatic checking off or check manually.
 Downloads and installation each require a user action. A downloaded update is
 **not** installed just because the user closes the app.
+After the user confirms installation, the NSIS installer runs silently and
+restarts RocketStats without showing its setup wizard.
 
 The dashboard menu contains the manual check and automatic-check setting.
 Update status appears in an in-app balloon, including the startup result.

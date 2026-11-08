@@ -20,7 +20,7 @@ async function main() {
   }
   const options = {
     targets: Platform.WINDOWS.createTarget(["nsis"], Arch.x64),
-    config: desktopBuildConfig(config, args.includes("--release")),
+    config: desktopBuildConfig(config, args.includes("--release"), new Date().toISOString()),
     publish: "never"
   };
   await buildWithRetry(options);

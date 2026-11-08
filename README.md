@@ -99,6 +99,8 @@ Per-account data stays on this PC. The state file is stored in
 
 The desktop account panel and the Stream Deck Property Inspector list observed
 `PrimaryId` values, player names, and the number of distinct observed matches.
+The desktop panel opens automatically until an account is selected, then stays
+collapsed unless the user opens it to switch or manage accounts.
 Add an ID in the form `Steam|ID|0` or `Epic|ID|0`, select an observed ID as your
 account, or keep several IDs in the account list. Removing an ID from the list
 does not delete its match history. A verified primary login or local-player
@@ -198,15 +200,22 @@ The desktop companion reuses the TypeScript live runtime and account/statistics
 logic, but does not require Stream Deck. It is a separate dashboard window with
 an isolated renderer; it does not inject an in-game overlay, read or write game
 memory, install drivers, automate inputs, or use the optional HUD-control bridge.
+The dashboard header shows the application version and packaged build date, and
+the initial window is sized to show the MMR history when the screen allows.
 The desktop dashboard shows rank, MMR, win/loss, streaks, records and matchmaking
 bans. Live match and player-stat cards (including boost, goals, timer, score,
 queue, speed and possession) are not displayed. The local feed still supports
 account statistics and record tracking; Stream Deck actions are unchanged.
+Language, local API port and Stats API setup are grouped in a configuration
+dialog, while session and statistics controls remain on the dashboard.
 
 Below the cards, an MMR history graph shows how the rating developed. History is
 stored per account and per mode (`rankByPlaylist[].history` in `state.json`, up
-to 500 changes per mode); pick the mode in the dropdown. Points are added only
-when the MMR value changes.
+to 500 changes per mode); pick the mode in the dropdown. Its legend identifies
+the selected mode, and hovering or keyboard-focusing a point shows its MMR,
+change from the previous point, and timestamp. The chart labels MMR on the
+vertical axis and date on the horizontal axis. Points are added only when the
+MMR value changes.
 
 For development:
 

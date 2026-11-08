@@ -9,7 +9,9 @@ function fakeElement() {
     setAttribute(name, value) { this.attributes.set(name, value); },
     contains(element) { return element === this; },
     matches() { return false; },
-    focus() { this.focused = true; }
+    focus() { this.focused = true; },
+    showModal() { this.open = true; },
+    close() { this.open = false; }
   };
 }
 

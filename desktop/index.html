@@ -15,12 +15,17 @@
       <div>
         <p class="eyebrow">ROCKET LEAGUE · DESKTOP COMPANION</p>
         <h1>RocketStats</h1>
+        <p id="build-info" class="build-info"></p>
       </div>
       <div class="topbar-actions">
         <div class="connection">
           <span id="status-dot" class="status-dot"></span>
           <span id="connection-label">Connecting to local Stats API…</span>
         </div>
+        <button id="config-open" class="menu-toggle config-toggle" type="button" aria-label="Configuration"
+          aria-haspopup="dialog" aria-controls="config-dialog">
+          <span aria-hidden="true">&#9881;</span>
+        </button>
         <details id="app-menu" class="app-menu">
           <summary id="menu-toggle" class="menu-toggle" aria-label="Menu" aria-controls="menu-panel">
             <span aria-hidden="true">&#9776;</span>
@@ -75,33 +80,36 @@
         </div>
       </section>
 
-      <section class="accounts-panel" aria-labelledby="accounts-heading">
-        <div class="accounts-heading">
-          <div>
-            <p class="eyebrow" id="accounts-eyebrow">PLATFORM ACCOUNTS</p>
-            <h2 id="accounts-heading">Accounts and candidates</h2>
+      <details id="accounts-panel" class="accounts-panel">
+        <summary class="accounts-summary">
+          <div class="accounts-heading">
+            <div>
+              <h2 id="accounts-heading">Accounts and candidates</h2>
+            </div>
+            <p id="accounts-status" role="status" aria-live="polite"></p>
           </div>
-          <p id="accounts-status" role="status" aria-live="polite"></p>
+        </summary>
+        <div class="accounts-content">
+          <p id="accounts-hint" class="accounts-hint"></p>
+          <div class="accounts-actions">
+            <label for="accounts-select" id="accounts-select-label">Observed accounts</label>
+            <select id="accounts-select" disabled></select>
+            <button id="accounts-use" class="button secondary" type="button" disabled>Use account</button>
+            <button id="accounts-correct" class="button secondary" type="button" hidden>Correct automatic attribution</button>
+            <button id="accounts-remove" class="button secondary" type="button" disabled>Remove</button>
+          </div>
+          <form id="accounts-add-form" class="accounts-actions">
+            <label for="accounts-add-input" id="accounts-add-label">Add platform ID</label>
+            <input id="accounts-add-input" type="text" maxlength="160" placeholder="Steam|ID|0" autocomplete="off">
+            <button id="accounts-add" class="button secondary" type="submit" disabled>Add</button>
+          </form>
         </div>
-        <p id="accounts-hint" class="accounts-hint"></p>
-        <div class="accounts-actions">
-          <label for="accounts-select" id="accounts-select-label">Observed accounts</label>
-          <select id="accounts-select" disabled></select>
-          <button id="accounts-use" class="button secondary" type="button" disabled>Use account</button>
-          <button id="accounts-correct" class="button secondary" type="button" hidden>Correct automatic attribution</button>
-          <button id="accounts-remove" class="button secondary" type="button" disabled>Remove</button>
-        </div>
-        <form id="accounts-add-form" class="accounts-actions">
-          <label for="accounts-add-input" id="accounts-add-label">Add platform ID</label>
-          <input id="accounts-add-input" type="text" maxlength="160" placeholder="Steam|ID|0" autocomplete="off">
-          <button id="accounts-add" class="button secondary" type="submit" disabled>Add</button>
-        </form>
-      </section>
+      </details>
 
       <section class="controls" aria-label="Dashboard controls">
         <div class="scope-control">
           <div>
-            <p class="eyebrow" id="scope-eyebrow">WIN / LOSS SCOPE</p>
+            <p class="eyebrow" id="scope-eyebrow">STATISTICS</p>
             <strong id="scope-value">All modes</strong>
           </div>
           <button id="scope-button" class="button secondary" type="button">Switch scope</button>
@@ -112,7 +120,46 @@
         </div>
         <button id="new-session-button" class="button secondary" type="button">New session</button>
         <button id="reset-button" class="button danger" type="button">Reset W/L</button>
-        <button id="setup-api-button" class="button secondary" type="button">Set up local Stats API</button>
+      </section>
+
+      <section class="dashboard-section">
+        <div class="section-heading compact-heading">
+          <div>
+            <h2 id="ranked-heading">Rank &amp; record</h2>
+          </div>
+        </div>
+        <div id="ranked-grid" class="card-grid"></div>
+      </section>
+
+      <section class="dashboard-section">
+        <div class="section-heading compact-heading">
+          <div>
+            <h2 id="history-heading">MMR history</h2>
+          </div>
+          <label class="history-mode">
+            <span id="history-mode-label">Mode</span>
+            <select id="history-select"></select>
+          </label>
+        </div>
+        <div class="history-panel">
+          <div id="history-legend" class="history-legend" hidden>
+            <span class="history-legend-key" aria-hidden="true"></span>
+            <span id="history-legend-label"></span>
+          </div>
+          <svg id="history-chart" class="history-chart" viewBox="0 0 640 240" role="img"></svg>
+          <div id="history-tooltip" class="history-tooltip" role="tooltip" hidden></div>
+          <p id="history-summary" class="history-summary"></p>
+          <p id="history-empty" class="empty-state" hidden></p>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="config-dialog" class="configuration-dialog" aria-labelledby="config-heading">
+      <div class="configuration-header">
+        <h2 id="config-heading">Configuration</h2>
+        <button id="config-close" class="button secondary" type="button">Close</button>
+      </div>
+      <div class="configuration-fields">
         <div class="setting-control">
           <label for="locale-select" id="language-label">Language</label>
           <select id="locale-select">
@@ -130,37 +177,10 @@
           <input id="port-input" type="number" min="1" max="65535" value="49123" inputmode="numeric">
           <button class="button secondary compact" id="port-save" type="submit">Apply</button>
         </form>
-      </section>
-
-      <section class="dashboard-section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow" id="ranked-eyebrow">RANKED</p>
-            <h2 id="ranked-heading">Rank &amp; record</h2>
-          </div>
-        </div>
-        <div id="ranked-grid" class="card-grid"></div>
-      </section>
-
-      <section class="dashboard-section">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow" id="history-eyebrow">HISTORY</p>
-            <h2 id="history-heading">MMR history</h2>
-          </div>
-          <label class="history-mode">
-            <span id="history-mode-label">Mode</span>
-            <select id="history-select"></select>
-          </label>
-        </div>
-        <div class="history-panel">
-          <svg id="history-chart" class="history-chart" viewBox="0 0 640 200" role="img"></svg>
-          <p id="history-summary" class="history-summary"></p>
-          <p id="history-empty" class="empty-state" hidden></p>
-        </div>
-      </section>
-
-    </main>
+        <button id="setup-api-button" class="button secondary" type="button">Set up local Stats API</button>
+        <p id="config-status" class="configuration-status" role="status" aria-live="polite"></p>
+      </div>
+    </dialog>
     <script src="./renderer.js"></script>
   </body>
 </html>

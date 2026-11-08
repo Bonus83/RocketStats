@@ -23,13 +23,17 @@ function parseUpdateConfig(input) {
   return { owner, repo, publisherNames };
 }
 
-function desktopBuildConfig(config, requireRelease) {
+function desktopBuildConfig(config, requireRelease, buildDate = new Date().toISOString()) {
   const signingReady = Boolean(config?.publisherNames.length);
   if (requireRelease && !config) {
     throw new Error("A release requires a public GitHub repository in desktop/update-config.json.");
   }
+  if (typeof buildDate !== "string" || Number.isNaN(Date.parse(buildDate))) {
+    throw new Error("The desktop build date must be a valid date string.");
+  }
   return {
     forceCodeSigning: signingReady,
+    extraMetadata: { buildDate },
     publish: config
       ? [{ provider: "github", owner: config.owner, repo: config.repo, private: false, releaseType: "release" }]
       : null,

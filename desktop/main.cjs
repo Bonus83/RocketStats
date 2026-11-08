@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain, screen } = require("electron");
 const { execFile, execFileSync } = require("node:child_process");
 const {
   copyFile, mkdir, readFile, rename, writeFile
@@ -36,6 +36,15 @@ const settingsPath = path.join(app.getPath("userData"), "settings.json");
 function systemLocale() {
   const candidate = app.getLocale().split(/[-_]/, 1)[0].toLowerCase();
   return LOCALES.has(candidate) ? candidate : "en";
+}
+
+function getBuildDate() {
+  const packagePath = path.join(app.getAppPath(), "package.json");
+  const metadata = JSON.parse(readFileSync(packagePath, "utf8"));
+  const buildDate = metadata.buildDate;
+  return typeof buildDate === "string" && !Number.isNaN(Date.parse(buildDate))
+    ? buildDate
+    : null;
 }
 
 function loadSettings() {
@@ -172,11 +181,14 @@ function handleServiceError(message, kind, code) {
 }
 
 function createWindow() {
+  const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
+  const width = Math.min(1400, screenWidth);
+  const height = Math.min(1050, screenHeight);
   mainWindow = new BrowserWindow({
-    width: 1180,
-    height: 820,
-    minWidth: 720,
-    minHeight: 600,
+    width,
+    height,
+    minWidth: Math.min(960, width),
+    minHeight: Math.min(800, height),
     backgroundColor: "#080d16",
     title: APP_NAME,
     webPreferences: {
@@ -202,6 +214,8 @@ function createWindow() {
 ipcMain.handle("desktop:get-state", () => ({
   models: [...models.values()],
   connection: connectionState.getState(),
+  version: app.getVersion(),
+  buildDate: getBuildDate(),
   locale,
   port,
   startupError,

@@ -73,6 +73,7 @@ async function loadDashboard(locale, mmrHistory, session = null, accounts = null
     ...(mmrHistory ? { getMmrHistory: async () => mmrHistory } : {}),
     getState: async () => ({
       locale, port: 49123, autoCheckUpdates: false, session, accounts,
+      version: "0.1.8", buildDate: "2026-11-08T18:51:15.000Z",
       connection: { status: "connected", error: null, revision: 0 },
       update: { phase: "idle", version: "0.1.0" },
       models: [...retained, ...removed].map((action) => model(action))
@@ -87,6 +88,34 @@ async function loadDashboard(locale, mmrHistory, session = null, accounts = null
   return { ...dom, html, listeners, calls, sessionCalls, accountCalls };
 }
 
+test("desktop shows the application version and build date in the header", async () => {
+  const h = await loadDashboard("de");
+  assert.match(h.getElement("build-info").textContent, /^v0\.1\.8 · Build /);
+  assert.match(h.getElement("build-info").textContent, /2026/);
+  assert.ok(h.getElement("history-chart"));
+});
+
+test("desktop groups locale, port and Stats API setup in a configuration dialog", async () => {
+  const h = await loadDashboard("de");
+  const dialog = h.html.match(/<dialog id="config-dialog"[\s\S]*?<\/dialog>/)?.[0];
+  const controls = h.html.match(/<section class="controls"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(dialog);
+  assert.ok(controls);
+  assert.match(dialog, /id="locale-select"/);
+  assert.match(dialog, /id="port-input"/);
+  assert.match(dialog, /id="setup-api-button"/);
+  assert.doesNotMatch(controls, /locale-select|port-input|setup-api-button/);
+
+  const configDialog = h.getElement("config-dialog");
+  assert.equal(configDialog.open, false);
+  h.getElement("config-open").listeners.get("click")();
+  assert.equal(configDialog.open, true);
+  assert.equal(h.getElement("config-heading").textContent, "Konfiguration");
+  h.getElement("config-close").listeners.get("click")();
+  assert.equal(configDialog.open, false);
+  assert.equal(h.getElement("reset-button").textContent, "Sieg/Niederlage zurücksetzen");
+});
+
 test("desktop shows possible accounts and manages multiple IDs without deleting match data", async () => {
   const a = "Steam|76561198000000001|0";
   const b = "Epic|friend|0";
@@ -98,13 +127,24 @@ test("desktop shows possible accounts and manages multiple IDs without deleting 
     ],
     selectionRequired: true
   });
+  assert.equal(h.getElement("accounts-panel").open, true);
   assert.match(h.getElement("accounts-status").textContent, /Mehrere mögliche Konten/);
   assert.deepEqual(h.getElement("accounts-select").children.map((option) => option.value), [a, b]);
   const select = h.getElement("accounts-select");
   select.value = b;
   select.listeners.get("change")({ target: select });
   await h.getElement("accounts-use").listeners.get("click")();
+  assert.equal(h.getElement("accounts-panel").open, false);
   assert.match(h.getElement("accounts-status").textContent, /Manuell ausgewählt: Friend/);
+  h.getElement("accounts-panel").open = true;
+  h.listeners.accounts({
+    accounts: [{ accountId: b, name: "Friend", matchesSeen: 2, managed: true, suggested: true }],
+    activeAccountId: b,
+    selectedAccountId: b,
+    selectionSource: "manual",
+    selectionRequired: false
+  });
+  assert.equal(h.getElement("accounts-panel").open, true);
   await h.getElement("accounts-remove").listeners.get("click")();
   h.getElement("accounts-add-input").value = added;
   await h.getElement("accounts-add-form").listeners.get("submit")({ preventDefault() {} });
@@ -116,6 +156,29 @@ test("desktop shows possible accounts and manages multiple IDs without deleting 
   await h.getElement("accounts-add-form").listeners.get("submit")({ preventDefault() {} });
   assert.equal(h.getElement("error-panel").hidden, false);
   assert.match(h.getElement("error-text").textContent, /Konto konnte nicht geändert werden/);
+});
+
+test("selected accounts start collapsed, remain user-toggleable, and reopen when removed", async () => {
+  const accountId = "Steam|76561198000000001|0";
+  const accounts = {
+    accounts: [{ accountId, name: "Me", matchesSeen: 4, managed: true, suggested: true }],
+    activeAccountId: accountId, selectedAccountId: accountId, selectionSource: "manual",
+    selectionRequired: true
+  };
+  const h = await loadDashboard("en", undefined, null, accounts);
+  const panel = h.getElement("accounts-panel");
+  assert.equal(panel.open, false);
+  assert.match(h.getElement("accounts-status").textContent, /Manually selected: Me/);
+
+  panel.open = true;
+  h.listeners.accounts({ ...accounts, activeAccountId: accountId });
+  assert.equal(panel.open, true);
+
+  h.listeners.accounts({
+    accounts: [{ ...accounts.accounts[0], managed: false }],
+    selectionRequired: false
+  });
+  assert.equal(panel.open, true);
 });
 
 test("desktop confirms corrections and passes the explicit correction flag", async () => {
@@ -215,6 +278,7 @@ test("desktop displays account statistics without live match or player-stat sect
 
 test("desktop keeps win/loss scope and reset controls after removing live data", async () => {
   const h = await loadDashboard("en");
+  assert.equal(h.getElement("scope-eyebrow").textContent, "STATISTICS");
   h.listeners.model({ ...model("stats-scope", "2v2"), footerKey: "scopeMode" });
   assert.equal(h.getElement("scope-value").textContent, "Current mode \u00b7 2v2");
   await h.getElement("scope-button").listeners.get("click")();
@@ -235,12 +299,41 @@ test("desktop draws the MMR history per mode and switches between modes", async 
   assert.deepEqual(select.children.map((option) => option.value), ["ranked_2v2", "ranked_3v3"]);
   assert.equal(select.value, "ranked_2v2");
   const chart = h.getElement("history-chart");
-  assert.equal(chart.children.filter((node) => node.tagName === "circle").length, 3);
+  assert.equal(chart.children.filter((node) => node.tagName === "circle" &&
+    node.attributes.get("class") === "history-dot").length, 3);
+  assert.equal(chart.children.filter((node) => node.attributes.get("class") === "history-hit-target").length, 3);
+  assert.equal(h.getElement("history-legend").hidden, false);
+  assert.equal(h.getElement("history-legend-label").textContent, "MMR · Ranked 2v2");
+  const axisLabels = chart.children.filter((node) => node.attributes.get("class") === "history-axis-label")
+    .map((node) => node.textContent);
+  assert.deepEqual(axisLabels, ["MMR", "Datum"]);
+  const tickLabels = chart.children.filter((node) => node.attributes.get("class") === "history-tick-label")
+    .map((node) => node.textContent);
+  assert.deepEqual(tickLabels.slice(0, 3), ["950", "925", "900"]);
+  assert.deepEqual(tickLabels.slice(3), ["01.01.1970", "01.01.1970"]);
+  const hitTarget = chart.children.find((node) => node.attributes.get("class") === "history-hit-target");
+  assert.equal(hitTarget.attributes.get("r"), "11");
+  assert.match(hitTarget.children[0].textContent, /Ranked 2v2\nMMR: 900\nDatum: 01\.01\.1970/);
+  const secondHitTarget = chart.children.filter((node) =>
+    node.attributes.get("class") === "history-hit-target")[1];
+  assert.match(secondHitTarget.children[0].textContent, /Änderung zum vorherigen Wert: \+50/);
+  secondHitTarget.listeners.get("pointerenter")({ clientX: 200, clientY: 100 });
+  const tooltip = h.getElement("history-tooltip");
+  assert.equal(tooltip.hidden, false);
+  assert.deepEqual(tooltip.children.slice(0, 3).map((line) => line.textContent), [
+    "Ranked 2v2", "MMR: 950", "Änderung zum vorherigen Wert: +50"
+  ]);
+  assert.match(tooltip.children[3].textContent, /^Datum: 01\.01\.1970/);
+  secondHitTarget.listeners.get("pointerleave")();
+  assert.equal(tooltip.hidden, true);
+
   assert.equal(h.getElement("history-summary").textContent, "930 (+30) · Min 900 · Max 950 · 3 Werte");
   assert.equal(h.getElement("history-empty").hidden, true);
 
   select.listeners.get("change")({ target: { value: "ranked_3v3" } });
-  assert.equal(chart.children.filter((node) => node.tagName === "circle").length, 1);
+  assert.equal(chart.children.filter((node) => node.tagName === "circle" &&
+    node.attributes.get("class") === "history-dot").length, 1);
+  assert.equal(h.getElement("history-legend-label").textContent, "MMR · Ranked 3v3");
   assert.match(h.getElement("history-summary").textContent, /^700 \(\+0\)/);
 });
 
@@ -251,4 +344,5 @@ test("desktop shows an empty MMR history hint when no values exist", async () =>
   assert.equal(h.getElement("history-empty").hidden, false);
   assert.equal(h.getElement("history-empty").textContent, "No MMR values for this mode yet.");
   assert.equal(h.getElement("history-select").disabled, true);
+  assert.equal(h.getElement("history-legend").hidden, true);
 });
