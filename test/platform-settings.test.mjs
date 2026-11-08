@@ -59,6 +59,12 @@ function harness() {
   };
 }
 
+test("Stream Deck settings bridge rejects malformed global settings explicitly", () => {
+  const h = harness();
+  h.bridge.receive(undefined);
+  assert.deepEqual(h.errors, ["Received invalid Stream Deck global settings."]);
+});
+
 test("Stream Deck settings expose candidates and process account commands without losing settings", async () => {
   const h = harness();
   h.bridge.start(h.current());

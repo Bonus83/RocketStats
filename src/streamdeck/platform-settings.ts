@@ -39,13 +39,17 @@ export class PlatformSettingsBridge {
     private readonly reportError: (error: unknown) => void
   ) {}
 
-  start(settings: JsonObject): void {
+  start(settings: unknown): void {
     this.ready = true;
     this.receive(settings);
     this.update(this.actions.get());
   }
 
-  receive(settings: JsonObject): void {
+  receive(settings: unknown): void {
+    if (!isRecord(settings)) {
+      this.reportError(new Error("Received invalid Stream Deck global settings."));
+      return;
+    }
     const raw = settings.platformAccountCommand;
     if (raw === undefined || raw === null) return;
     const command = parseCommand(raw);
@@ -119,8 +123,8 @@ export class PlatformSettingsBridge {
   }
 }
 
-function parseCommand(value: JsonValue): AccountCommand | undefined {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+function parseCommand(value: unknown): AccountCommand | undefined {
+  if (!isRecord(value)) return undefined;
   const { requestId, action, accountId, correctInferred } = value;
   if (
     typeof requestId !== "string" || requestId.length === 0 || requestId.length > 100 ||
@@ -136,6 +140,10 @@ function parseCommand(value: JsonValue): AccountCommand | undefined {
     accountId,
     ...(typeof correctInferred === "boolean" ? { correctInferred } : {})
   };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function serializeAccounts(snapshot: PlatformAccountsSnapshot): JsonObject {
