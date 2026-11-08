@@ -116,6 +116,8 @@ or push a tag `v<package version>`. It runs the tests, builds with
 match the version, and uploads them to a **draft** release (created if missing).
 It refuses to touch an already published release. Review the draft and publish
 it manually (step 4).
+The Windows packaging step retries twice for transient HTTP 502, 503 or 504
+responses; other build errors fail immediately.
 
 Both build commands use `publish: never`: neither uploads code nor creates or
 publishes releases. Uploads are a separate deliberate maintainer operation.
