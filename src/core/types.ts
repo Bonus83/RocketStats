@@ -56,6 +56,61 @@ export interface MatchRecord {
   isProvisional?: boolean;
   /** Set by a stats reset; the match is kept only so repeated result events cannot re-add it. */
   excludedFromStats?: boolean;
+  performance?: PlayerMatchPerformance;
+}
+
+export interface PlayerMatchPerformance {
+  score: number;
+  goals: number;
+  assists: number;
+  saves: number;
+  shots: number;
+  demos: number;
+  touches: number;
+  flipResets: number;
+  fastestGoalKph?: number;
+}
+
+export interface ObservedMatchPlayer extends PlayerMatchPerformance {
+  accountId: string;
+  name: string;
+  team: Team;
+}
+
+export interface ObservedIdentityMatch {
+  matchId: string;
+  startedAt: number;
+  updatedAt: number;
+  queueType: QueueType;
+  players: ObservedMatchPlayer[];
+  completedAt?: number;
+  winnerTeam?: Team;
+  earlyLeaveAt?: number;
+  soloMmr?: { value: number; observedAt: number; playlist: Exclude<QueueType, "unknown"> };
+  resolvedAccountId?: string;
+  resolutionSource?: "manual" | "inferred" | "verified";
+  excludedFromStats?: boolean;
+  recordsBefore?: PersonalRecords;
+  rankBefore?: RankRecord | null;
+  rankHistoryDelta?: { evicted: MmrHistoryPoint[]; introduced: MmrHistoryPoint[] };
+  mmrPlaylistBefore?: QueueType | null;
+}
+
+export interface PlatformAccountCandidate {
+  accountId: string;
+  name?: string;
+  matchesSeen: number;
+  managed: boolean;
+  suggested: boolean;
+}
+
+export interface PlatformAccountsSnapshot {
+  accounts: PlatformAccountCandidate[];
+  activeAccountId?: string;
+  selectedAccountId?: string;
+  verifiedAccountId?: string;
+  selectionSource?: "manual" | "inferred" | "verified";
+  selectionRequired: boolean;
 }
 
 export interface MmrHistoryPoint {
@@ -123,6 +178,11 @@ export interface PersistedState {
   accounts: Record<string, AccountStats>;
   matches: MatchRecord[];
   pendingReconnect: PendingReconnect[];
+  identityMatches?: ObservedIdentityMatch[];
+  identitySearchMatchIds?: string[];
+  managedPlatformIds?: string[];
+  selectedPlatformId?: string;
+  platformSelectionSource?: "manual" | "inferred" | "verified";
 }
 
 export interface LiveGoalEvent {
@@ -151,6 +211,8 @@ export interface LivePlayerStats {
   accountId?: string;
   name: string;
   matchedByManualName?: boolean;
+  matchedBySelectedAccount?: boolean;
+  isBot?: boolean;
   team: Team;
   score: number;
   goals: number;
@@ -179,6 +241,8 @@ export interface LiveMatchSnapshot {
   orangeScore: number;
   myTeam?: Team;
   localPlayer?: LivePlayerStats;
+  players?: LivePlayerStats[];
+  winnerTeam?: Team;
   lastGoal?: LiveGoalEvent;
   latestEvent?: LiveGameplayEvent;
   queueType?: QueueType;

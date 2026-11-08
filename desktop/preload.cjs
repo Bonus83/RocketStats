@@ -16,6 +16,11 @@ contextBridge.exposeInMainWorld("rocketStatsDesktop", Object.freeze({
   setStatsPeriod: (period) => ipcRenderer.invoke("desktop:set-period", period),
   decideSession: (startNew) => ipcRenderer.invoke("desktop:session-decision", startNew),
   onSession: (callback) => subscribe("desktop:session", callback),
+  addPlatformAccount: (accountId) => ipcRenderer.invoke("desktop:add-platform-account", accountId),
+  selectPlatformAccount: (accountId, correctInferred) =>
+    ipcRenderer.invoke("desktop:select-platform-account", accountId, correctInferred),
+  removePlatformAccount: (accountId) => ipcRenderer.invoke("desktop:remove-platform-account", accountId),
+  onPlatformAccounts: (callback) => subscribe("desktop:accounts", callback),
   configureApi: () => ipcRenderer.invoke("desktop:configure-api"),
   checkUpdate: () => ipcRenderer.invoke("desktop:check-update"),
   downloadUpdate: () => ipcRenderer.invoke("desktop:download-update"),

@@ -45,7 +45,7 @@
         background: #101725;
         color: #e8ecf6;
       }
-      input[type="number"] {
+      input[type="number"], input[type="text"] {
         box-sizing: border-box;
         width: 100%;
         margin-top: 4px;
@@ -73,6 +73,15 @@
       #status.error {
         color: #ff8a80;
       }
+      button {
+        margin-top: 6px;
+        padding: 6px 9px;
+        border: 1px solid #394867;
+        border-radius: 5px;
+        background: #202d44;
+        color: #e8ecf6;
+      }
+      button:disabled { opacity: .5; }
     </style>
   </head>
   <body>
@@ -128,6 +137,20 @@
     <fieldset>
       <legend data-i18n="accountFallback">Account fallback</legend>
       <label>
+        <span data-i18n="platformAccounts">Platform accounts and candidates</span>
+        <select id="platformAccountSelect"></select>
+      </label>
+      <button id="platformAccountUse" type="button" data-i18n="platformUse">Use account</button>
+      <button id="platformAccountCorrect" type="button" data-i18n="platformCorrect" hidden>Correct automatic attribution</button>
+      <button id="platformAccountRemove" type="button" data-i18n="platformRemove">Remove</button>
+      <label>
+        <span data-i18n="platformAddLabel">Add platform ID</span>
+        <input id="platformAccountInput" type="text" maxlength="160" placeholder="Steam|ID|0" autocomplete="off" />
+      </label>
+      <button id="platformAccountAdd" type="button" data-i18n="platformAdd">Add ID</button>
+      <p class="hint" id="platformAccountStatus" role="status" aria-live="polite"></p>
+      <p class="hint" data-i18n="platformHint">Candidates are stored locally; teammates and opponents may also recur. The verified game account takes priority.</p>
+      <label>
         <span data-i18n="inGameName">In-game name</span>
         <input id="manualDisplayName" type="text" maxlength="64" autocomplete="off" />
       </label>
@@ -173,12 +196,21 @@
         };
         const statInputs = [...document.querySelectorAll("[data-banner-stat]")];
         const status = document.getElementById("status");
+        const accountSelect = document.getElementById("platformAccountSelect");
+        const accountInput = document.getElementById("platformAccountInput");
+        const accountUse = document.getElementById("platformAccountUse");
+        const accountCorrect = document.getElementById("platformAccountCorrect");
+        const accountRemove = document.getElementById("platformAccountRemove");
+        const accountAdd = document.getElementById("platformAccountAdd");
+        const accountStatus = document.getElementById("platformAccountStatus");
         const messages = window.RocketStatsSettingsI18n;
         let websocket;
         let context;
         let pluginUuid;
         let actionSettings = { ...defaults };
         let globalSettings = { ...globalDefaults };
+        let pendingAccountRequest;
+        let accountRequestTimeout;
 
         function applyLocale(locale) {
           const translations = messages[locale] || messages.en;
@@ -188,6 +220,7 @@
             if (translations[key]) {
               element.textContent = translations[key];
             }
+            renderAccounts();
           }
         }
 
@@ -237,6 +270,87 @@
           fields.apiPort.value = globalSettings.apiPort;
           fields.controlPort.value = globalSettings.controlPort;
           fields.manualDisplayName.value = globalSettings.manualDisplayName || "";
+          const result = globalSettings.platformAccountResult;
+          if (pendingAccountRequest && result && result.requestId === pendingAccountRequest) {
+            clearTimeout(accountRequestTimeout);
+            pendingAccountRequest = undefined;
+            if (result.error) {
+              showStatus("platformError", true);
+              status.textContent += ` ${result.error}`;
+            } else {
+              showStatus("platformSaved");
+            }
+          }
+          renderAccounts();
+        }
+
+        function renderAccounts() {
+          const translations = messages[fields.locale.value] || messages.en;
+          const snapshot = globalSettings.platformAccounts;
+          const entries = Array.isArray(snapshot?.accounts)
+            ? snapshot.accounts.filter((entry) => entry && typeof entry.accountId === "string")
+            : [];
+          const previous = accountSelect.value;
+          accountSelect.replaceChildren(...entries.map((entry) => {
+            const option = document.createElement("option");
+            option.value = entry.accountId;
+            option.textContent = [
+              ...(entry.suggested ? [translations.platformCandidate] : []),
+              ...(entry.name ? [entry.name] : []),
+              entry.accountId,
+              `${entry.matchesSeen || 0} ${translations.platformMatches}`,
+              ...(entry.managed ? [translations.platformManaged] : [])
+            ].join(" · ");
+            return option;
+          }));
+          accountSelect.value = entries.some((entry) => entry.accountId === previous)
+            ? previous
+            : snapshot?.activeAccountId || snapshot?.selectedAccountId || entries[0]?.accountId || "";
+          const selected = entries.find((entry) => entry.accountId === accountSelect.value);
+          const waiting = pendingAccountRequest !== undefined;
+          accountSelect.disabled = waiting || entries.length === 0;
+          accountUse.disabled = waiting || !selected;
+          accountCorrect.hidden = snapshot?.selectionSource !== "inferred" ||
+            !selected || selected.accountId === snapshot.selectedAccountId;
+          accountCorrect.disabled = waiting || !selected || Boolean(snapshot?.verifiedAccountId);
+          accountRemove.disabled = waiting || !selected?.managed || selected.accountId === snapshot?.verifiedAccountId;
+          accountAdd.disabled = waiting;
+          accountInput.disabled = waiting;
+          if (snapshot?.selectionRequired) {
+            accountStatus.textContent = translations.platformPending;
+          } else if (snapshot?.verifiedAccountId) {
+            accountStatus.textContent = `${translations.platformVerified}: ${snapshot.verifiedAccountId}`;
+          } else if (snapshot?.activeAccountId) {
+            const key = snapshot.selectionSource === "inferred" ? "platformInferred" : "platformSelected";
+            accountStatus.textContent = `${translations[key]}: ${snapshot.activeAccountId}`;
+          } else {
+            accountStatus.textContent = translations.platformWaiting;
+          }
+        }
+
+        function accountCommand(action, accountId, correctInferred = false) {
+          if (!accountId || pendingAccountRequest) {
+            showStatus("platformInvalid", true);
+            return;
+          }
+          const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+          const nextGlobalSettings = {
+            ...globalSettings,
+            platformAccountCommand: {
+              requestId, action, accountId, ...(correctInferred ? { correctInferred: true } : {})
+            }
+          };
+          if (!send("setGlobalSettings", nextGlobalSettings, pluginUuid)) return;
+          globalSettings = nextGlobalSettings;
+          pendingAccountRequest = requestId;
+          accountRequestTimeout = setTimeout(() => {
+            if (pendingAccountRequest !== requestId) return;
+            pendingAccountRequest = undefined;
+            showStatus("platformTimeout", true);
+            renderAccounts();
+          }, 10000);
+          showStatus("platformWorking");
+          renderAccounts();
         }
 
         function saveSettings() {
@@ -280,7 +394,7 @@
           }
           actionSettings = nextSettings;
           if (globalSettingsChanged) {
-            const nextGlobalSettings = { apiPort, controlPort, manualDisplayName };
+            const nextGlobalSettings = { ...globalSettings, apiPort, controlPort, manualDisplayName };
             if (!send("setGlobalSettings", nextGlobalSettings, pluginUuid)) {
               return;
             }
@@ -303,6 +417,16 @@
             saveSettings();
           });
         }
+        accountSelect.addEventListener("change", renderAccounts);
+        accountUse.addEventListener("click", () => accountCommand("select", accountSelect.value));
+        accountCorrect.addEventListener("click", () => {
+          const translations = messages[fields.locale.value] || messages.en;
+          if (window.confirm(translations.platformCorrectConfirm)) {
+            accountCommand("select", accountSelect.value, true);
+          }
+        });
+        accountRemove.addEventListener("click", () => accountCommand("remove", accountSelect.value));
+        accountAdd.addEventListener("click", () => accountCommand("add", accountInput.value.trim()));
 
         loadSettings(defaults);
         loadGlobalSettings(globalDefaults);

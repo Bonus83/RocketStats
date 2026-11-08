@@ -391,6 +391,31 @@ test("plugin state keeps MMR history per mode and account and persists it", asyn
   }
 });
 
+test("MMR stored before the history feature still appears in the history", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "rocketstats-tests-"));
+  const file = join(dir, "state.json");
+  const options = { statePath: file, identityGraceWindowMs: 10_000, reconnectWindowMs: 30_000 };
+  try {
+    const { writeFile } = await import("node:fs/promises");
+    await writeFile(file, JSON.stringify({
+      schemaVersion: 1, activeAccountId: "a", matches: [], pendingReconnect: [],
+      accounts: { a: {
+        accountId: "a", streak: { type: "none", count: 0 }, updatedAt: 500,
+        records: { longestWinStreak: 0, longestLossStreak: 0, maxGoalsPerMatch: 0, maxAssistsPerMatch: 0, maxSavesPerMatch: 0, maxScorePerMatch: 0 },
+        rankByPlaylist: [{ playlist: "ranked_3v3", mmr: 1167 }]
+      } }
+    }));
+    const state = new PluginState(options);
+    await state.initialize();
+    state.resolveIdentity({ accountId: "a", liveDisplayName: "A", observedAt: 1000 });
+    assert.deepEqual(state.getMmrHistory().ranked_3v3, [{ at: 500, mmr: 1167 }]);
+    await state.setPlaylistRank("ranked_3v3", 1180, undefined, 2000);
+    assert.deepEqual(state.getMmrHistory().ranked_3v3, [{ at: 500, mmr: 1167 }, { at: 2000, mmr: 1180 }]);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test("plugin state keeps streaks separated by account", async () => {
   const dir = await mkdtemp(join(tmpdir(), "rocketstats-tests-"));
   const file = join(dir, "state.json");

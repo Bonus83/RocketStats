@@ -1,6 +1,6 @@
 {
   "name": "rocketstats-elgato",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Rocket League live statistics for Elgato Stream Deck and desktop.",
   "private": true,
   "type": "module",

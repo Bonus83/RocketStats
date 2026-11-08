@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { isSelectablePlaylist } from "./playlists.js";
+import { platformAccountId } from "./platform-identity.js";
 import { DEFAULT_RECORDS, MatchRecord, PersistedState, QueueType, RankRecord } from "./types.js";
 
 const INITIAL_STATE: PersistedState = {
@@ -74,6 +75,26 @@ export class AccountStore {
     }
     normalized.matches = input.matches ?? [];
     normalized.pendingReconnect = input.pendingReconnect ?? [];
+    normalized.identityMatches = Array.isArray(input.identityMatches) ? input.identityMatches : [];
+    normalized.identitySearchMatchIds = Array.isArray(input.identitySearchMatchIds)
+      ? input.identitySearchMatchIds.filter((id) => typeof id === "string")
+      : [];
+    normalized.managedPlatformIds = [...new Set(
+      (Array.isArray(input.managedPlatformIds) ? input.managedPlatformIds : [])
+        .map(platformAccountId)
+        .filter((id): id is string => id !== undefined)
+    )];
+    const selectedPlatformId = platformAccountId(input.selectedPlatformId) ??
+      (!Array.isArray(input.managedPlatformIds) ? platformAccountId(input.activeAccountId) : undefined);
+    if (selectedPlatformId) {
+      normalized.selectedPlatformId = selectedPlatformId;
+    }
+    if (input.platformSelectionSource === "manual" || input.platformSelectionSource === "inferred" ||
+        input.platformSelectionSource === "verified") {
+      normalized.platformSelectionSource = input.platformSelectionSource;
+    } else if (selectedPlatformId && !Array.isArray(input.managedPlatformIds)) {
+      normalized.platformSelectionSource = "verified";
+    }
 
     for (const [accountId, account] of Object.entries(input.accounts ?? {})) {
       const normalizedAccount = {
@@ -106,6 +127,10 @@ export class AccountStore {
         }
       }
       normalized.accounts[accountId] = normalizedAccount;
+      if (!Array.isArray(input.managedPlatformIds) &&
+          platformAccountId(accountId) && !normalized.managedPlatformIds.includes(accountId)) {
+        normalized.managedPlatformIds.push(accountId);
+      }
     }
 
     return normalized;

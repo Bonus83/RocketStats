@@ -207,6 +207,7 @@ ipcMain.handle("desktop:get-state", () => ({
   startupError,
   autoCheckUpdates,
   session: getSessionState(),
+  accounts: service?.getPlatformAccounts() ?? null,
   update: updateController?.getState() ?? { phase: "starting", version: app.getVersion() }
 }));
 
@@ -264,6 +265,33 @@ ipcMain.handle("desktop:reset-stats", async () => {
 });
 
 ipcMain.handle("desktop:mmr-history", () => service?.getMmrHistory() ?? {});
+
+function requireAccountService(event) {
+  if (
+    !mainWindow || event.sender !== mainWindow.webContents ||
+    event.senderFrame !== mainWindow.webContents.mainFrame
+  ) {
+    throw new Error("Accounts can only be managed from the desktop dashboard.");
+  }
+  if (!service) throw new Error("RocketStats Desktop is still starting.");
+  return service;
+}
+
+for (const [channel, method] of [
+  ["desktop:add-platform-account", "addPlatformAccount"],
+  ["desktop:select-platform-account", "selectPlatformAccount"],
+  ["desktop:remove-platform-account", "removePlatformAccount"]
+]) {
+  ipcMain.handle(channel, async (event, accountId, correctInferred) => {
+    const accounts = requireAccountService(event);
+    if (typeof accountId !== "string") throw new TypeError("Platform ID must be a string.");
+    if (correctInferred !== undefined && typeof correctInferred !== "boolean") {
+      throw new TypeError("The automatic attribution correction flag must be a boolean.");
+    }
+    await accounts[method](accountId, correctInferred);
+    return accounts.getPlatformAccounts();
+  });
+}
 
 function getSessionState() {
   return service ? { ...service.getSessionInfo(), promptPending: sessionPromptPending } : null;
@@ -400,7 +428,8 @@ app.whenReady().then(async () => {
         send("desktop:model", model);
       },
       onStatus: (nextStatus) => connectionState.setStatus(nextStatus),
-      onError: handleServiceError
+      onError: handleServiceError,
+      onPlatformAccounts: (accounts) => send("desktop:accounts", accounts)
     });
     // Ask about the previous session only if it actually contains matches.
     if (service.getSessionInfo().matchCount > 0) {
@@ -409,6 +438,7 @@ app.whenReady().then(async () => {
       await service.startNewSession();
     }
     publishSession();
+    send("desktop:accounts", service.getPlatformAccounts());
     updateController.configureAutomaticChecks(autoCheckUpdates);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

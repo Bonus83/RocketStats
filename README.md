@@ -5,6 +5,8 @@ This repository now contains the first implementation slice for a Rocket League 
 - Stream Deck plugin manifest scaffold
 - Core state architecture for multi-account separation
 - Identity precedence logic (live account beats manual name)
+- Local platform-ID discovery, multiple managed accounts, and match-by-match
+  candidate statistics while the local account is unknown
 - Optional exact-name player fallback for feeds without a local-player marker
 - Streak engine with early-leave provisional losses and ranked reconnect correction
 - Win/loss scope key: streak and records (longest win/loss run) show either all
@@ -68,7 +70,7 @@ For small changes, use the targeted helpers instead of the full build and suite:
 ```powershell
 npm run dev:affected   # changed files and the tests that cover them
 npm run dev:verify     # type-check (only if src\ changed) + affected tests
-npm run dev:check      # type-check and emit the desktop TypeScript graph
+npm run dev:check      # type-check the desktop graph and Stream Deck account bridge
 node scripts/dev.mjs test ui update   # groups: ui, update, service, core, all
 ```
 
@@ -77,6 +79,7 @@ node scripts/dev.mjs test ui update   # groups: ui, update, service, core, all
 | Desktop main process, IPC, process checks | `desktop/main.cjs` | `ui` |
 | Connection status and warning filter | `desktop/connection-state.cjs` | `ui` |
 | Desktop UI and texts in 7 languages | `desktop/renderer.js` | `ui`, `update` |
+| Stream Deck settings and account picker | `com.rocketstats.livestats.sdPlugin/ui`, `src/streamdeck/platform-settings.ts` | `ui`, `core` |
 | Update flow | `desktop/updater.cjs` | `update` |
 | Desktop service | `src/desktop/desktop-service.ts` | `service` |
 | Live feed, stats and accounts | `src/runtime`, `src/connector`, `src/core` | `core`, `service` |
@@ -91,6 +94,42 @@ Per-account data stays on this PC. The state file is stored in
 `%APPDATA%\RocketStatsElgato\state.json` on Windows,
 `~/Library/Application Support/RocketStatsElgato/state.json` on macOS, and
 `${XDG_STATE_HOME:-~/.local/state}/RocketStatsElgato/state.json` on Linux.
+
+## Platform accounts and candidate matches
+
+The desktop account panel and the Stream Deck Property Inspector list observed
+`PrimaryId` values, player names, and the number of distinct observed matches.
+Add an ID in the form `Steam|ID|0` or `Epic|ID|0`, select an observed ID as your
+account, or keep several IDs in the account list. Removing an ID from the list
+does not delete its match history. A verified primary login or local-player
+marker always overrides an unverified selection or typed name. A selected ID is
+used for a live match only when that ID occurs exactly once in its player list.
+
+While the local account is uncertain, the application retains each observed
+player's ID, name, team, individual match stats, mode and result locally. This
+includes teammates and opponents; no player data is sent to an online tracker.
+On selection, unresolved matches containing that ID are assigned to it, and
+its W/L, streak, personal records and available solo MMR history are restored.
+Matches already assigned to another account are not silently copied. Candidate
+observations remain locally available after selection so that an automatic
+attribution can be corrected; removing a managed ID does not erase them.
+
+Candidate suggestions intersect the players seen across different matches.
+Automatic selection happens only when at least two completed matches with
+stable match GUIDs and at least two distinct valid player IDs share exactly one
+candidate. Repeated snapshots of one match are not additional matches. A single
+solo match is not conclusive because its opponents are present too, and even a
+repeated candidate can be a teammate or opponent. Automatic selection is shown
+as **unverified**; use **Correct automatic attribution** if it is wrong.
+Correction only reassigns automatically attributed matches where the chosen ID
+was actually observed; other matches remain unresolved. Existing W/L reset
+markers are preserved when a match is reassigned.
+
+If a match does not expose a GUID, a locally generated ID preserves its
+observations but cannot establish automatic identity. Without a stable GUID,
+the same ongoing match cannot be reliably deduplicated across application
+restarts. Existing match history from before RocketStats was recording is not
+reconstructed.
 
 To configure the game's local Stats API, close Rocket League and run:
 
@@ -184,6 +223,9 @@ npm run desktop:dist
 The installer is written to `release\`. It bundles Electron, so recipients do
 not need Node.js or administrator privileges. The desktop app stores its account
 state separately from the Stream Deck plugin's state to avoid concurrent writes.
+Account selections and candidate histories are therefore managed separately in
+the desktop panel and in the plugin's Property Inspector; they are not synced
+between the two stores.
 It supports the same seven languages and lets users configure the local Stats
 API port. The Stats API feed must be available on that port. An explicit setup
 button can enable the local feed after confirmation, only while Rocket League is
@@ -295,6 +337,9 @@ searching multiple playlists are excluded from MMR updates because the log
 does not reliably identify the local player's MMR in those cases. The queued
 sample is held briefly and saved only for a matching loaded playlist and a
 confirmed local account or an explicitly configured, unique manual-name match.
+If the platform ID is still unknown, the solo sample is kept with the observed
+match and attributed after an explicit selection or an unverified unique
+multi-match inference; a correction can undo that tentative attribution.
 Conflicting account or playlist signals do not update the MMR.
 
 Rank and division estimates use the separately maintained Tracker Network tables
@@ -358,7 +403,7 @@ To update the data when ranges change:
 
 ## Implemented requirements
 
-- Per-account persistence boundary is established.
+- Per-account persistence and local multi-match platform-ID candidates are established.
 - Active logged-in game account has strict priority over typed fallback names.
 - Streak logic:
   - tracks current run only (`win` or `loss`)

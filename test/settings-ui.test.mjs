@@ -44,19 +44,27 @@ test("legacy MMR settings migrate to auto and deliberate fixed selections remain
   class Element {
     value = "";
     checked = false;
+    disabled = false;
+    hidden = false;
+    children = [];
     listeners = new Map();
     classList = { toggle() {} };
+    replaceChildren(...children) { this.children = children; }
     addEventListener(event, callback) { this.listeners.set(event, callback); }
     change() { this.listeners.get("change")(); }
+    click() { this.listeners.get("click")(); }
   }
   const fields = Object.fromEntries([
-    "locale", "playlist", "apiPort", "controlPort", "manualDisplayName", "animateEvents", "status"
+    "locale", "playlist", "apiPort", "controlPort", "manualDisplayName", "animateEvents", "status",
+    "platformAccountSelect", "platformAccountInput", "platformAccountUse", "platformAccountCorrect", "platformAccountRemove",
+    "platformAccountAdd", "platformAccountStatus"
   ].map((key) => [key, new Element()]));
   const stats = ["goals", "assists", "saves", "shots", "demos", "score", "ping"]
     .map((value) => Object.assign(new Element(), { value }));
   const document = {
     documentElement: { lang: "" },
     getElementById: (id) => fields[id],
+    createElement: () => new Element(),
     querySelectorAll: (selector) => selector === "[data-banner-stat]" ? stats : []
   };
   let socket;
@@ -70,9 +78,10 @@ test("legacy MMR settings migrate to auto and deliberate fixed selections remain
     send(message) { this.sent.push(JSON.parse(message)); }
     emit(event, data = {}) { this.listeners.get(event)(data); }
   }
-  const window = { RocketStatsSettingsI18n: translations };
+  let confirmed = false;
+  const window = { RocketStatsSettingsI18n: translations, confirm: () => confirmed };
   const script = [...settingsHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)][0][1];
-  runInNewContext(script, { document, window, WebSocket: FakeWebSocket });
+  runInNewContext(script, { document, window, WebSocket: FakeWebSocket, setTimeout, clearTimeout });
   assert.equal(fields.locale.value, "en");
   assert.equal(fields.playlist.value, "auto");
   assert.equal(fields.apiPort.value, 49123);
@@ -126,4 +135,77 @@ test("legacy MMR settings migrate to auto and deliberate fixed selections remain
   fields.playlist.change();
   assert.equal(socket.sent.at(-1).payload.playlistMode, "auto");
   assert.equal(socket.sent.at(-1).payload.playlist, "auto");
+
+  const first = "Steam|76561198000000001|0";
+  const second = "Epic|friend|0";
+  const candidates = {
+    accounts: [
+      { accountId: first, name: "Me", matchesSeen: 2, managed: false, suggested: true },
+      { accountId: second, name: "Friend", matchesSeen: 2, managed: true, suggested: true }
+    ],
+    selectionRequired: true
+  };
+  socket.emit("message", {
+    data: JSON.stringify({ event: "didReceiveGlobalSettings", payload: { settings: {
+      apiPort: 49123, controlPort: 49124, manualDisplayName: "", platformAccounts: candidates
+    } } })
+  });
+  assert.equal(fields.platformAccountStatus.textContent, translations.en.platformPending);
+  assert.deepEqual(fields.platformAccountSelect.children.map((option) => option.value), [first, second]);
+  fields.platformAccountSelect.value = second;
+  fields.platformAccountSelect.change();
+  fields.platformAccountUse.click();
+  const command = socket.sent.at(-1);
+  assert.equal(command.event, "setGlobalSettings");
+  assert.equal(command.payload.platformAccountCommand.action, "select");
+  assert.equal(command.payload.platformAccountCommand.accountId, second);
+  assert.equal(command.payload.platformAccounts.accounts.length, 2);
+  assert.equal(fields.platformAccountUse.disabled, true);
+  socket.emit("message", {
+    data: JSON.stringify({ event: "didReceiveGlobalSettings", payload: { settings: {
+      ...command.payload,
+      platformAccounts: { ...candidates, selectionRequired: false, activeAccountId: second },
+      platformAccountResult: { requestId: command.payload.platformAccountCommand.requestId }
+    } } })
+  });
+  assert.equal(fields.status.textContent, translations.en.platformSaved);
+  assert.equal(fields.platformAccountUse.disabled, false);
+
+  socket.emit("message", {
+    data: JSON.stringify({ event: "didReceiveGlobalSettings", payload: { settings: {
+      ...command.payload,
+      platformAccounts: {
+        ...candidates, selectionRequired: false, activeAccountId: first,
+        selectedAccountId: first, selectionSource: "inferred"
+      }
+    } } })
+  });
+  fields.platformAccountSelect.value = second;
+  fields.platformAccountSelect.change();
+  assert.equal(fields.platformAccountCorrect.hidden, false);
+  assert.equal(fields.platformAccountCorrect.disabled, false);
+  const sentBeforeCorrection = socket.sent.length;
+  fields.platformAccountCorrect.click();
+  assert.equal(socket.sent.length, sentBeforeCorrection);
+  confirmed = true;
+  fields.platformAccountCorrect.click();
+  const correction = socket.sent.at(-1);
+  assert.equal(correction.payload.platformAccountCommand.action, "select");
+  assert.equal(correction.payload.platformAccountCommand.accountId, second);
+  assert.equal(correction.payload.platformAccountCommand.correctInferred, true);
+  socket.emit("message", {
+    data: JSON.stringify({ event: "didReceiveGlobalSettings", payload: { settings: {
+      ...correction.payload,
+      platformAccounts: {
+        ...candidates, selectionRequired: false, activeAccountId: second,
+        selectedAccountId: second, selectionSource: "manual"
+      },
+      platformAccountResult: { requestId: correction.payload.platformAccountCommand.requestId }
+    } } })
+  });
+  assert.equal(fields.platformAccountCorrect.hidden, true);
+  fields.apiPort.value = 49125;
+  fields.apiPort.change();
+  assert.equal(socket.sent.at(-1).payload.platformAccounts.activeAccountId, second);
+  assert.equal(socket.sent.at(-1).payload.apiPort, 49125);
 });

@@ -308,3 +308,101 @@ globalThis.RocketStatsSettingsI18n = {
     connectionClosed: "Соединение Stream Deck закрыто."
   }
 };
+
+const platformAccountMessages = {
+  en: {
+    platformAccounts: "Platform accounts and candidates", platformUse: "Use account", platformRemove: "Remove",
+    platformCorrect: "Correct automatic attribution",
+    platformCorrectConfirm: "Reassign automatically attributed matches to this account? Matches without this ID remain unresolved.",
+    platformAddLabel: "Add platform ID", platformAdd: "Add ID",
+    platformHint: "Candidates are stored locally; teammates and opponents may also recur. The verified game account takes priority.",
+    platformCandidate: "Candidate", platformMatches: "matches", platformManaged: "saved",
+    platformPending: "Several candidates: select your account.", platformVerified: "Verified game account",
+    platformInferred: "Automatically suggested (not verified)", platformSelected: "Selected account",
+    platformWaiting: "No account selected yet.", platformInvalid: "Select an account or enter an ID.",
+    platformError: "Could not change account:", platformSaved: "Account updated.", platformWorking: "Updating account…",
+    platformTimeout: "No response from the plugin. Check its connection and try again."
+  },
+  de: {
+    platformAccounts: "Plattformkonten und Kandidaten", platformUse: "Konto verwenden", platformRemove: "Entfernen",
+    platformCorrect: "Automatische Zuordnung korrigieren",
+    platformCorrectConfirm: "Automatisch zugeordnete Matches auf dieses Konto korrigieren? Matches ohne diese ID bleiben ungeklärt.",
+    platformAddLabel: "Plattform-ID hinzufügen", platformAdd: "ID hinzufügen",
+    platformHint: "Kandidaten bleiben lokal gespeichert; auch Mitspieler und Gegner können wiederkehren. Das bestätigte Spielkonto hat Vorrang.",
+    platformCandidate: "Kandidat", platformMatches: "Matches", platformManaged: "gespeichert",
+    platformPending: "Mehrere Kandidaten: Bitte dein Konto auswählen.", platformVerified: "Bestätigtes Spielkonto",
+    platformInferred: "Automatisch vermutet (nicht bestätigt)", platformSelected: "Ausgewähltes Konto",
+    platformWaiting: "Noch kein Konto ausgewählt.", platformInvalid: "Konto auswählen oder ID eingeben.",
+    platformError: "Konto konnte nicht geändert werden:", platformSaved: "Konto aktualisiert.", platformWorking: "Konto wird aktualisiert…",
+    platformTimeout: "Keine Antwort vom Plugin. Verbindung prüfen und erneut versuchen."
+  },
+  pl: {
+    platformAccounts: "Konta platform i kandydaci", platformUse: "Użyj konta", platformRemove: "Usuń",
+    platformCorrect: "Popraw automatyczne przypisanie",
+    platformCorrectConfirm: "Przypisać automatycznie rozpoznane mecze do tego konta? Mecze bez tego ID pozostaną nierozstrzygnięte.",
+    platformAddLabel: "Dodaj ID platformy", platformAdd: "Dodaj ID",
+    platformHint: "Kandydaci są zapisywani lokalnie; powtarzać mogą się też sojusznicy i przeciwnicy. Zweryfikowane konto gry ma pierwszeństwo.",
+    platformCandidate: "Kandydat", platformMatches: "mecze", platformManaged: "zapisane",
+    platformPending: "Kilku kandydatów: wybierz swoje konto.", platformVerified: "Zweryfikowane konto gry",
+    platformInferred: "Wykryte automatycznie (niezweryfikowane)", platformSelected: "Wybrane konto",
+    platformWaiting: "Nie wybrano jeszcze konta.", platformInvalid: "Wybierz konto lub wpisz ID.",
+    platformError: "Nie można zmienić konta:", platformSaved: "Konto zaktualizowane.", platformWorking: "Aktualizowanie konta…",
+    platformTimeout: "Brak odpowiedzi wtyczki. Sprawdź połączenie i spróbuj ponownie."
+  },
+  fr: {
+    platformAccounts: "Comptes de plateforme et candidats", platformUse: "Utiliser ce compte", platformRemove: "Retirer",
+    platformCorrect: "Corriger l’attribution automatique",
+    platformCorrectConfirm: "Réattribuer les matchs détectés automatiquement à ce compte ? Les matchs sans cet ID resteront non attribués.",
+    platformAddLabel: "Ajouter un ID de plateforme", platformAdd: "Ajouter l’ID",
+    platformHint: "Les candidats restent sur ce PC ; des coéquipiers ou adversaires peuvent aussi réapparaître. Le compte du jeu vérifié est prioritaire.",
+    platformCandidate: "Candidat", platformMatches: "matchs", platformManaged: "enregistré",
+    platformPending: "Plusieurs candidats : choisissez votre compte.", platformVerified: "Compte du jeu vérifié",
+    platformInferred: "Suggestion automatique (non vérifiée)", platformSelected: "Compte sélectionné",
+    platformWaiting: "Aucun compte sélectionné.", platformInvalid: "Sélectionnez un compte ou saisissez un ID.",
+    platformError: "Impossible de modifier le compte :", platformSaved: "Compte mis à jour.", platformWorking: "Mise à jour du compte…",
+    platformTimeout: "Aucune réponse du plugin. Vérifiez la connexion et réessayez."
+  },
+  es: {
+    platformAccounts: "Cuentas de plataforma y candidatos", platformUse: "Usar cuenta", platformRemove: "Quitar",
+    platformCorrect: "Corregir asignación automática",
+    platformCorrectConfirm: "¿Asignar a esta cuenta las partidas detectadas automáticamente? Las partidas sin este ID quedarán sin resolver.",
+    platformAddLabel: "Añadir ID de plataforma", platformAdd: "Añadir ID",
+    platformHint: "Los candidatos se guardan en este PC; también pueden repetirse compañeros o rivales. La cuenta verificada del juego tiene prioridad.",
+    platformCandidate: "Candidato", platformMatches: "partidas", platformManaged: "guardada",
+    platformPending: "Hay varios candidatos: selecciona tu cuenta.", platformVerified: "Cuenta del juego verificada",
+    platformInferred: "Sugerencia automática (sin verificar)", platformSelected: "Cuenta seleccionada",
+    platformWaiting: "Aún no hay una cuenta seleccionada.", platformInvalid: "Selecciona una cuenta o introduce un ID.",
+    platformError: "No se pudo cambiar la cuenta:", platformSaved: "Cuenta actualizada.", platformWorking: "Actualizando cuenta…",
+    platformTimeout: "El plugin no responde. Comprueba la conexión e inténtalo de nuevo."
+  },
+  pt: {
+    platformAccounts: "Contas de plataforma e candidatos", platformUse: "Usar conta", platformRemove: "Remover",
+    platformCorrect: "Corrigir atribuição automática",
+    platformCorrectConfirm: "Atribuir as partidas detectadas automaticamente a esta conta? Partidas sem este ID permanecerão indefinidas.",
+    platformAddLabel: "Adicionar ID de plataforma", platformAdd: "Adicionar ID",
+    platformHint: "Os candidatos ficam neste PC; colegas e adversários também podem se repetir. A conta verificada do jogo tem prioridade.",
+    platformCandidate: "Candidato", platformMatches: "partidas", platformManaged: "salva",
+    platformPending: "Há vários candidatos: selecione sua conta.", platformVerified: "Conta do jogo verificada",
+    platformInferred: "Sugestão automática (não verificada)", platformSelected: "Conta selecionada",
+    platformWaiting: "Nenhuma conta selecionada.", platformInvalid: "Selecione uma conta ou informe um ID.",
+    platformError: "Não foi possível alterar a conta:", platformSaved: "Conta atualizada.", platformWorking: "Atualizando conta…",
+    platformTimeout: "O plugin não respondeu. Verifique a conexão e tente novamente."
+  },
+  ru: {
+    platformAccounts: "Записи платформ и кандидаты", platformUse: "Использовать", platformRemove: "Убрать",
+    platformCorrect: "Исправить автоматическое назначение",
+    platformCorrectConfirm: "Назначить этой записи автоматически определённые матчи? Матчи без этого ID останутся неопределёнными.",
+    platformAddLabel: "Добавить ID платформы", platformAdd: "Добавить ID",
+    platformHint: "Кандидаты сохраняются на этом ПК; союзники и соперники тоже могут повторяться. Подтверждённая игровая запись имеет приоритет.",
+    platformCandidate: "Кандидат", platformMatches: "матчей", platformManaged: "сохранена",
+    platformPending: "Несколько кандидатов: выберите свою запись.", platformVerified: "Подтверждённая игровая запись",
+    platformInferred: "Определена автоматически (не подтверждена)", platformSelected: "Выбранная запись",
+    platformWaiting: "Запись ещё не выбрана.", platformInvalid: "Выберите запись или введите ID.",
+    platformError: "Не удалось изменить запись:", platformSaved: "Запись обновлена.", platformWorking: "Обновление записи…",
+    platformTimeout: "Плагин не отвечает. Проверьте соединение и повторите попытку."
+  }
+};
+
+for (const [locale, messages] of Object.entries(platformAccountMessages)) {
+  Object.assign(globalThis.RocketStatsSettingsI18n[locale], messages);
+}

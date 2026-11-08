@@ -267,6 +267,107 @@ const TEXT = {
   }
 };
 
+const ACCOUNT_TEXT = {
+  de: {
+    accountTag: "PLATTFORMKONTEN", accountHeading: "Konten und Kandidaten",
+    accountPending: "Mehrere mögliche Konten – bitte dein Konto auswählen.",
+    accountWaiting: "Noch kein Konto ausgewählt.", accountVerified: "Spielkonto bestätigt",
+    accountManual: "Manuell ausgewählt", accountInferred: "Automatisch vermutet (nicht bestätigt)",
+    accountHint: "Kandidaten und Matchdaten bleiben lokal. Wiederkehrende Spieler können auch Mitspieler oder Gegner sein. Das bestätigte Spielkonto hat Vorrang.",
+    accountSelect: "Beobachtete Konten", accountUse: "Konto verwenden", accountRemove: "Entfernen",
+    accountCorrect: "Automatische Zuordnung korrigieren",
+    accountCorrectConfirm: "Automatisch zugeordnete Matches auf dieses Konto korrigieren? Matches ohne diese ID bleiben vorerst ungeklärt.",
+    accountAddLabel: "Plattform-ID hinzufügen", accountAdd: "Hinzufügen",
+    accountSuggested: "Kandidat", accountManaged: "gespeichert", accountMatches: "Matches",
+    accountError: "Konto konnte nicht geändert werden",
+    accountRemoveConfirm: "Diese ID aus der Kontoliste entfernen? Gespeicherte Matchdaten bleiben erhalten."
+  },
+  en: {
+    accountTag: "PLATFORM ACCOUNTS", accountHeading: "Accounts and candidates",
+    accountPending: "Several accounts are possible — select your account.",
+    accountWaiting: "No account selected yet.", accountVerified: "Game account verified",
+    accountManual: "Manually selected", accountInferred: "Automatically suggested (not verified)",
+    accountHint: "Candidates and match data stay on this PC. Recurring players may also be teammates or opponents. A verified game account takes priority.",
+    accountSelect: "Observed accounts", accountUse: "Use account", accountRemove: "Remove",
+    accountCorrect: "Correct automatic attribution",
+    accountCorrectConfirm: "Reassign automatically attributed matches to this account? Matches without this ID will remain unresolved.",
+    accountAddLabel: "Add platform ID", accountAdd: "Add",
+    accountSuggested: "Candidate", accountManaged: "saved", accountMatches: "matches",
+    accountError: "Could not change account",
+    accountRemoveConfirm: "Remove this ID from your account list? Saved match data will be kept."
+  },
+  pl: {
+    accountTag: "KONTA PLATFORM", accountHeading: "Konta i kandydaci",
+    accountPending: "Możliwych jest kilka kont — wybierz swoje konto.",
+    accountWaiting: "Nie wybrano jeszcze konta.", accountVerified: "Konto gry zweryfikowane",
+    accountManual: "Wybrane ręcznie", accountInferred: "Wykryte automatycznie (niezweryfikowane)",
+    accountHint: "Kandydaci i dane meczów pozostają na tym komputerze. Powracający gracze mogą być również sojusznikami lub przeciwnikami. Zweryfikowane konto gry ma pierwszeństwo.",
+    accountSelect: "Zaobserwowane konta", accountUse: "Użyj konta", accountRemove: "Usuń",
+    accountCorrect: "Popraw automatyczne przypisanie",
+    accountCorrectConfirm: "Przypisać automatycznie rozpoznane mecze do tego konta? Mecze bez tego ID pozostaną nierozstrzygnięte.",
+    accountAddLabel: "Dodaj ID platformy", accountAdd: "Dodaj",
+    accountSuggested: "Kandydat", accountManaged: "zapisane", accountMatches: "mecze",
+    accountError: "Nie można zmienić konta",
+    accountRemoveConfirm: "Usunąć ten ID z listy kont? Zapisane dane meczów zostaną zachowane."
+  },
+  fr: {
+    accountTag: "COMPTES DE PLATEFORME", accountHeading: "Comptes et candidats",
+    accountPending: "Plusieurs comptes sont possibles : choisissez votre compte.",
+    accountWaiting: "Aucun compte sélectionné.", accountVerified: "Compte du jeu vérifié",
+    accountManual: "Sélection manuelle", accountInferred: "Suggestion automatique (non vérifiée)",
+    accountHint: "Les candidats et les données de match restent sur ce PC. Les joueurs récurrents peuvent être des coéquipiers ou des adversaires. Le compte vérifié du jeu est prioritaire.",
+    accountSelect: "Comptes observés", accountUse: "Utiliser ce compte", accountRemove: "Retirer",
+    accountCorrect: "Corriger l’attribution automatique",
+    accountCorrectConfirm: "Réattribuer les matchs détectés automatiquement à ce compte ? Les matchs sans cet ID resteront non attribués.",
+    accountAddLabel: "Ajouter un ID de plateforme", accountAdd: "Ajouter",
+    accountSuggested: "Candidat", accountManaged: "enregistré", accountMatches: "matchs",
+    accountError: "Impossible de modifier le compte",
+    accountRemoveConfirm: "Retirer cet ID de la liste ? Les données de match enregistrées seront conservées."
+  },
+  es: {
+    accountTag: "CUENTAS DE PLATAFORMA", accountHeading: "Cuentas y candidatos",
+    accountPending: "Hay varias cuentas posibles; selecciona la tuya.",
+    accountWaiting: "Aún no hay una cuenta seleccionada.", accountVerified: "Cuenta del juego verificada",
+    accountManual: "Selección manual", accountInferred: "Sugerencia automática (sin verificar)",
+    accountHint: "Los candidatos y los datos de las partidas permanecen en este PC. Los jugadores recurrentes también pueden ser compañeros o rivales. La cuenta verificada del juego tiene prioridad.",
+    accountSelect: "Cuentas observadas", accountUse: "Usar cuenta", accountRemove: "Quitar",
+    accountCorrect: "Corregir asignación automática",
+    accountCorrectConfirm: "¿Asignar a esta cuenta las partidas detectadas automáticamente? Las partidas sin este ID quedarán sin resolver.",
+    accountAddLabel: "Añadir ID de plataforma", accountAdd: "Añadir",
+    accountSuggested: "Candidato", accountManaged: "guardada", accountMatches: "partidas",
+    accountError: "No se pudo cambiar la cuenta",
+    accountRemoveConfirm: "¿Quitar este ID de la lista? Se conservarán los datos de las partidas."
+  },
+  pt: {
+    accountTag: "CONTAS DE PLATAFORMA", accountHeading: "Contas e candidatos",
+    accountPending: "Há várias contas possíveis; selecione a sua.",
+    accountWaiting: "Nenhuma conta selecionada.", accountVerified: "Conta do jogo verificada",
+    accountManual: "Selecionada manualmente", accountInferred: "Sugestão automática (não verificada)",
+    accountHint: "Candidatos e dados das partidas permanecem neste PC. Jogadores recorrentes também podem ser colegas ou adversários. A conta verificada do jogo tem prioridade.",
+    accountSelect: "Contas observadas", accountUse: "Usar conta", accountRemove: "Remover",
+    accountCorrect: "Corrigir atribuição automática",
+    accountCorrectConfirm: "Atribuir as partidas detectadas automaticamente a esta conta? Partidas sem este ID permanecerão indefinidas.",
+    accountAddLabel: "Adicionar ID de plataforma", accountAdd: "Adicionar",
+    accountSuggested: "Candidato", accountManaged: "salva", accountMatches: "partidas",
+    accountError: "Não foi possível alterar a conta",
+    accountRemoveConfirm: "Remover este ID da lista? Os dados das partidas serão mantidos."
+  },
+  ru: {
+    accountTag: "УЧЁТНЫЕ ЗАПИСИ ПЛАТФОРМ", accountHeading: "Учётные записи и кандидаты",
+    accountPending: "Возможно несколько учётных записей — выберите свою.",
+    accountWaiting: "Учётная запись ещё не выбрана.", accountVerified: "Игровая учётная запись подтверждена",
+    accountManual: "Выбрана вручную", accountInferred: "Определена автоматически (не подтверждена)",
+    accountHint: "Кандидаты и данные матчей хранятся на этом ПК. Повторяющиеся игроки могут быть союзниками или соперниками. Подтверждённая игровая запись имеет приоритет.",
+    accountSelect: "Обнаруженные записи", accountUse: "Использовать", accountRemove: "Убрать",
+    accountCorrect: "Исправить автоматическое назначение",
+    accountCorrectConfirm: "Назначить этой записи автоматически определённые матчи? Матчи без этого ID останутся неопределёнными.",
+    accountAddLabel: "Добавить ID платформы", accountAdd: "Добавить",
+    accountSuggested: "Кандидат", accountManaged: "сохранена", accountMatches: "матчей",
+    accountError: "Не удалось изменить учётную запись",
+    accountRemoveConfirm: "Убрать этот ID из списка? Сохранённые данные матчей останутся."
+  }
+};
+
 const RANKED_ACTIONS = ["rank", "mmr-wl", "streak", "records", "ban-countdown"];
 const DASHBOARD_ACTIONS = new Set([...RANKED_ACTIONS, "stats-scope"]);
 const LABELS = {
@@ -276,7 +377,7 @@ const state = {
   locale: "en", models: new Map(),
   connection: { status: "connecting", error: null, revision: -1 }, error: null,
   update: { phase: "starting", version: "" }, autoCheckUpdates: true,
-  session: null
+  session: null, accounts: null
 };
 let errorChanged = false;
 let updateStateRevision = 0;
@@ -284,6 +385,9 @@ let autoUpdateChanged = false;
 let autoUpdateSaving = false;
 let updateInstallPending = false;
 let updateHideTimer;
+let accountChoice = "";
+let accountsBusy = false;
+let accountsRenderSignature = "";
 
 const UPDATE_BALLOON_MS = 8000;
 const UPDATE_NOTIFICATION_PHASES = new Set([
@@ -291,7 +395,79 @@ const UPDATE_NOTIFICATION_PHASES = new Set([
 ]);
 
 function tr(key) {
-  return TEXT[state.locale]?.[key] ?? TEXT.en[key] ?? key;
+  return ACCOUNT_TEXT[state.locale]?.[key] ?? TEXT[state.locale]?.[key] ??
+    ACCOUNT_TEXT.en[key] ?? TEXT.en[key] ?? key;
+}
+
+function renderAccounts() {
+  const signature = JSON.stringify([state.locale, state.accounts, accountChoice, accountsBusy]);
+  if (signature === accountsRenderSignature) return;
+  accountsRenderSignature = signature;
+  document.getElementById("accounts-eyebrow").textContent = tr("accountTag");
+  document.getElementById("accounts-heading").textContent = tr("accountHeading");
+  document.getElementById("accounts-hint").textContent = tr("accountHint");
+  document.getElementById("accounts-select-label").textContent = tr("accountSelect");
+  document.getElementById("accounts-use").textContent = tr("accountUse");
+  document.getElementById("accounts-correct").textContent = tr("accountCorrect");
+  document.getElementById("accounts-remove").textContent = tr("accountRemove");
+  document.getElementById("accounts-add-label").textContent = tr("accountAddLabel");
+  document.getElementById("accounts-add").textContent = tr("accountAdd");
+
+  const accounts = state.accounts;
+  const entries = accounts?.accounts ?? [];
+  if (!entries.some((entry) => entry.accountId === accountChoice)) {
+    accountChoice = accounts?.activeAccountId ?? accounts?.selectedAccountId ?? entries[0]?.accountId ?? "";
+    if (!entries.some((entry) => entry.accountId === accountChoice)) accountChoice = entries[0]?.accountId ?? "";
+  }
+  const select = document.getElementById("accounts-select");
+  select.replaceChildren(...entries.map((entry) => {
+    const option = document.createElement("option");
+    option.value = entry.accountId;
+    const labels = [
+      ...(entry.suggested ? [tr("accountSuggested")] : []),
+      ...(entry.name ? [entry.name] : []),
+      entry.accountId,
+      `${entry.matchesSeen} ${tr("accountMatches")}`,
+      ...(entry.managed ? [tr("accountManaged")] : [])
+    ];
+    option.textContent = labels.join(" · ");
+    return option;
+  }));
+  select.value = accountChoice;
+  const selected = entries.find((entry) => entry.accountId === accountChoice);
+  select.disabled = !accounts || accountsBusy || entries.length === 0;
+  document.getElementById("accounts-use").disabled = !accounts || accountsBusy || !selected;
+  const correct = document.getElementById("accounts-correct");
+  correct.hidden = accounts?.selectionSource !== "inferred" ||
+    !selected || selected.accountId === accounts.selectedAccountId;
+  correct.disabled = accountsBusy || !selected || Boolean(accounts?.verifiedAccountId);
+  document.getElementById("accounts-remove").disabled =
+    !accounts || accountsBusy || !selected?.managed || selected.accountId === accounts.verifiedAccountId;
+  document.getElementById("accounts-add").disabled = !accounts || accountsBusy;
+  const active = entries.find((entry) => entry.accountId === accounts?.activeAccountId);
+  let status = tr("accountWaiting");
+  if (accounts?.selectionRequired) {
+    status = tr("accountPending");
+  } else if (accounts?.activeAccountId) {
+    const kind = accounts.verifiedAccountId ? "accountVerified" :
+      accounts.selectionSource === "inferred" ? "accountInferred" : "accountManual";
+    status = `${tr(kind)}: ${active?.name || accounts.activeAccountId}`;
+  }
+  document.getElementById("accounts-status").textContent = status;
+}
+
+function applyAccounts(accounts) {
+  if (!accounts) return;
+  const previous = state.accounts?.activeAccountId;
+  state.accounts = accounts;
+  if (previous !== undefined && previous !== accounts.activeAccountId) {
+    historyRequest += 1;
+    mmrHistory = {};
+    historyPlaylist = undefined;
+    renderMmrHistory();
+    refreshMmrHistory(0);
+  }
+  renderAccounts();
 }
 
 function renderCard(action, model) {
@@ -594,6 +770,7 @@ function renderAll() {
   renderError();
   renderScope();
   renderSession();
+  renderAccounts();
   renderUpdate();
   renderGroup("ranked-grid", RANKED_ACTIONS);
   renderMmrHistory();
@@ -637,9 +814,57 @@ bridge.onStatus(applyConnection);
 bridge.onError(showError);
 bridge.onUpdate(applyUpdate);
 bridge.onSession?.(applySession);
+bridge.onPlatformAccounts?.(applyAccounts);
 document.getElementById("history-select").addEventListener("change", (event) => {
   historyPlaylist = event.target.value;
   renderMmrHistory();
+});
+
+async function changeAccount(action) {
+  accountsBusy = true;
+  renderAccounts();
+  try {
+    const accounts = await action();
+    if (!accounts || !Array.isArray(accounts.accounts)) {
+      throw new Error("The account service returned an invalid response.");
+    }
+    applyAccounts(accounts);
+    clearError();
+    return true;
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    showError(`${tr("accountError")}: ${detail}`);
+    return false;
+  } finally {
+    accountsBusy = false;
+    renderAccounts();
+  }
+}
+
+document.getElementById("accounts-select").addEventListener("change", (event) => {
+  accountChoice = event.target.value;
+  renderAccounts();
+});
+document.getElementById("accounts-use").addEventListener("click", async () => {
+  if (accountChoice) await changeAccount(() => bridge.selectPlatformAccount(accountChoice));
+});
+document.getElementById("accounts-correct").addEventListener("click", async () => {
+  if (!accountChoice || !window.confirm(tr("accountCorrectConfirm"))) return;
+  await changeAccount(() => bridge.selectPlatformAccount(accountChoice, true));
+});
+document.getElementById("accounts-remove").addEventListener("click", async () => {
+  if (!accountChoice || !window.confirm(tr("accountRemoveConfirm"))) return;
+  await changeAccount(() => bridge.removePlatformAccount(accountChoice));
+});
+document.getElementById("accounts-add-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const input = document.getElementById("accounts-add-input");
+  const accountId = input.value.trim();
+  if (await changeAccount(() => bridge.addPlatformAccount(accountId))) {
+    accountChoice = accountId;
+    input.value = "";
+    renderAccounts();
+  }
 });
 
 const menu = document.getElementById("app-menu");
@@ -807,6 +1032,7 @@ bridge.getState().then((initial) => {
   if (updateStateRevision === initialUpdateRevision) applyUpdate(initial.update);
   if (!autoUpdateChanged) state.autoCheckUpdates = initial.autoCheckUpdates;
   if (initial.session && !state.session) state.session = initial.session;
+  if (initial.accounts && !state.accounts) applyAccounts(initial.accounts);
   state.models = new Map(initial.models
     .filter((model) => DASHBOARD_ACTIONS.has(model.action))
     .map((model) => [model.action, model]));

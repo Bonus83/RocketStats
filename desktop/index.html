@@ -75,6 +75,29 @@
         </div>
       </section>
 
+      <section class="accounts-panel" aria-labelledby="accounts-heading">
+        <div class="accounts-heading">
+          <div>
+            <p class="eyebrow" id="accounts-eyebrow">PLATFORM ACCOUNTS</p>
+            <h2 id="accounts-heading">Accounts and candidates</h2>
+          </div>
+          <p id="accounts-status" role="status" aria-live="polite"></p>
+        </div>
+        <p id="accounts-hint" class="accounts-hint"></p>
+        <div class="accounts-actions">
+          <label for="accounts-select" id="accounts-select-label">Observed accounts</label>
+          <select id="accounts-select" disabled></select>
+          <button id="accounts-use" class="button secondary" type="button" disabled>Use account</button>
+          <button id="accounts-correct" class="button secondary" type="button" hidden>Correct automatic attribution</button>
+          <button id="accounts-remove" class="button secondary" type="button" disabled>Remove</button>
+        </div>
+        <form id="accounts-add-form" class="accounts-actions">
+          <label for="accounts-add-input" id="accounts-add-label">Add platform ID</label>
+          <input id="accounts-add-input" type="text" maxlength="160" placeholder="Steam|ID|0" autocomplete="off">
+          <button id="accounts-add" class="button secondary" type="submit" disabled>Add</button>
+        </form>
+      </section>
+
       <section class="controls" aria-label="Dashboard controls">
         <div class="scope-control">
           <div>

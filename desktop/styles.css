@@ -58,6 +58,15 @@ main { max-width: 1500px; margin: 0 auto; padding: 22px clamp(22px, 4vw, 58px) 5
 .session-panel p { margin: 0; }
 .session-actions { display: flex; gap: 8px; }
 
+.accounts-panel { margin-top: 16px; padding: 15px; border: 1px solid #2a4566; border-radius: 14px; background: #101c2d; }
+.accounts-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.accounts-heading h2 { margin-top: 5px; font-size: 15px; }
+#accounts-status { color: #b7c8df; font-size: 12px; overflow-wrap: anywhere; }
+.accounts-hint { margin-top: 9px; color: #9aacc4; font-size: 11px; line-height: 1.5; }
+.accounts-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 11px; color: #aab9cf; font-size: 11px; }
+.accounts-actions select { flex: 1 1 280px; max-width: 500px; }
+.accounts-actions input { width: min(100%, 340px); }
+
 .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 16px 0 30px; padding: 14px; border: 1px solid #1b293c; border-radius: 14px; background: rgba(13, 21, 33, .85); }
 .scope-control { display: flex; align-items: center; gap: 18px; flex: 1 1 260px; }
 .scope-control strong { display: block; margin-top: 4px; font-size: 13px; }

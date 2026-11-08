@@ -1,5 +1,5 @@
 import { getRocketLeaguePaths } from "../core/rocket-league-paths.js";
-import { MmrHistoryPoint, PluginLocale, StatsPeriod } from "../core/types.js";
+import { MmrHistoryPoint, PlatformAccountsSnapshot, PluginLocale, StatsPeriod } from "../core/types.js";
 import { PluginState } from "../core/plugin-state.js";
 import { RocketLeagueLogWatcher } from "../connector/rocket-league-log-watcher.js";
 import { getRocketLeagueProcessStartTime } from "../core/rocket-league-process.js";
@@ -13,6 +13,7 @@ export interface DesktopServiceOptions {
   onModel: (model: KeyRenderModel) => void;
   onStatus: (status: LiveConnectionStatus) => void;
   onError: (message: string, kind: LiveErrorKind, code?: string) => void;
+  onPlatformAccounts?: (accounts: PlatformAccountsSnapshot) => void;
 }
 
 export interface DesktopService {
@@ -28,6 +29,10 @@ export interface DesktopService {
   startNewSession(): Promise<void>;
   getSessionInfo(): { period: StatsPeriod; startedAt: number | undefined; matchCount: number };
   getMmrHistory(): Record<string, MmrHistoryPoint[]>;
+  getPlatformAccounts(): PlatformAccountsSnapshot;
+  addPlatformAccount(accountId: string): Promise<void>;
+  selectPlatformAccount(accountId: string, correctInferred?: boolean): Promise<void>;
+  removePlatformAccount(accountId: string): Promise<void>;
 }
 
 const ACTION_KINDS: ActionKind[] = [
@@ -88,7 +93,8 @@ export async function startDesktopService(
       "code" in error && typeof error.code === "string" ? error.code : undefined
     ),
     onConnected: recoverIdentity,
-    onConnectionStatus: options.onStatus
+    onConnectionStatus: options.onStatus,
+    ...(options.onPlatformAccounts ? { onPlatformAccounts: options.onPlatformAccounts } : {})
   });
   let runtime = createRuntime();
 
@@ -192,6 +198,11 @@ export async function startDesktopService(
     setStatsPeriod: (period) => runtime.setStatsPeriod(period),
     startNewSession: () => runtime.startNewSession(),
     getSessionInfo: () => runtime.getSessionInfo(),
-    getMmrHistory: () => state.getMmrHistory()
+    getMmrHistory: () => state.getMmrHistory(),
+    getPlatformAccounts: () => runtime.getPlatformAccounts(),
+    addPlatformAccount: (accountId) => runtime.addPlatformAccount(accountId),
+    selectPlatformAccount: (accountId, correctInferred) =>
+      runtime.selectPlatformAccount(accountId, correctInferred),
+    removePlatformAccount: (accountId) => runtime.removePlatformAccount(accountId)
   };
 }

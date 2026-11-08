@@ -41,6 +41,7 @@ import {
 } from "./streamdeck/actions.js";
 import { RenderBus } from "./streamdeck/render-bus.js";
 import { startStreamDeckRuntime } from "./streamdeck/startup.js";
+import { PlatformSettingsBridge } from "./streamdeck/platform-settings.js";
 
 const statePath = getStatePath({
   platform: process.platform,
@@ -63,6 +64,7 @@ const controlClient = new RlControlClient({
   timeoutMs: 1_500
 });
 let runtime: LiveRuntime;
+let accountBridge: PlatformSettingsBridge;
 let gameLogWatcher: RocketLeagueLogWatcher | undefined;
 let identityRecoveryInProgress = false;
 const renderBus = new RenderBus();
@@ -153,6 +155,7 @@ function applyGlobalSettings(settings: Record<string, unknown>): void {
 
 streamDeck.settings.onDidReceiveGlobalSettings((ev) => {
   applyGlobalSettings(ev.settings);
+  accountBridge.receive(ev.settings);
 });
 
 runtime = new LiveRuntime(pluginState, sink, {
@@ -190,8 +193,25 @@ runtime = new LiveRuntime(pluginState, sink, {
   mmrPlaylist: process.env.ROCKETSTATS_MMR_PLAYLIST ?? "auto",
   eventBannerStats: parseEventBannerStats(process.env.ROCKETSTATS_EVENT_STATS),
   animateEvents: parseBoolean(process.env.ROCKETSTATS_ANIMATE_EVENTS, true),
-  onConnected: recoverGameLogIdentity
+  onConnected: recoverGameLogIdentity,
+  onPlatformAccounts: (accounts) => accountBridge.update(accounts)
 });
+
+accountBridge = new PlatformSettingsBridge(
+  {
+    get: () => streamDeck.settings.getGlobalSettings(),
+    set: (settings) => streamDeck.settings.setGlobalSettings(settings)
+  },
+  {
+    get: () => runtime.getPlatformAccounts(),
+    add: (accountId) => runtime.addPlatformAccount(accountId),
+    select: (accountId, correctInferred) => runtime.selectPlatformAccount(accountId, correctInferred),
+    remove: (accountId) => runtime.removePlatformAccount(accountId)
+  },
+  (error) => process.stderr.write(
+    `[rocketstats:accounts] ${error instanceof Error ? error.message : String(error)}\n`
+  )
+);
 
 export async function startPlugin(): Promise<void> {
   await startStreamDeckRuntime({
@@ -228,6 +248,7 @@ export async function startPlugin(): Promise<void> {
     loadSettings: async () => {
       const globalSettings = await streamDeck.settings.getGlobalSettings();
       applyGlobalSettings(globalSettings);
+      accountBridge.start(globalSettings);
     },
     startRuntime: () => runtime.start()
   });

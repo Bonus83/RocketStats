@@ -134,6 +134,10 @@ export class RlLiveConnector {
     this.officialNormalizer.configureVerifiedAccountId(accountId);
   }
 
+  configureSelectedAccountId(accountId: string | undefined): void {
+    this.officialNormalizer.configureSelectedAccountId(accountId);
+  }
+
   stop(): void {
     if (this.destroyed) {
       return;

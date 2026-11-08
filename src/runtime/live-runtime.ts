@@ -1,12 +1,16 @@
+import { randomUUID } from "node:crypto";
 import {
   AccountIdentitySignal,
   createEmptySnapshot,
   LiveMatchSnapshot,
+  ObservedIdentityMatch,
+  PlatformAccountsSnapshot,
   PluginLocale,
   QueueType,
   StatsPeriod
 } from "../core/types.js";
 import { PluginState } from "../core/plugin-state.js";
+import { platformAccountId } from "../core/platform-identity.js";
 import { RlLiveConnector, LiveErrorKind } from "../connector/rl-live-connector.js";
 import { RocketLeagueLogQueue } from "../connector/rocket-league-log-watcher.js";
 import { estimateRank } from "../core/rank-estimator.js";
@@ -36,6 +40,7 @@ export interface LiveRuntimeOptions {
   onError?: (error: Error, kind: LiveErrorKind) => void;
   onConnected?: () => void;
   onConnectionStatus?: (status: LiveConnectionStatus) => void;
+  onPlatformAccounts?: (accounts: PlatformAccountsSnapshot) => void;
 }
 
 interface PendingMatchQueue {
@@ -55,6 +60,7 @@ export class LiveRuntime {
   private currentPort: number;
   private manualDisplayName: string | undefined;
   private verifiedLogAccountId: string | undefined;
+  private verifiedFeedAccountId: string | undefined;
   private observedAccountId: string | undefined;
   private matchAccountId: string | undefined;
   private matchQueueType: QueueType | undefined;
@@ -63,6 +69,9 @@ export class LiveRuntime {
   private logReservation: { queue: RocketLeagueLogQueue; accountId: string | undefined } | undefined;
   private connectorConnected = false;
   private latestSnapshot: LiveMatchSnapshot | undefined;
+  private currentMatchStorageId: string | undefined;
+  private lastAccountsSignature = "";
+  private lastVerifiedBinding = "";
 
   constructor(
     private readonly pluginState: PluginState,
@@ -97,10 +106,14 @@ export class LiveRuntime {
       } else if (status === "disconnected" && this.connectorConnected) {
         this.connectorConnected = false;
         this.recordGameLogIdentity(undefined);
+        this.verifiedFeedAccountId = undefined;
         this.observedAccountId = undefined;
+        this.lastVerifiedBinding = "";
         this.matchAccountId = undefined;
         this.pendingQueue = undefined;
         this.latestSnapshot = undefined;
+        this.currentMatchStorageId = undefined;
+        this.notifyPlatformAccounts();
       }
     });
   }
@@ -109,6 +122,8 @@ export class LiveRuntime {
     if (!this.pluginState.hasActiveAccount()) {
       this.pluginState.resolveIdentity({ observedAt: Date.now() });
     }
+    this.connector.configureSelectedAccountId(this.pluginState.getSelectedPlatformId());
+    this.notifyPlatformAccounts();
     this.renderActions(this.latestSnapshot ?? createEmptySnapshot());
     this.connector.start();
   }
@@ -163,6 +178,56 @@ export class LiveRuntime {
       startedAt: this.pluginState.getSessionStartedAt(),
       matchCount: this.pluginState.getSessionMatchCount()
     };
+  }
+
+  getPlatformAccounts(): PlatformAccountsSnapshot {
+    return this.pluginState.getPlatformAccounts(
+      this.verifiedLogAccountId ?? this.verifiedFeedAccountId
+    );
+  }
+
+  async addPlatformAccount(accountId: string): Promise<void> {
+    try {
+      await this.pluginState.addPlatformAccount(accountId);
+    } finally {
+      this.notifyPlatformAccounts();
+    }
+  }
+
+  async selectPlatformAccount(accountId: string, correctInferred = false): Promise<void> {
+    const verified = this.verifiedLogAccountId ?? this.verifiedFeedAccountId;
+    if (verified && verified !== accountId.trim()) {
+      throw new Error("The account currently reported by the game takes priority.");
+    }
+    try {
+      await this.pluginState.selectPlatformAccount(accountId, "manual", undefined, correctInferred);
+    } finally {
+      this.synchronizeSelectedPlatform();
+    }
+    const currentVerified = this.verifiedLogAccountId ?? this.verifiedFeedAccountId;
+    if (currentVerified && currentVerified !== accountId.trim()) {
+      throw new Error("The game account changed while the selection was being saved.");
+    }
+  }
+
+  async removePlatformAccount(accountId: string): Promise<void> {
+    const verified = this.verifiedLogAccountId ?? this.verifiedFeedAccountId;
+    if (verified === accountId.trim()) {
+      throw new Error("The account currently reported by the game cannot be removed.");
+    }
+    const wasSelected = this.pluginState.getSelectedPlatformId() === accountId.trim();
+    try {
+      await this.pluginState.removePlatformAccount(accountId);
+    } finally {
+      this.connector.configureSelectedAccountId(this.pluginState.getSelectedPlatformId());
+      if (wasSelected && !this.pluginState.getSelectedPlatformId() &&
+          !this.verifiedLogAccountId && !this.verifiedFeedAccountId) {
+        this.matchAccountId = undefined;
+        this.observedAccountId = undefined;
+      }
+      this.notifyPlatformAccounts();
+      this.renderActions(this.latestSnapshot ?? createEmptySnapshot());
+    }
   }
 
   configurePort(port: number): void {
@@ -234,6 +299,9 @@ export class LiveRuntime {
     this.connector.configureVerifiedAccountId(accountId);
     if (!accountId) {
       this.matchAccountId = undefined;
+      this.verifiedFeedAccountId = undefined;
+      this.observedAccountId = undefined;
+      this.notifyPlatformAccounts();
       return;
     }
 
@@ -242,6 +310,10 @@ export class LiveRuntime {
     }
     this.observedAccountId = accountId;
     this.selectIdentity({ accountId, observedAt: Date.now() });
+    this.rememberVerifiedAccount(
+      accountId,
+      this.latestSnapshot?.isInMatch ? this.currentMatchStorageId : undefined
+    );
     const snapshot = { ...(this.latestSnapshot ?? createEmptySnapshot()) };
     if (snapshot.localPlayer?.accountId !== accountId) {
       delete snapshot.localPlayer;
@@ -252,11 +324,11 @@ export class LiveRuntime {
 
   private handleSnapshot(snapshot: LiveMatchSnapshot): void {
     const previous = this.latestSnapshot;
-    if (
-      snapshot.isInMatch &&
+    const newMatch = snapshot.isInMatch &&
       (snapshot.matchCreated || !previous?.isInMatch ||
-        (snapshot.matchId !== "unknown" && snapshot.matchId !== previous.matchId))
-    ) {
+        (snapshot.matchId !== "unknown" && snapshot.matchId !== previous.matchId &&
+          previous.matchId !== "unknown"));
+    if (newMatch) {
       this.matchGeneration += 1;
       const reconnecting = previous?.leftEarly &&
         previous.matchId === snapshot.matchId &&
@@ -264,6 +336,25 @@ export class LiveRuntime {
       if (!reconnecting) {
         this.matchAccountId = undefined;
         this.matchQueueType = undefined;
+        this.currentMatchStorageId = snapshot.matchId === "unknown"
+          ? `local:${randomUUID()}`
+          : snapshot.matchId;
+      }
+    }
+    if (snapshot.isInMatch && !this.currentMatchStorageId) {
+      this.currentMatchStorageId = snapshot.matchId === "unknown"
+        ? `local:${randomUUID()}`
+        : snapshot.matchId;
+    } else if (
+      this.currentMatchStorageId?.startsWith("local:") &&
+      snapshot.matchId !== "unknown"
+    ) {
+      try {
+        const saved = this.pluginState.renameIdentityMatch(this.currentMatchStorageId, snapshot.matchId);
+        void saved?.catch(this.reportError);
+        this.currentMatchStorageId = snapshot.matchId;
+      } catch (error) {
+        this.reportError(error);
       }
     }
 
@@ -279,7 +370,22 @@ export class LiveRuntime {
         this.reportError(new Error("The feed and game log reported different local accounts."));
       }
       const signal: AccountIdentitySignal = { observedAt: snapshot.updatedAt };
-      if (local.accountId) {
+      if (local.matchedBySelectedAccount && local.accountId) {
+        const selected = this.pluginState.getSelectedPlatformId();
+        if (selected === local.accountId) {
+          const current = this.pluginState.getPlatformAccounts().selectionSource;
+          if (!this.pluginState.hasActiveAccount() ||
+              this.pluginState.getActiveAccount().accountId !== selected) {
+            void this.pluginState.selectPlatformAccount(
+              selected,
+              current === "inferred" ? "inferred" : "manual"
+            ).catch(this.reportError);
+          }
+          this.observedAccountId = selected;
+          if (snapshot.isInMatch) this.matchAccountId = selected;
+        }
+      } else if (local.accountId) {
+        this.verifiedFeedAccountId = local.accountId;
         signal.accountId = local.accountId;
         signal.liveDisplayName = local.name;
       } else if (local.matchedByManualName && this.manualDisplayName) {
@@ -289,6 +395,9 @@ export class LiveRuntime {
       if (signal.accountId || signal.manualMatch) {
         const accountId = this.selectIdentity(signal);
         this.observedAccountId = accountId;
+        if (signal.accountId) {
+          this.rememberVerifiedAccount(accountId, snapshot.isInMatch ? this.currentMatchStorageId : undefined);
+        }
         if (snapshot.isInMatch) {
           this.matchAccountId = accountId;
         }
@@ -298,14 +407,49 @@ export class LiveRuntime {
     const matchAccountConfirmed = this.matchAccountId !== undefined &&
       this.pluginState.hasActiveAccount() &&
       this.pluginState.getActiveAccount().accountId === this.matchAccountId;
+    const storageId = this.currentMatchStorageId ?? snapshot.matchId;
+    const searching = !matchAccountConfirmed || snapshot.localPlayer?.matchedByManualName === true;
+    if (
+      storageId !== "unknown" &&
+      (searching || snapshot.localPlayer?.matchedBySelectedAccount === true ||
+        this.pluginState.hasIdentityMatch(storageId))
+    ) {
+      try {
+        const observation = this.pluginState.observeIdentityMatch(
+          storageId,
+          snapshot,
+          searching,
+          this.pendingSoloMmr(snapshot)
+        );
+        void observation.saved?.catch(this.reportError);
+        const inferred = observation.inferredAccountId;
+        if (inferred && searching && !this.verifiedLogAccountId && !this.verifiedFeedAccountId) {
+          void this.pluginState.selectPlatformAccount(inferred, "inferred").catch((error: unknown) => {
+            this.synchronizeSelectedPlatform();
+            this.reportError(error);
+          });
+          if (this.pluginState.getSelectedPlatformId() === inferred) {
+            this.connector.configureSelectedAccountId(inferred);
+            this.observedAccountId = inferred;
+          }
+        }
+        if (observation.accountsChanged || inferred) {
+          this.notifyPlatformAccounts();
+        }
+      } catch (error) {
+        this.reportError(error);
+      }
+    }
     if (matchAccountConfirmed) {
-      void this.pluginState.updateAccountFromSnapshot(snapshot).catch(this.reportError);
+      if (!snapshot.localPlayer?.matchedBySelectedAccount) {
+        void this.pluginState.updateAccountFromSnapshot(snapshot).catch(this.reportError);
+      }
       this.updateLoadedPlaylist(snapshot);
 
       const queueType = this.matchQueueType ?? snapshot.queueType ?? "unknown";
       if (snapshot.result) {
         void this.pluginState.recordMatchResult({
-          matchId: snapshot.matchId,
+          matchId: storageId,
           queueType,
           outcome: snapshot.result,
           completedAt: snapshot.updatedAt
@@ -313,14 +457,14 @@ export class LiveRuntime {
         this.lastRecordedEarlyLeaveMatchId = undefined;
       } else if (
         snapshot.leftEarly &&
-        this.lastRecordedEarlyLeaveMatchId !== snapshot.matchId
+        this.lastRecordedEarlyLeaveMatchId !== storageId
       ) {
         void this.pluginState.recordEarlyLeave(
-          snapshot.matchId,
+          storageId,
           queueType,
           snapshot.updatedAt
         ).catch(this.reportError);
-        this.lastRecordedEarlyLeaveMatchId = snapshot.matchId;
+        this.lastRecordedEarlyLeaveMatchId = storageId;
       }
     }
 
@@ -337,6 +481,101 @@ export class LiveRuntime {
       void this.pluginState.persistActiveAccount().catch(this.reportError);
     }
     return identity.accountId;
+  }
+
+  private rememberVerifiedAccount(accountId: string, matchId?: string): void {
+    if (!platformAccountId(accountId)) {
+      return;
+    }
+    const binding = `${accountId}\0${matchId ?? ""}`;
+    if (this.lastVerifiedBinding === binding && this.pluginState.getSelectedPlatformId() === accountId) {
+      return;
+    }
+    const accounts = this.pluginState.getPlatformAccounts();
+    if (
+      this.lastVerifiedBinding !== binding ||
+      accounts.selectedAccountId !== accountId ||
+      accounts.selectionSource !== "verified" ||
+      !accounts.accounts.some((entry) => entry.accountId === accountId && entry.managed)
+    ) {
+      this.lastVerifiedBinding = binding;
+      void this.pluginState.selectPlatformAccount(accountId, "verified", matchId).catch((error: unknown) => {
+        this.synchronizeSelectedPlatform();
+        this.reportError(error);
+      });
+      this.connector.configureSelectedAccountId(this.pluginState.getSelectedPlatformId());
+    }
+    this.notifyPlatformAccounts();
+  }
+
+  private synchronizeSelectedPlatform(): void {
+    const selected = this.pluginState.getSelectedPlatformId();
+    const verified = this.verifiedLogAccountId ?? this.verifiedFeedAccountId;
+    this.connector.configureSelectedAccountId(selected);
+    const snapshot = this.latestSnapshot;
+    if (snapshot?.isInMatch && selected && (!verified || verified === selected)) {
+      const matches = snapshot.players?.filter((player) => player.accountId === selected) ?? [];
+      if (matches.length === 1 && matches[0]) {
+        this.matchAccountId = selected;
+        this.observedAccountId = selected;
+        this.latestSnapshot = {
+          ...snapshot,
+          localPlayer: {
+            ...matches[0],
+            ...(!verified ? { matchedBySelectedAccount: true } : {})
+          },
+          myTeam: matches[0].team
+        };
+        this.updateLoadedPlaylist(this.latestSnapshot);
+      } else {
+        this.matchAccountId = undefined;
+        this.observedAccountId = verified;
+      }
+    } else {
+      this.observedAccountId = verified ?? selected;
+      if (snapshot?.isInMatch) this.matchAccountId = undefined;
+    }
+    this.notifyPlatformAccounts();
+    this.renderActions(this.latestSnapshot ?? createEmptySnapshot());
+  }
+
+  private notifyPlatformAccounts(): void {
+    if (!this.options.onPlatformAccounts) {
+      return;
+    }
+    const accounts = this.getPlatformAccounts();
+    const signature = JSON.stringify(accounts);
+    if (signature !== this.lastAccountsSignature) {
+      this.lastAccountsSignature = signature;
+      this.options.onPlatformAccounts(accounts);
+    }
+  }
+
+  private pendingSoloMmr(snapshot: LiveMatchSnapshot): ObservedIdentityMatch["soloMmr"] {
+    const pending = this.pendingQueue;
+    const selected = this.pluginState.getSelectedPlatformId();
+    const selectedPending = pending?.accountId !== undefined &&
+      !this.verifiedLogAccountId && !this.verifiedFeedAccountId &&
+      pending.accountId === selected &&
+      snapshot.localPlayer?.matchedBySelectedAccount === true &&
+      snapshot.localPlayer.accountId === selected;
+    if (
+      !pending || (pending.accountId !== undefined && !selectedPending) ||
+      pending.matchGeneration !== this.matchGeneration ||
+      Date.now() - pending.observedAt > MAX_PENDING_QUEUE_AGE_MS ||
+      !snapshot.isInMatch || !snapshot.gameStateLoaded ||
+      pending.queue.queueType === "unknown" ||
+      pending.queue.mmr === undefined || !Number.isFinite(pending.queue.mmr) ||
+      (snapshot.queueType !== "unknown" && snapshot.queueType !== pending.queue.queueType) ||
+      (pending.queue.matchId && !this.sameMatchId(snapshot.matchId, pending.queue.matchId))
+    ) {
+      return undefined;
+    }
+    return {
+      value: pending.queue.mmr,
+      observedAt: pending.observedAt,
+      playlist: pending.queue.queueType
+    };
   }
 
   private updateLoadedPlaylist(snapshot: LiveMatchSnapshot): void {
@@ -378,7 +617,8 @@ export class LiveRuntime {
     }
     this.pendingQueue = undefined;
     if (queueType !== "unknown" && pendingMatchesAccount && applicable.queue.queueType === queueType &&
-      applicable.queue.mmr !== undefined) {
+      applicable.queue.mmr !== undefined &&
+      !snapshot.localPlayer?.matchedBySelectedAccount) {
       void this.pluginState.setPlaylistRank(
         queueType,
         applicable.queue.mmr,

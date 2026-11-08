@@ -20,6 +20,7 @@ export class OfficialStatsNormalizer {
   private matchFinished = false;
   private manualPlayerName: string | undefined;
   private verifiedAccountId: string | undefined;
+  private selectedAccountId: string | undefined;
 
   configureManualPlayerName(name: string | undefined): void {
     const normalized = name?.trim();
@@ -32,6 +33,14 @@ export class OfficialStatsNormalizer {
       delete this.snapshot.myTeam;
     }
     this.verifiedAccountId = accountId;
+  }
+
+  configureSelectedAccountId(accountId: string | undefined): void {
+    if (this.selectedAccountId !== accountId) {
+      delete this.snapshot.localPlayer;
+      delete this.snapshot.myTeam;
+    }
+    this.selectedAccountId = accountId;
   }
 
   reset(): void {
@@ -55,16 +64,23 @@ export class OfficialStatsNormalizer {
     }
 
     const timestamp = parseTimestamp(input.Timestamp ?? input.timestamp) ?? now;
-    const matchId = stringValue(data.MatchGuid) ?? stringValue(input.MatchGuid) ??
-      stringValue(input.matchGuid) ?? this.snapshot.matchId;
+    const reportedMatchId = stringValue(data.MatchGuid) ?? stringValue(input.MatchGuid) ??
+      stringValue(input.matchGuid);
+    if (eventName === "MatchCreated" && !reportedMatchId && this.matchFinished && !this.snapshot.leftEarly) {
+      this.snapshot = createEmptySnapshot();
+      this.matchFinished = false;
+    }
+    const matchId = reportedMatchId && sameMatchGuid(reportedMatchId, this.snapshot.matchId)
+      ? this.snapshot.matchId
+      : reportedMatchId ?? this.snapshot.matchId;
 
     if (matchId !== this.snapshot.matchId && matchId !== "unknown") {
-      this.snapshot = {
-        ...createEmptySnapshot(),
-        matchId,
-        updatedAt: timestamp
-      };
-      this.matchFinished = false;
+      if (this.snapshot.matchId === "unknown" && this.snapshot.isInMatch) {
+        this.snapshot = { ...this.snapshot, matchId, updatedAt: timestamp };
+      } else {
+        this.snapshot = { ...createEmptySnapshot(), matchId, updatedAt: timestamp };
+        this.matchFinished = false;
+      }
     } else {
       this.snapshot = { ...this.snapshot, updatedAt: timestamp };
     }
@@ -187,6 +203,9 @@ export class OfficialStatsNormalizer {
     const players = (Array.isArray(data.Players) ? data.Players : [])
       .map(asRecord)
       .filter((player): player is JsonRecord => player !== undefined);
+    this.snapshot.players = players
+      .map(normalizePlayer)
+      .filter((player): player is LivePlayerStats => player !== undefined);
     delete this.snapshot.localPlayer;
     delete this.snapshot.myTeam;
     const explicitlyLocalPlayers = players.filter(isLocalPlayer);
@@ -209,12 +228,17 @@ export class OfficialStatsNormalizer {
       return;
     }
 
-    const matchingPlayers = this.verifiedAccountId
-      ? players.filter((player) => stringValue(player.PrimaryId) === this.verifiedAccountId)
-      : players.filter((player) =>
-        this.manualPlayerName !== undefined &&
+    const preferredId = this.verifiedAccountId ?? this.selectedAccountId;
+    let matchingPlayers = preferredId
+      ? players.filter((player) => stringValue(player.PrimaryId) === preferredId)
+      : [];
+    let matchedByName = false;
+    if (!this.verifiedAccountId && matchingPlayers.length === 0 && this.manualPlayerName) {
+      matchingPlayers = players.filter((player) =>
         stringValue(player.Name)?.trim().toLowerCase() === this.manualPlayerName
       );
+      matchedByName = true;
+    }
     if (matchingPlayers.length !== 1) {
       return;
     }
@@ -225,9 +249,11 @@ export class OfficialStatsNormalizer {
     }
     const localPlayer = normalizePlayer(matchingPlayer);
     if (localPlayer) {
-      if (!this.verifiedAccountId) {
+      if (matchedByName) {
         delete localPlayer.accountId;
         localPlayer.matchedByManualName = true;
+      } else if (!this.verifiedAccountId && this.selectedAccountId) {
+        localPlayer.matchedBySelectedAccount = true;
       }
       this.snapshot.localPlayer = localPlayer;
       this.snapshot.myTeam = localPlayer.team;
@@ -243,6 +269,9 @@ export class OfficialStatsNormalizer {
       delete this.snapshot.gameStateLoaded;
       delete this.snapshot.localPlayer;
       delete this.snapshot.myTeam;
+      delete this.snapshot.players;
+      delete this.snapshot.winnerTeam;
+      delete this.snapshot.lastGoal;
     }
     this.snapshot.rankedReconnectResultApplied =
       this.snapshot.leftEarly || this.snapshot.rankedReconnectResultApplied;
@@ -303,6 +332,11 @@ export class OfficialStatsNormalizer {
 
   private applyMatchResult(data: JsonRecord): void {
     const winnerTeam = teamFromNumber(data.WinnerTeamNum);
+    if (winnerTeam) {
+      this.snapshot.winnerTeam = winnerTeam;
+    } else {
+      delete this.snapshot.winnerTeam;
+    }
     const localTeam = this.snapshot.myTeam;
     if (!winnerTeam || !localTeam) {
       delete this.snapshot.result;
@@ -348,6 +382,12 @@ function parseTimestamp(value: unknown): number | undefined {
   return Number.isNaN(parsed) ? undefined : parsed;
 }
 
+function sameMatchGuid(left: string, right: string): boolean {
+  const normalize = (value: string): string => value.replace(/[{}-]/g, "").toLowerCase();
+  const normalized = normalize(left);
+  return /^[0-9a-f]{32}$/.test(normalized) && normalized === normalize(right);
+}
+
 function teamFromNumber(value: unknown): Team | undefined {
   if (value === 0) {
     return "blue";
@@ -391,6 +431,9 @@ function normalizePlayer(player: JsonRecord): LivePlayerStats | undefined {
   const accountId = stringValue(player.PrimaryId);
   if (accountId) {
     normalized.accountId = accountId;
+  }
+  if (player.IsBot === true || player.bIsBot === true || player.bBot === true) {
+    normalized.isBot = true;
   }
   const ping = numberValue(player.Ping);
   if (ping !== undefined) {

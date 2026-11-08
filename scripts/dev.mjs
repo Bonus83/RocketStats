@@ -10,10 +10,10 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
 
 const TEST_GROUPS = {
-  ui: ["desktop-connection", "desktop-dashboard"],
+  ui: ["desktop-connection", "desktop-dashboard", "settings-ui"],
   update: ["desktop-updater", "desktop-update-balloon", "desktop-update-install"],
   service: ["desktop-service"],
-  core: ["core", "auto-mmr", "game-log"],
+  core: ["core", "auto-mmr", "game-log", "platform-identity", "platform-settings"],
 };
 
 // Source path prefix -> test groups that cover it.
@@ -23,6 +23,7 @@ const SOURCE_MAP = [
   ["desktop/index.html", ["ui"]],
   ["desktop/styles.css", ["ui"]],
   ["desktop/", ["ui"]],
+  ["com.rocketstats.livestats.sdPlugin/ui/", ["ui"]],
   ["src/desktop/", ["service"]],
   ["src/runtime/", ["service", "core"]],
   ["src/connector/", ["core", "service"]],
@@ -72,7 +73,7 @@ function affected() {
   return { files, tests: [...tests], needsCheck };
 }
 
-// Type-checks and emits only the desktop dependency graph; never touches bin/index.js.
+// Type-checks the desktop graph and standalone settings bridge; never touches bin/index.js.
 function check() {
   const ts = require("typescript");
   const configPath = path.join(root, "tsconfig.json");
@@ -81,7 +82,10 @@ function check() {
   const host = ts.createCompilerHost({});
   const { options, errors } = ts.convertCompilerOptionsFromJson(config.config.compilerOptions, root, configPath);
   if (errors.length) throw new Error(ts.formatDiagnostics(errors, host));
-  const program = ts.createProgram([path.join(root, "src", "desktop", "desktop-service.ts")], options);
+  const program = ts.createProgram([
+    path.join(root, "src", "desktop", "desktop-service.ts"),
+    path.join(root, "src", "streamdeck", "platform-settings.ts")
+  ], options);
   const diagnostics = ts.getPreEmitDiagnostics(program);
   if (diagnostics.length) {
     console.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, host));
@@ -119,7 +123,7 @@ function runTests(names) {
 function usage() {
   console.log(`Usage: node scripts/dev.mjs <command>
 
-  check              Type-check and emit the desktop TypeScript graph
+  check              Type-check and emit the desktop graph and settings bridge
   test <group|file>  Run test groups (${Object.keys(TEST_GROUPS).join(", ")}, all) or single test files
   affected           Show changed files and the tests that cover them
   verify             check (if src/ changed) + affected tests`);
