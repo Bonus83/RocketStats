@@ -416,6 +416,36 @@ test("MMR stored before the history feature still appears in the history", async
   }
 });
 
+test("MMR history includes the current rank when its last saved point is stale", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "rocketstats-tests-"));
+  const file = join(dir, "state.json");
+  const options = { statePath: file, identityGraceWindowMs: 10_000, reconnectWindowMs: 30_000 };
+  try {
+    const state = new PluginState(options);
+    await state.initialize();
+    state.resolveIdentity({ accountId: "a", liveDisplayName: "A", observedAt: 1000 });
+    await state.setPlaylistRank("ranked_3v3", 1167, undefined, 100);
+    await state.setPlaylistRank("ranked_3v3", 1149, undefined, 200);
+
+    const rank = state.getActiveAccount().rankByPlaylist[0];
+    rank.mmr = 1158;
+    state.getActiveAccount().updatedAt = 300;
+    await state.persistActiveAccount();
+
+    assert.deepEqual(state.getMmrHistory().ranked_3v3, [
+      { at: 100, mmr: 1167 },
+      { at: 200, mmr: 1149 },
+      { at: 300, mmr: 1158 }
+    ]);
+    assert.deepEqual(rank.history, [
+      { at: 100, mmr: 1167 },
+      { at: 200, mmr: 1149 }
+    ]);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test("plugin state keeps streaks separated by account", async () => {
   const dir = await mkdtemp(join(tmpdir(), "rocketstats-tests-"));
   const file = join(dir, "state.json");
@@ -1027,11 +1057,17 @@ test("records tile shows streak, per-match stats, and fastest-goal speed", () =>
     updatedAt: 0
   };
   const rendered = renderAction("records", snapshot, {
-    recordsLabel: "W2 L1"
+    recordsLabel: "W2 L1",
+    longestWinStreak: 2,
+    longestLossStreak: 1
   });
   assert.equal(rendered.title, "RECORDS");
   assert.equal(rendered.value, "W2 L1");
   assert.equal(rendered.footer, "");
+  const recordsSvg = Buffer.from(rendered.image.split(",")[1], "base64").toString("utf8");
+  assert.match(recordsSvg, /LONGEST STREAKS/);
+  assert.match(recordsSvg, /<tspan fill="#3EDB8D">W2<\/tspan>/);
+  assert.match(recordsSvg, /<tspan fill="#FF4D4D">L1<\/tspan>/);
 
   const streak = renderAction("streak", snapshot, { streakValue: "L1" });
   assert.equal(streak.value, "L1");

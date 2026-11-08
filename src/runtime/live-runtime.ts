@@ -679,7 +679,8 @@ export class LiveRuntime {
       : this.options.mmrPlaylist;
     const mmrSummary = this.pluginState.getMmrSummary(mmrPlaylist);
     const mmrByPlaylist = this.pluginState.getMmrSummaries();
-    const recordsLabel = this.pluginState.getRecordsLabel();
+    const recordStreaks = this.pluginState.getRecordStreaks();
+    const recordsLabel = `W${recordStreaks.longestWinStreak} L${recordStreaks.longestLossStreak}`;
     const { wins, losses } = this.pluginState.getWinLossCounts();
 
     for (const action of this.options.actionKinds) {
@@ -695,6 +696,7 @@ export class LiveRuntime {
         eventBannerStats: this.options.eventBannerStats,
         animateEvents: this.options.animateEvents,
         recordsLabel,
+        ...recordStreaks,
         statsScope: this.pluginState.getStatsScope(),
         statsMode: this.pluginState.getStatsMode(),
         wins,

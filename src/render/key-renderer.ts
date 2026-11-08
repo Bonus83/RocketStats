@@ -73,6 +73,8 @@ export interface RenderContext {
   eventBannerStats: Array<"goals" | "assists" | "saves" | "shots" | "demos" | "score" | "ping">;
   animateEvents: boolean;
   recordsLabel: string;
+  longestWinStreak: number;
+  longestLossStreak: number;
   statsScope: StatsScope;
   statsMode: QueueType | undefined;
   wins: number;
@@ -96,6 +98,8 @@ const DEFAULT_CONTEXT: RenderContext = {
   eventBannerStats: ["goals", "assists", "saves"],
   animateEvents: true,
   recordsLabel: "W0 L0",
+  longestWinStreak: 0,
+  longestLossStreak: 0,
   statsScope: "all",
   statsMode: undefined,
   wins: 0,
@@ -229,6 +233,38 @@ export function renderScopeCardSvg(
   return `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`;
 }
 
+export function renderRecordsCardSvg(
+  title: string,
+  longestWinStreak: number,
+  longestLossStreak: number,
+  footer: string
+): string {
+  const titleSize = title.length > 16 ? 12 : title.length > 12 ? 14 : 16;
+  const valueSize = `W${longestWinStreak}  L${longestLossStreak}`.length > 9
+    ? 22
+    : `W${longestWinStreak}  L${longestLossStreak}`.length > 7 ? 26 : 32;
+  const footerSvg = footer
+    ? `<text x="72" y="128" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" ` +
+      `font-weight="600" font-size="12" fill="#8E9BB3">${escapeXml(footer)}</text>`
+    : "";
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">` +
+    `<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">` +
+    `<stop offset="0" stop-color="#14213A"/><stop offset="1" stop-color="#0A111F"/>` +
+    `</linearGradient></defs>` +
+    `<rect width="144" height="144" fill="url(#bg)"/>` +
+    `<text x="72" y="36" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" ` +
+    `font-weight="700" font-size="${titleSize}" fill="#8E9BB3">${escapeXml(title)}</text>` +
+    `<text x="72" y="94" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" ` +
+    `font-weight="900" font-size="${valueSize}">` +
+    `<tspan fill="#3EDB8D">W${longestWinStreak}</tspan>` +
+    `<tspan fill="#8E9BB3" xml:space="preserve">  </tspan>` +
+    `<tspan fill="#FF4D4D">L${longestLossStreak}</tspan></text>` +
+    footerSvg +
+    `</svg>`;
+  return `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`;
+}
+
 export interface MmrCardInput {
   titleBase: string;
   playlist: string | undefined;
@@ -341,6 +377,12 @@ export function renderAction(
         value: ctx.recordsLabel,
         footer: scopeFooter(ctx),
         accent: "#3EDB8D",
+        image: renderRecordsCardSvg(
+          msg(ctx.locale, "longestStreaks"),
+          ctx.longestWinStreak,
+          ctx.longestLossStreak,
+          scopeFooter(ctx)
+        ),
         titleKey: "records"
       };
     case "stats-scope": {

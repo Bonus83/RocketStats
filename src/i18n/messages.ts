@@ -32,6 +32,7 @@ export type MessageKey =
   | "overtime"
   | "result"
   | "records"
+  | "longestStreaks"
   | "personal"
   | "goals"
   | "assists"
@@ -85,6 +86,7 @@ const DICTIONARY: Record<PluginLocale, Messages> = {
     overtime: "OVERTIME",
     result: "RESULT",
     records: "RECORDS",
+    longestStreaks: "LONGEST STREAKS",
     personal: "PERSONAL",
     goals: "GOALS",
     assists: "ASSISTS",
@@ -135,6 +137,7 @@ const DICTIONARY: Record<PluginLocale, Messages> = {
     overtime: "VERLÄNGERUNG",
     result: "ERGEBNIS",
     records: "REKORDE",
+    longestStreaks: "LÄNGSTE SERIEN",
     personal: "PERSÖNLICH",
     goals: "TORE",
     assists: "VORLAGEN",
@@ -185,6 +188,7 @@ const DICTIONARY: Record<PluginLocale, Messages> = {
     overtime: "DOGRYWKA",
     result: "WYNIK",
     records: "REKORDY",
+    longestStreaks: "NAJDŁUŻSZE SERIE",
     personal: "OSOBISTE",
     goals: "GOLE",
     assists: "ASYSTY",
@@ -235,6 +239,7 @@ const DICTIONARY: Record<PluginLocale, Messages> = {
     overtime: "PROLONGATION",
     result: "RÉSULTAT",
     records: "RECORDS",
+    longestStreaks: "PLUS LONGUES SÉRIES",
     personal: "PERSONNELS",
     goals: "BUTS",
     assists: "PASSES",
@@ -285,6 +290,7 @@ const DICTIONARY: Record<PluginLocale, Messages> = {
     overtime: "PRÓRROGA",
     result: "RESULTADO",
     records: "RÉCORDS",
+    longestStreaks: "RACHAS MÁS LARGAS",
     personal: "PERSONAL",
     goals: "GOLES",
     assists: "ASISTENCIAS",
@@ -335,6 +341,7 @@ const DICTIONARY: Record<PluginLocale, Messages> = {
     overtime: "PRORROGAÇÃO",
     result: "RESULTADO",
     records: "RECORDES",
+    longestStreaks: "MAIORES SEQUÊNCIAS",
     personal: "PESSOAIS",
     goals: "GOLS",
     assists: "ASSISTÊNCIAS",
@@ -385,6 +392,7 @@ const DICTIONARY: Record<PluginLocale, Messages> = {
     overtime: "ОВЕРТАЙМ",
     result: "РЕЗУЛЬТАТ",
     records: "РЕКОРДЫ",
+    longestStreaks: "ДЛИННЫЕ СЕРИИ",
     personal: "ЛИЧНЫЕ",
     goals: "ГОЛЫ",
     assists: "ПАСЫ",

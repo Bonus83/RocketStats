@@ -689,8 +689,13 @@ export class PluginState {
   }
 
   getRecordsLabel(): string {
-    const records = this.getScopedStreaks();
+    const records = this.getRecordStreaks();
     return `W${records.longestWinStreak} L${records.longestLossStreak}`;
+  }
+
+  getRecordStreaks(): { longestWinStreak: number; longestLossStreak: number } {
+    const { longestWinStreak, longestLossStreak } = this.getScopedStreaks();
+    return { longestWinStreak, longestLossStreak };
   }
 
   /** Wins and losses of the active account in the current scope, honouring resets. */
@@ -760,7 +765,18 @@ export class PluginState {
     const entries: Array<[string, MmrHistoryPoint[]]> = [];
     for (const rank of account.rankByPlaylist) {
       if (rank.history?.length) {
-        entries.push([rank.playlist, rank.history.map((point) => ({ ...point }))]);
+        const history = rank.history.map((point) => ({ ...point }));
+        if (
+          rank.mmr !== undefined &&
+          Number.isFinite(rank.mmr) &&
+          history.at(-1)?.mmr !== rank.mmr
+        ) {
+          history.push({
+            at: Math.max(account.updatedAt, history.at(-1)?.at ?? account.updatedAt),
+            mmr: rank.mmr
+          });
+        }
+        entries.push([rank.playlist, history.slice(-MMR_HISTORY_LIMIT)]);
       } else if (rank.mmr !== undefined && Number.isFinite(rank.mmr)) {
         // MMR stored before the history existed: show it as the first known point.
         entries.push([rank.playlist, [{ at: account.updatedAt, mmr: rank.mmr }]]);
