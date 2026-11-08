@@ -1,0 +1,22 @@
+RocketStats Source-Viewing License
+Copyright (c) 2026 Bonus83. All rights reserved.
+
+This license applies to original source code and project assets in this
+repository. Third-party components remain subject to their own licenses.
+
+The repository is made publicly available for viewing and issue reporting.
+Except for rights required by applicable law and rights granted by GitHub's
+Terms of Service for public repositories, no permission is granted to use,
+reproduce, copy, modify, create derivative works from, distribute, sublicense,
+or commercially exploit this source code or these project assets without prior
+written permission from the copyright holder.
+
+This license does not apply to official compiled RocketStats release binaries.
+Downloading, installing, and running those binaries is governed by EULA.md.
+
+Nothing in this license limits permissions that GitHub's Terms of Service grant
+for public repositories, including viewing or forking on GitHub:
+https://docs.github.com/en/site-policy/github-terms/github-terms-of-service#d-4-license-grant-to-other-users
+
+The source code and project assets are provided "AS IS", without warranty of
+any kind, to the extent permitted by applicable law.
